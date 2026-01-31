@@ -24,22 +24,22 @@ if (!url) {
     await page.goto(url, { waitUntil: "networkidle2" })
 
     try {
-        const nameSelectorTerabyte = 'h1.tit-prod'
-        await page.waitForSelector(nameSelectorTerabyte)
-        const nameTerabyte = await page.$eval(nameSelectorTerabyte, (el) => el.innerText.trim())
+        const nameSelector = 'h1.tit-prod'
+        await page.waitForSelector(nameSelector)
+        const name = await page.$eval(nameSelector, (el) => el.innerText.trim())
 
-        const priceSelectorTerabyte = "#valVista"
-        await page.waitForSelector(priceSelectorTerabyte)
-        const priceTerabyte = await page.$eval(priceSelectorTerabyte, (el) => el.innerText.trim())
+        const priceSelector = "#valVista"
+        await page.waitForSelector(priceSelector)
+        const price = await page.$eval(priceSelector, (el) => el.innerText.trim())
 
-        const productDataTerabyte = {
+        const productData = {
             url,
-            name: nameTerabyte,
-            price: priceTerabyte,
+            name,
+            price,
             timestamp: new Date().toISOString()
         }
 
-        fs.writeFileSync('product_price.json', JSON.stringify(productDataTerabyte, null, 2))
+        fs.writeFileSync('product_price.json', JSON.stringify(productData, null, 2))
         console.log('Concluido, dados salvos com sucesso em product_price.json')
 
     } catch (error) {
