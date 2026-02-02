@@ -21,18 +21,24 @@ import { useHookFormMask } from "use-mask-input";
 import { FieldValues, useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Checkbox } from "./ui/checkbox";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { UserRegister } from "../schema";
+import { userRegisterSchema } from "../schema";
+import toast from "react-hot-toast";
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [address, setAddress] = useState({ city: "", street: "" });
 
   const {
     register,
+    reset,
     handleSubmit,
+    setValue,
     setError,
     formState: { isSubmitting, errors },
     control,
-  } = useForm({
+  } = useForm<UserRegister>({
+    resolver: zodResolver(userRegisterSchema),
     mode: "onChange",
   });
 
@@ -45,10 +51,8 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
 
     if (res.ok) {
       const data = await res.json();
-      setAddress({
-        city: data.city,
-        street: data.street,
-      });
+      setValue("address", data.street);
+      setValue("city", data.city);
     }
   }
 
@@ -56,24 +60,32 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     console.log("Form Data Submitted:");
     console.log(data);
 
-    const res = await fetch("https://apis.codante.io/api/register-user/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      "https://apis.codante.io/api/register-user/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    });
+    );
 
     const resData = await res.json();
 
     if (!res.ok) {
       console.log(resData);
       for (const field in resData.errors) {
-        setError(field, { type: "manual", message: resData.errors[field] });
+        setError(field as keyof UserRegister, {
+          type: "manual",
+          message: resData.errors[field],
+        });
       }
+      toast.error("Erro ao criar a conta. Verifique os campos.");
     } else {
       console.log(resData);
-      
+      toast.success("Conta criada com sucesso!");
+      reset();
     }
   }
 
@@ -94,20 +106,10 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 id="firstname"
                 type="text"
                 placeholder="John Doe"
-                {...register("firstname", {
-                  required: "O campo primeiro nome precisa ser preenchido",
-                  minLength: {
-                    value: 3,
-                    message: "O nome deve ter no mínimo 3 caracteres",
-                  },
-                  maxLength: {
-                    value: 50,
-                    message: "O nome deve ter no máximo 50 caracteres",
-                  },
-                })}
+                {...register("firstname")}
               />
               <FieldDescription>
-                  {errors.firstname && (
+                {errors.firstname && (
                   <p className="text-red-500" role="alert">
                     {errors.firstname?.message as string}
                   </p>
@@ -120,17 +122,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 id="lastname"
                 type="text"
                 placeholder="Doe"
-                {...register("lastname", {
-                  required: "O campo sobrenome precisa ser preenchido",
-                  minLength: {
-                    value: 2,
-                    message: "O sobrenome deve ter no mínimo 2 caracteres",
-                  },
-                  maxLength: {
-                    value: 50,
-                    message: "O sobrenome deve ter no máximo 50 caracteres",
-                  },
-                })}
+                {...register("lastname")}
               />
               <FieldDescription>
                 {errors.lastname && (
@@ -146,13 +138,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 id="email"
                 type="email"
                 placeholder="m@example.com"
-                {...register("email", {
-                  required: "O campo email precisa ser preenchido",
-                  pattern: {
-                    value: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
-                    message: "Endereço de email inválido",
-                  },
-                })}
+                {...register("email")}
               />
               <FieldDescription>
                 {errors.email && (
@@ -169,13 +155,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                   className="relative"
                   id="password"
                   type={isPasswordVisible ? "text" : "password"}
-                  {...register("password", {
-                    required: "O campo senha precisa ser preenchido",
-                    minLength: {
-                      value: 8,
-                      message: "A senha deve ter no mínimo 8 caracteres",
-                    },
-                  })}
+                  {...register("password")}
                 />
                 <span className="absolute right-3 top-2">
                   <button
@@ -212,20 +192,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 <Input
                   id="confirm-password"
                   type={isPasswordVisible ? "text" : "password"}
-                  {...register("password_confirmation", {
-                    required:
-                      "O campo de confirmação da senha precisa ser preenchido",
-                    minLength: {
-                      value: 8,
-                      message:
-                        "A confirmaçáo da senha deve ter no mínimo 8 caracteres",
-                    },
-                    validate(value, formValues) {
-                      if (value === formValues.password) return true;
-                      return "As senhas não coincidem";
-                    },
-                    
-                  })}
+                  {...register("password_confirmation")}
                 />
                 <span className="absolute right-3 top-2">
                   <button
@@ -260,17 +227,11 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 id="phone"
                 type="text"
                 placeholder="(00) 0 0000-0000"
-                {...registerWithMask("phone", "(99) 9 9999-9999", {
-                  required: "O campo telefone precisa ser preenchido",
-                  pattern: {
-                    value: /^\(\d{2}\) \d{1} \d{4}-\d{4}$/,
-                    message: "Telefone inválido",
-                  },
-                })}
+                {...registerWithMask("phone", "(99) 9 9999-9999")}
               />
               <FieldDescription>
                 {errors.phone && (
-                  <p className="text-red-500">
+                  <p className="text-red-500" role="alert">
                     {errors.phone?.message as string}
                   </p>
                 )}
@@ -284,13 +245,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 id="cpf"
                 type="text"
                 placeholder="000.000.000-00"
-                {...registerWithMask("cpf", "999.999.999-99", {
-                  required: "O campo CPF precisa ser preenchido",
-                  pattern: {
-                    value: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
-                    message: "CPF inválido",
-                  },
-                })}
+                {...registerWithMask("cpf", "999.999.999-99")}
               />
 
               <FieldDescription className="">
@@ -308,8 +263,6 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 type="text"
                 placeholder="00000-000"
                 {...registerWithMask("zipcode", "99999-999", {
-                  required: "O campo CEP precisa ser preenchido",
-                  pattern: { value: /^\d{5}-\d{3}$/, message: "CEP inválido" },
                   onBlur: handleZipCodeBlur,
                 })}
               />
@@ -328,7 +281,6 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 type="text"
                 placeholder="Rua"
                 className="disabled:bg-slate-200"
-                value={address.street}
                 {...register("address")}
                 disabled
               />
@@ -340,15 +292,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 type="text"
                 placeholder="Cidade"
                 className="disabled:bg-slate-200"
-                value={address.city}
                 {...register("city")}
                 disabled
               />
             </Field>
             <FieldGroup className="py-2 w-76">
-
               <Field>
-
                 <div className="flex items-center gap-2">
                   <Controller
                     name="terms"
@@ -373,7 +322,6 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                     </a>
                   </FieldLabel>
                 </div>
-
 
                 <FieldDescription className="">
                   {errors.terms && (

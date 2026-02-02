@@ -11,6 +11,10 @@ export const userRegisterSchema = z.object({
   zipcode: z.string().min(1, {"message": "O campo de CEP precisa ser preenchido"}).regex(/^\d{5}-\d{3}$/, {"message": "CEP inválido."}),
   address: z.string().min(1, {"message": "O campo de endereço precisa ser preenchido"}),
   city: z.string().min(1, {"message": "O campo de cidade precisa ser preenchido"}),
+  terms: z.boolean({ "message": "Você deve aceitar os termos de serviço" }),
+}).refine((data) => data.password === data.password_confirmation, {
+  message: "As senhas não conferem",
+  path: ["password_confirmation"],
 });
 
 export type UserRegister = z.infer<typeof userRegisterSchema>;
