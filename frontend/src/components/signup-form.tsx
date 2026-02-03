@@ -19,28 +19,11 @@ import { EyeIcon, EyeOffIcon, Loader } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import type { SignupFormValues } from "../schema";
-// import { signupSchema } from "../schema";
+import type { SignupFormValues } from "../schema";
+import { signupSchema } from "../schema";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-
-
-import { z } from "zod"
-
-const signupSchema = z
-  .object({
-    name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
-    email: z.string().email({ message: "Email inválido" }),
-    password: z.string().min(8, { message: "A senha deve ter pelo menos 8 caracteres" }),
-    password_confirmation: z.string().min(8, { message: "A confirmação de senha deve ter pelo menos 8 caracteres" }),
-  })
-  .refine((data) => data.password === data.password_confirmation, {
-    message: "As senhas não coincidem",
-    path: ["confirmPassword"],
-  })
-
-type SignupFormValues = z.infer<typeof signupSchema>
 
 export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -71,6 +54,7 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
         email: formData.email,
         password: formData.password,
         callbackURL: "/",
+
       },
       {
         onRequest: (ctx) => {
@@ -80,7 +64,7 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
           toast.success("Conta criada com sucesso!");
           reset();
           console.log("User registered:", ctx);
-          router.replace("/");
+          router.replace("/dashboard");
         },
 
         onError: (ctx) => {

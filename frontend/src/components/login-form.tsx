@@ -23,12 +23,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { LoginFormValues } from "../schema";
 import { loginSchema } from "../schema";
 import { useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const router = useRouter();
 
   const {
     register,
@@ -40,7 +44,26 @@ export function LoginForm({
   });
 
   async function onSubmit(data: LoginFormValues) {
-     alert(`Email: ${data.email}\nPassword: ${data.password}`);
+     const {} = await authClient.signIn.email(
+      {
+        email: data.email,
+        password: data.password,
+      },
+      {
+        onRequest: (ctx) => {
+          console.log("User logging in:", ctx);
+        },
+        onSuccess: (ctx) => {
+          toast.success("Login realizado com sucesso!");
+          console.log("User logged in:", ctx);
+          router.replace("/dashboard");
+        },
+        onError: (ctx) => {
+          toast.error("Erro ao realizar login: " + ctx.error.message);
+          console.log("User login failed:", ctx);
+        },
+      },
+    );
   }
 
   return (
