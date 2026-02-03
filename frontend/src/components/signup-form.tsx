@@ -17,80 +17,82 @@ import {
 import { Input } from "@/components/ui/input";
 import { EyeIcon, EyeOffIcon, Loader } from "lucide-react";
 import { useState } from "react";
-import { useHookFormMask } from "use-mask-input";
-import { FieldValues, useForm } from "react-hook-form";
-import { Controller } from "react-hook-form";
-import { Checkbox } from "./ui/checkbox";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { UserRegister } from "../schema";
-import { userRegisterSchema } from "../schema";
+// import type { SignupFormValues } from "../schema";
+// import { signupSchema } from "../schema";
 import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
-export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
+
+import { z } from "zod"
+
+const signupSchema = z
+  .object({
+    name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
+    email: z.string().email({ message: "Email inválido" }),
+    password: z.string().min(8, { message: "A senha deve ter pelo menos 8 caracteres" }),
+    password_confirmation: z.string().min(8, { message: "A confirmação de senha deve ter pelo menos 8 caracteres" }),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  })
+
+type SignupFormValues = z.infer<typeof signupSchema>
+
+export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const router = useRouter();
 
   const {
     register,
     reset,
     handleSubmit,
-    setValue,
-    setError,
     formState: { isSubmitting, errors },
-    control,
-  } = useForm<UserRegister>({
-    resolver: zodResolver(userRegisterSchema),
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      password_confirmation: "",
+    },
     mode: "onChange",
   });
 
-  const registerWithMask = useHookFormMask(register);
 
-  async function handleZipCodeBlur(event: React.FocusEvent<HTMLInputElement>) {
-    const zipCode = event.target.value;
+  async function onSubmit(formData: SignupFormValues) {
 
-    const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${zipCode}`);
-
-    if (res.ok) {
-      const data = await res.json();
-      setValue("address", data.street);
-      setValue("city", data.city);
-    }
-  }
-
-  async function onSubmit(data: FieldValues) {
-    console.log("Form Data Submitted:");
-    console.log(data);
-
-    const res = await fetch(
-      "https://apis.codante.io/api/register-user/register",
+    const {} = await authClient.signUp.email(
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        callbackURL: "/",
+      },
+      {
+        onRequest: (ctx) => {
+          console.log("User registering:", ctx);
         },
-        body: JSON.stringify(data),
+        onSuccess: (ctx) => {
+          toast.success("Conta criada com sucesso!");
+          reset();
+          console.log("User registered:", ctx);
+          router.replace("/");
+        },
+
+        onError: (ctx) => {
+          toast.error("Erro ao criar conta: " + ctx.error.message);
+          console.log("User registration failed:", ctx);
+        },
       },
     );
-
-    const resData = await res.json();
-
-    if (!res.ok) {
-      console.log(resData);
-      for (const field in resData.errors) {
-        setError(field as keyof UserRegister, {
-          type: "manual",
-          message: resData.errors[field],
-        });
-      }
-      toast.error("Erro ao criar a conta. Verifique os campos.");
-    } else {
-      console.log(resData);
-      toast.success("Conta criada com sucesso!");
-      reset();
-    }
   }
 
   return (
-    <Card {...props}>
+    <Card className="shadow-2xl" {...form}>
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Crie sua conta</CardTitle>
         <CardDescription>
@@ -106,28 +108,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 id="firstname"
                 type="text"
                 placeholder="John Doe"
-                {...register("firstname")}
+                {...register("name")}
               />
               <FieldDescription>
-                {errors.firstname && (
-                  <p className="text-red-500" role="alert">
-                    {errors.firstname?.message as string}
-                  </p>
-                )}
-              </FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="lastname">Sobrenome</FieldLabel>
-              <Input
-                id="lastname"
-                type="text"
-                placeholder="Doe"
-                {...register("lastname")}
-              />
-              <FieldDescription>
-                {errors.lastname && (
-                  <p className="text-red-500" role="alert">
-                    {errors.lastname?.message as string}
+                {errors.name && (
+                  <p className="text-red-500">
+                    {errors.name?.message as string}
                   </p>
                 )}
               </FieldDescription>
@@ -221,117 +207,8 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 )}
               </FieldDescription>
             </Field>
-            <Field>
-              <FieldLabel htmlFor="phone">Telefone Celular</FieldLabel>
-              <Input
-                id="phone"
-                type="text"
-                placeholder="(00) 0 0000-0000"
-                {...registerWithMask("phone", "(99) 9 9999-9999")}
-              />
-              <FieldDescription>
-                {errors.phone && (
-                  <p className="text-red-500" role="alert">
-                    {errors.phone?.message as string}
-                  </p>
-                )}
-              </FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="cpf" className="">
-                CPF
-              </FieldLabel>
-              <Input
-                id="cpf"
-                type="text"
-                placeholder="000.000.000-00"
-                {...registerWithMask("cpf", "999.999.999-99")}
-              />
-
-              <FieldDescription className="">
-                {errors.cpf && (
-                  <p className="text-red-500" role="alert">
-                    {errors.cpf?.message as string}
-                  </p>
-                )}
-              </FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="cep">CEP</FieldLabel>
-              <Input
-                id="cep"
-                type="text"
-                placeholder="00000-000"
-                {...registerWithMask("zipcode", "99999-999", {
-                  onBlur: handleZipCodeBlur,
-                })}
-              />
-              <FieldDescription className="">
-                {errors.zipcode && (
-                  <p className="text-red-500" role="alert">
-                    {errors.zipcode?.message as string}
-                  </p>
-                )}
-              </FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="address">Endereço</FieldLabel>
-              <Input
-                id="address"
-                type="text"
-                placeholder="Rua"
-                className="disabled:bg-slate-200"
-                {...register("address")}
-                disabled
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="city">Cidade</FieldLabel>
-              <Input
-                id="city"
-                type="text"
-                placeholder="Cidade"
-                className="disabled:bg-slate-200"
-                {...register("city")}
-                disabled
-              />
-            </Field>
-            <FieldGroup className="py-2 w-76">
-              <Field>
-                <div className="flex items-center gap-2">
-                  <Controller
-                    name="terms"
-                    control={control}
-                    rules={{
-                      required:
-                        "Você precisa aceitar os termos e condições para continuar",
-                    }}
-                    render={({ field }) => (
-                      <Checkbox
-                        id="terms"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    )}
-                  />
-
-                  <FieldLabel htmlFor="terms">
-                    Aceito os{" "}
-                    <a href="#" className="underline">
-                      termos e condições de uso
-                    </a>
-                  </FieldLabel>
-                </div>
-
-                <FieldDescription className="">
-                  {errors.terms && (
-                    <p className="text-red-500">
-                      {errors.terms.message as string}
-                    </p>
-                  )}
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
+            
+            
             <FieldGroup>
               <Field>
                 <Button
@@ -340,7 +217,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                    <Loader className="animate-spin" size={20} />
+                    <Loader className="animate-spin" color="green" size={50} />
                   ) : (
                     "Cadastrar"
                   )}
@@ -349,7 +226,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                   Criar conta com Google
                 </Button>
                 <FieldDescription className="px-6 text-center">
-                  Já tem uma conta? <a href="login">Entrar</a>
+                  Já tem uma conta? <a href="#">Entrar</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>

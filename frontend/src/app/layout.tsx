@@ -1,6 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
+
+import { Inter } from "next/font/google"
 import { Toaster } from "react-hot-toast";
+
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+  weight: ["400", "600", "700"],
+})
 
 
 export const metadata: Metadata = {
@@ -16,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body
-        className={`antialiased`}
+        className={`${inter.variable} antialiased`}
         suppressHydrationWarning
       >
         <Toaster />

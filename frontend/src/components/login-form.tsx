@@ -1,59 +1,76 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+'use client'
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { LoginFormValues } from "../schema";
+import { loginSchema } from "../schema";
+import { useForm } from "react-hook-form";
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<typeof Card>) {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting, errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+  });
+
+  async function onSubmit(data: LoginFormValues) {
+     alert(`Email: ${data.email}\nPassword: ${data.password}`);
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
+      <Card className="shadow-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Bem-vindo de volta</CardTitle>
           <CardDescription>
-            Faça login com sua conta do Google
+            Insira suas credenciais para acessar sua conta
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
-              <Field>
-                <Button variant="outline" type="button">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path
-                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  Login com Google
-                </Button>
-              </Field>
-              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Ou continue com
-              </FieldSeparator>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
                   type="email"
                   placeholder="email@exemplo.com"
-                  required
+                  {...register("email")}
+                  disabled={isSubmitting}
                 />
+                <FieldDescription>
+                  {errors.email && (
+                    <p className="text-red-500" role="alert">
+                      {errors.email?.message as string}
+                    </p>
+                  )}
+                </FieldDescription>
               </Field>
               <Field>
                 <div className="flex items-center">
@@ -65,10 +82,66 @@ export function LoginForm({
                     Esqueceu sua senha?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={isPasswordVisible ? "text" : "password"}
+                    {...register("password")}
+                    disabled={isSubmitting}
+                  />
+                  <span className="absolute right-3 top-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                    >
+                      {isPasswordVisible ? (
+                        <EyeIcon
+                          size={20}
+                          className="cursor-pointer text-slate-600"
+                        />
+                      ) : (
+                        <EyeOffIcon
+                          size={20}
+                          className="cursor-pointer text-slate-600"
+                        />
+                      )}
+                    </button>
+                  </span>
+                </div>
+                <FieldDescription>
+                  {errors.password && (
+                    <p className="text-red-500" role="alert">
+                      {errors.password?.message as string}
+                    </p>
+                  )}
+                </FieldDescription>
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
+                <Button type="submit" className="cursor-pointer" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Entrando...
+                    </>
+                  ) : (
+                    "Entrar"
+                  )}
+                </Button>
+              </Field>
+
+              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
+                Ou continue com
+              </FieldSeparator>
+              <Field>
+                <Button variant="outline" className="cursor-pointer" type="button">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Login com Google
+                </Button>
                 <FieldDescription className="text-center">
                   Não tem uma conta? <a href="/signup">Cadastre-se</a>
                 </FieldDescription>
@@ -78,9 +151,10 @@ export function LoginForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        Ao clicar em continuar, você concorda com nossos <a href="#">Termos de serviço</a>{" "}
-        e <a href="#">Política de Privacidade</a>.
+        Ao clicar em continuar, você concorda com nossos{" "}
+        <a href="#">Termos de serviço</a> e{" "}
+        <a href="#">Política de Privacidade</a>.
       </FieldDescription>
     </div>
-  )
+  );
 }
