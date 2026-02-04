@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1770165782047,
+    "url": "https://www.amazon.com.br/Mem%C3%B3ria-PC3200-Vengeance-CMK16GX4M1E3200C16-CORSAIR/dp/B07W8ZDDKT/ref=dp_fod_d_sccl_2/141-2790210-8170062?pd_rd_w=GqBx2&content-id=amzn1.sym.b62ac7bd-1361-4636-859b-961edb7c8aff&pf_rd_p=b62ac7bd-1361-4636-859b-961edb7c8aff&pf_rd_r=5FWQ8B9MPSDPF52MPV6Q&pd_rd_wg=Y4UOl&pd_rd_r=108c7b74-9db2-4468-b7f4-7a7fd8be1cbe&pd_rd_i=B07W8ZDDKT&th=1",
+    "name": "Memória DDR4 16GB PC3200 Vengeance LPX Preto CMK16GX4M1E3200C16 CORSAIR Memória CORSAIR DDR4 16GB 1X16GB PC 3200 Vengeance LPX Preto CMK16GX4M1E3200C16",
+    "price": "R$1.000,00",
+    "method": "visual",
+    "scrapedAt": "2026-02-04T00:43:02.047Z"
+  },
+  {
+    "id": 1770165799677,
+    "url": "https://www.terabyteshop.com.br/produto/26031/memoria-ddr4-kingston-fury-beast-rgb-8gb-3200mhz-black-kf432c16bb2a8",
+    "name": "Memória DDR4 Kingston Fury Beast, RGB, 8GB, 3200MHz, Black, KF432C16BB2A/8",
+    "price": "569.99",
+    "method": "json-ld",
+    "scrapedAt": "2026-02-04T00:43:19.677Z"
+  },
+  {
+    "id": 1770166438324,
+    "url": "https://www.terabyteshop.com.br/produto/26031/memoria-ddr4-kingston-fury-beast-rgb-8gb-3200mhz-black-kf432c16bb2a8",
+    "name": "Memória DDR4 Kingston Fury Beast, RGB, 8GB, 3200MHz, Black, KF432C16BB2A/8",
+    "price": "569.99",
+    "method": "json-ld",
+    "scrapedAt": "2026-02-04T00:53:58.324Z"
+  }
+]

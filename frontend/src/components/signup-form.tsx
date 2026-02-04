@@ -45,6 +45,14 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
     mode: "onChange",
   });
 
+    const handleLoginWithGoogle = async () => {
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/dashboard",
+    });
+  };
+
+
 
   async function onSubmit(formData: SignupFormValues) {
 
@@ -206,7 +214,7 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
                     "Cadastrar"
                   )}
                 </Button>
-                <Button variant="outline" type="button">
+                <Button variant="outline" type="button" onClick={handleLoginWithGoogle} disabled={isSubmitting}>
                   Criar conta com Google
                 </Button>
                 <FieldDescription className="px-6 text-center">
