@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { BorderBeam } from "./ui/border-beam";
 
 export function LoginForm({
   className,
@@ -44,7 +45,7 @@ export function LoginForm({
   });
 
   async function onSubmit(data: LoginFormValues) {
-     const {} = await authClient.signIn.email(
+    const {} = await authClient.signIn.email(
       {
         email: data.email,
         password: data.password,
@@ -75,7 +76,14 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="shadow-2xl">
+      <Card className="shadow-2xl relative overflow-hidden">
+        <BorderBeam
+          duration={8}
+          size={300}
+          borderWidth={2}
+          reverse
+          className="from-transparent via-green-500 to-transparent"
+        />
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Bem-vindo de volta</CardTitle>
           <CardDescription>
@@ -147,7 +155,11 @@ export function LoginForm({
                 </FieldDescription>
               </Field>
               <Field>
-                <Button type="submit" className="cursor-pointer" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  className="cursor-pointer"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -163,7 +175,13 @@ export function LoginForm({
                 Ou continue com
               </FieldSeparator>
               <Field>
-                <Button variant="outline" className="cursor-pointer" type="button" onClick={handleLoginWithGoogle} disabled={isSubmitting}>
+                <Button
+                  variant="outline"
+                  className="cursor-pointer"
+                  type="button"
+                  onClick={handleLoginWithGoogle}
+                  disabled={isSubmitting}
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path
                       d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"

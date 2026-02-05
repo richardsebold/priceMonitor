@@ -24,6 +24,7 @@ import { signupSchema } from "../schema";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { BorderBeam } from "./ui/border-beam";
 
 export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -84,7 +85,14 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
   }
 
   return (
-    <Card className="shadow-2xl" {...form}>
+    <Card className="shadow-2xl relative overflow-hidden" {...form}>
+      <BorderBeam
+                duration={8}
+                size={300}
+                borderWidth={2}
+                reverse
+                className="from-transparent via-green-400 to-transparent"
+              />
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Crie sua conta</CardTitle>
         <CardDescription>

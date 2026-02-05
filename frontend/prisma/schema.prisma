@@ -90,10 +90,12 @@ model Verification {
 
 
 model ProductHistory {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(cuid())
   url       String
   name      String?
   price     String?
+  currency  String?
+  image     String?
   method    String?
   scrapedAt DateTime @default(now())
 
