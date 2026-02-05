@@ -25,6 +25,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  products      ProductHistory[]
+
   sessions Session[]
   accounts Account[]
 
@@ -84,4 +86,19 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+
+model ProductHistory {
+  id        Int      @id @default(autoincrement())
+  url       String
+  name      String?
+  price     String?
+  method    String?
+  scrapedAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("produtos_historico")
 }
