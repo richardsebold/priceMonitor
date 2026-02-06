@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { Inter } from "next/font/google"
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "@/components/ui/sonner";
 
 
 const inter = Inter({
@@ -29,7 +29,7 @@ export default function RootLayout({
         className={`${inter.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Toaster />
+        <Toaster position="top-center" richColors />
 
         {children}
       </body>

@@ -40,5 +40,14 @@
     "image": "https://images9.kabum.com.br/produtos/fotos/934759/console-sony-playstation-5-com-leitor-de-discos-ssd-1tb-controle-sem-fio-dualsense-2-jogos_1760736613_g.jpg",
     "method": "json-ld",
     "scrapedAt": "2026-02-05T21:00:14.365Z"
+  },
+  {
+    "id": 1770382439893,
+    "url": "https://www.kabum.com.br/produto/934759/console-sony-playstation-5-com-leitor-de-discos-ssd-1tb-controle-sem-fio-dualsense-2-jogos",
+    "name": "Console Sony PlayStation 5, Com Leitor de Discos, SSD 1TB, Controle Sem Fio DualSense + 2 Jogos",
+    "price": 3905.07,
+    "image": "https://images9.kabum.com.br/produtos/fotos/934759/console-sony-playstation-5-com-leitor-de-discos-ssd-1tb-controle-sem-fio-dualsense-2-jogos_1760736613_g.jpg",
+    "method": "json-ld",
+    "scrapedAt": "2026-02-06T12:53:59.893Z"
   }
 ]

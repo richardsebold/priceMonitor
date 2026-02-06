@@ -7,9 +7,10 @@ import Image from "next/image";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { NewProduct } from "@/actions/add-product";
-import { Trash } from "lucide-react";
+import { SquarePen, Trash } from "lucide-react";
 import { deleteProduct } from "@/actions/delete-product";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 
 export function DashboardClient() {
   const [productList, setProductList] = useState<ProductHistory[]>([]);
@@ -39,8 +40,8 @@ export function DashboardClient() {
     const myNewProduct = await NewProduct(product);
 
     if(!myNewProduct) return
-
-
+    
+    setProduct("")
 
     await handleGetProduct();
 
@@ -55,10 +56,12 @@ export function DashboardClient() {
         const deletedProduct = await deleteProduct(id);
 
         if(!deletedProduct) return
+
+        
     
         await handleGetProduct();
 
-        toast.success("Produto deletado com sucesso!");
+        toast.warning("Produto deletado com sucesso!");
 
 
     } catch (error) {
@@ -74,7 +77,7 @@ export function DashboardClient() {
       </h2>
 
       <div className="flex gap-4">
-        <Input placeholder="Insira a URL do produto" onChange={(e) => setProduct(e.target.value)}/>
+        <Input placeholder="Insira a URL do produto" onChange={(e) => setProduct(e.target.value)} value={product}/>
         <Button className="cursor-pointer" onClick={handleAddProduct}>Adicionar</Button>
       </div>
       
@@ -133,8 +136,24 @@ export function DashboardClient() {
                 </div>
               </div>
 
-              <div>
-                <Trash className="cursor-pointer hover:text-red-600 transition-all hover:scale-110 duration-200" onClick={() => handleDeleteProduct(item.id)} />
+              <div className="flex gap-2 items-center">
+                <Trash className="cursor-pointer hover:text-red-600 transition-all hover:scale-110 duration-200" size={25} onClick={() => handleDeleteProduct(item.id)} />
+                
+                <Dialog>
+
+                  <DialogTrigger  asChild><SquarePen className="cursor-pointer hover:text-blue-600 transition-all hover:scale-110 duration-200" size={25}  /></DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle >Editar URL</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="flex gap-2">
+                      <Input placeholder="Editar tarefa" />
+                      <Button className="cursor-pointer">Editar</Button>
+                    </div>
+
+                  </DialogContent>
+                </Dialog>
               </div>
 
               <div className="mt-4 text-xs text-gray-400 border-t pt-2 flex gap-4">
