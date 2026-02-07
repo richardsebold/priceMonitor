@@ -7,8 +7,6 @@ import Image from "next/image";
 
 
 export default async function Dashboard() {
-  
-
 
 
   const session = await auth.api.getSession({
@@ -45,7 +43,9 @@ export default async function Dashboard() {
               {session.user.name?.charAt(0)}
             </div>
           )}
-          <ButtonSignOut />
+          
+            <ButtonSignOut />
+        
         </div>
       </div>
 

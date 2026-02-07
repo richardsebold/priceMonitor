@@ -44,6 +44,12 @@ export function DashboardClient() {
         return;
       }
 
+      if (productList.find((item) => item.url === product)) {
+        toast.warning("Produto ja cadastrado!");
+        setLoading(false);
+        return;
+      }
+
       const myNewProduct = await NewProduct(product);
 
       if (!myNewProduct) return;
@@ -55,6 +61,8 @@ export function DashboardClient() {
       toast.success("Produto adicionado com sucesso!");
     } catch (error) {
       console.error("Erro ao buscar:", error);
+      setLoading(false);
+      toast.error("Erro ao adicionar produto!");
     }
 
     setLoading(false);
