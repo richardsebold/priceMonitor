@@ -1,73 +1,79 @@
-"use client"; 
+"use client";
 
 import { useEffect, useState } from "react";
-import { getProducts } from "@/actions/get-products-from-db"; 
-import type { ProductHistory } from "../../generated/prisma/client"; 
+import { getProducts } from "@/actions/get-products-from-db";
+import type { ProductHistory } from "../../generated/prisma/client";
 import Image from "next/image";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { NewProduct } from "@/actions/add-product";
-import { SquarePen, Trash } from "lucide-react";
+import { LoaderCircle, Plus, Trash } from "lucide-react";
 import { deleteProduct } from "@/actions/delete-product";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import EditURL from "./EditURL";
 
 export function DashboardClient() {
   const [productList, setProductList] = useState<ProductHistory[]>([]);
   const [product, setProduct] = useState<string>("");
-
+  const [loading, setLoading] = useState<boolean>(false);
 
   async function handleGetProduct() {
     try {
-        const products = await getProducts();
-        if (products) {
-            setProductList(products);
-        }
+      const products = await getProducts();
+      if (products) {
+        setProductList(products);
+      }
     } catch (error) {
-        console.error("Erro ao buscar:", error);
-    } 
+      console.error("Erro ao buscar:", error);
+    }
   }
 
-  useEffect (() => {
+  useEffect(() => {
     (async () => {
       await handleGetProduct();
     })();
   }, []);
 
   const handleAddProduct = async () => {
-    if (product.length === 0 || !product) return;
+    setLoading(true);
 
-    const myNewProduct = await NewProduct(product);
-
-    if(!myNewProduct) return
-    
-    setProduct("")
-
-    await handleGetProduct();
-
-    toast.success("Produto adicionado com sucesso!");
-  }
-
-  async function handleDeleteProduct(id: string) {
-    
     try {
-        if (id.length === 0 || !id) return;
+      if (product.length === 0 || !product) {
+        toast.error("Insira um URL");
+        setLoading(false);
+        return;
+      }
 
-        const deletedProduct = await deleteProduct(id);
+      const myNewProduct = await NewProduct(product);
 
-        if(!deletedProduct) return
+      if (!myNewProduct) return;
 
-        
-    
-        await handleGetProduct();
+      setProduct("");
 
-        toast.warning("Produto deletado com sucesso!");
+      await handleGetProduct();
 
-
+      toast.success("Produto adicionado com sucesso!");
     } catch (error) {
-        console.error("Erro ao buscar:", error);
+      console.error("Erro ao buscar:", error);
     }
 
+    setLoading(false);
+  };
+
+  async function handleDeleteProduct(id: string) {
+    try {
+      if (id.length === 0 || !id) return;
+
+      const deletedProduct = await deleteProduct(id);
+
+      if (!deletedProduct) return;
+
+      await handleGetProduct();
+
+      toast.warning("Produto deletado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao buscar:", error);
+    }
   }
 
   return (
@@ -77,10 +83,16 @@ export function DashboardClient() {
       </h2>
 
       <div className="flex gap-4">
-        <Input placeholder="Insira a URL do produto" onChange={(e) => setProduct(e.target.value)} value={product}/>
-        <Button className="cursor-pointer" onClick={handleAddProduct}>Adicionar</Button>
+        <Input
+          placeholder="Insira a URL do produto"
+          onChange={(e) => setProduct(e.target.value)}
+          value={product}
+        />
+        <Button className="cursor-pointer" onClick={handleAddProduct}>
+          {loading ? <LoaderCircle className="animate-spin" /> : <Plus />}
+          Cadastrar
+        </Button>
       </div>
-      
 
       <div className="grid gap-4 mt-6">
         {productList.length === 0 ? (
@@ -90,7 +102,7 @@ export function DashboardClient() {
         ) : (
           productList.map((item, index) => (
             <div
-              key={item.id || index} 
+              key={item.id || index}
               className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-start">
@@ -110,54 +122,48 @@ export function DashboardClient() {
                   <Image
                     src={item.image as string}
                     alt={item.name as string}
-                    className="w-16 h-16 object-cover rounded-md" 
+                    className="w-16 h-16 object-cover rounded-md"
                     width={100}
                     height={100}
                   />
                 </div>
 
                 <div className="text-right">
-                  {item.currency === "BRL"? (
+                  {item.currency === "BRL" ? (
                     <p className="text-2xl font-bold text-green-600 gap-2">
-                    R$  {item.price|| "---"}
-                  </p>
+                      R$ {item.price || "---"}
+                    </p>
                   ) : (
                     <p className="text-2xl font-bold text-green-600">
-                    {item.price || "---"}
-                  </p>
+                      {item.price || "---"}
+                    </p>
                   )}
-                  
+
                   {item.currency ? (
                     <p className="text-xs text-gray-400">{item.currency}</p>
                   ) : (
-                  <p className="text-xs text-gray-400">Sem informação</p>
-                )}
-                
+                    <p className="text-xs text-gray-400">Sem informação</p>
+                  )}
                 </div>
               </div>
 
               <div className="flex gap-2 items-center">
-                <Trash className="cursor-pointer hover:text-red-600 transition-all hover:scale-110 duration-200" size={25} onClick={() => handleDeleteProduct(item.id)} />
-                
-                <Dialog>
+                <Trash
+                  className="cursor-pointer hover:text-red-600 transition-all hover:scale-110 duration-200"
+                  size={25}
+                  onClick={() => handleDeleteProduct(item.id)}
+                />
 
-                  <DialogTrigger  asChild><SquarePen className="cursor-pointer hover:text-blue-600 transition-all hover:scale-110 duration-200" size={25}  /></DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle >Editar URL</DialogTitle>
-                    </DialogHeader>
-
-                    <div className="flex gap-2">
-                      <Input placeholder="Editar tarefa" />
-                      <Button className="cursor-pointer">Editar</Button>
-                    </div>
-
-                  </DialogContent>
-                </Dialog>
+                <EditURL product={item} handleGetProduct={handleGetProduct} />
               </div>
 
               <div className="mt-4 text-xs text-gray-400 border-t pt-2 flex gap-4">
-                <span>Extraído em: {item.scrapedAt ? new Date(item.scrapedAt).toLocaleString() : "-"}</span>
+                <span>
+                  Extraído em:{" "}
+                  {item.scrapedAt
+                    ? new Date(item.scrapedAt).toLocaleString()
+                    : "-"}
+                </span>
               </div>
             </div>
           ))
