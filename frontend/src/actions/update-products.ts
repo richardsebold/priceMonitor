@@ -19,7 +19,6 @@ export async function updateProducts () {
     const products = await prisma.productHistory.findMany({
         where: {
             userId: session.user.id,
-
         }
     });
     if(!products)  return

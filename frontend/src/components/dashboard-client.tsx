@@ -14,7 +14,10 @@ import EditURL from "./EditURL";
 
 export function DashboardClient() {
   const [productList, setProductList] = useState<ProductHistory[]>([]);
-  const [product, setProduct] = useState<string>("");
+  const [url, setUrl] = useState<string>("");
+
+  const [priceTarget, setPriceTarget] = useState<string>("");
+
   const [loading, setLoading] = useState<boolean>(false);
 
   async function handleGetProduct() {
@@ -38,23 +41,23 @@ export function DashboardClient() {
     setLoading(true);
 
     try {
-      if (product.length === 0 || !product) {
+      if (url.length === 0 || !url) {
         toast.error("Insira um URL");
         setLoading(false);
         return;
       }
 
-      if (productList.find((item) => item.url === product)) {
+      if (productList.find((item) => item.url === url)) {
         toast.warning("Produto ja cadastrado!");
         setLoading(false);
         return;
       }
 
-      const myNewProduct = await NewProduct(product);
+      const myNewProduct = await NewProduct(url, priceTarget);
 
       if (!myNewProduct) return;
 
-      setProduct("");
+      setUrl("");
 
       await handleGetProduct();
 
@@ -93,12 +96,26 @@ export function DashboardClient() {
       <div className="flex gap-4">
         <Input
           placeholder="Insira a URL do produto"
-          onChange={(e) => setProduct(e.target.value)}
-          value={product}
+          onChange={(e) => setUrl(e.target.value)}
+          value={url}
+        />
+        <Input
+          placeholder="Insira o valor desejado do produto"
+          onChange={(e) => setPriceTarget(e.target.value)}
+          value={priceTarget}
         />
         <Button className="cursor-pointer" onClick={handleAddProduct}>
-          {loading ? <LoaderCircle className="animate-spin" /> : <Plus />}
-          Cadastrar
+          {loading ? (
+            <>
+              <LoaderCircle className="animate-spin" />
+              <span>Cadastrando...</span>
+            </>
+          ) : (
+            <>
+              <Plus />
+              <span>Cadastrar</span>
+            </>
+          )}
         </Button>
       </div>
 

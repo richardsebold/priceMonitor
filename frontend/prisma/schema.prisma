@@ -94,10 +94,12 @@ model ProductHistory {
   url       String
   name      String?
   price     String?
+  priceTarget String?
   currency  String?
   image     String?
   method    String?
   scrapedAt DateTime @default(now())
+  
 
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -3,8 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { scrapeProduct } from '../actions/scrape-product';
 
-export async function NewProduct (product: string) {
+export async function NewProduct (url: string, priceTarget: string) {
 
     const session = await auth.api.getSession({
         headers: await headers()
@@ -16,18 +17,29 @@ export async function NewProduct (product: string) {
 
     try {
 
-        if(!product) return
+        if(!url) return
 
-        const newProduct = await prisma.productHistory.create({
+        const newProduct = await scrapeProduct(url);
+
+        if(!newProduct) return
+
+
+        const produto = await prisma.productHistory.create({
             data: {
-                url: product,
+                url: url,
+                name: newProduct.name,
+                price: newProduct.price,
+                priceTarget: priceTarget,
+                currency: newProduct.currency,
+                image: newProduct.image,
+                method: newProduct.method,
                 userId: session.user.id
             }
         });
 
-        if(!newProduct) return
+        if(!produto) return
 
-        return newProduct;
+        return produto;
     }
     catch (error) {
         console.error("Erro ao buscar:", error);
