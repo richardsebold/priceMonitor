@@ -14,14 +14,11 @@ export async function scrapeProduct(url) {
 
   await page.setViewport({ width: 1920, height: 1080 });
 
-  // 🔥 Performance: bloqueia recursos inúteis
   await page.setRequestInterception(true);
   page.on('request', req => {
     if (['image', 'font', 'media'].includes(req.resourceType())) {
       req.abort();
-    } else {
-      req.continue();
-    }
+    } else req.continue();
   });
 
   try {
@@ -36,6 +33,21 @@ export async function scrapeProduct(url) {
       const toStr = (v) =>
         v !== null && v !== undefined ? String(v).trim() : '';
 
+      const toNumberPrice = (value) => {
+        if (!value) return 0;
+
+        let text = String(value).replace(/[^\d.,]/g, '');
+
+        if (text.includes(',') && text.lastIndexOf(',') > text.lastIndexOf('.')) {
+          text = text.replace(/\./g, '').replace(',', '.');
+        } else {
+          text = text.replace(/,/g, '');
+        }
+
+        const num = Number(text);
+        return Number.isFinite(num) ? num : 0;
+      };
+
       const detectCurrency = (text) => {
         if (!text) return '';
         if (text.includes('R$')) return 'BRL';
@@ -47,47 +59,39 @@ export async function scrapeProduct(url) {
       };
 
       const isProduct = (node) => {
-        if (!node || typeof node !== 'object') return false;
-        const type = node['@type'];
+        const type = node?.['@type'];
         if (Array.isArray(type)) return type.includes('Product');
         return type === 'Product';
       };
 
       const extractOffer = (offers) => {
-        if (!offers) return { price: '', currency: '' };
+        if (!offers) return { price: 0, currency: '' };
+        if (Array.isArray(offers)) return extractOffer(offers[0]);
 
-        if (Array.isArray(offers)) {
-          return extractOffer(offers[0]);
-        }
-
-        const price = toStr(
+        const rawPrice =
           offers.price ??
           offers.lowPrice ??
           offers.highPrice ??
-          ''
-        );
+          '';
 
-        const currency = toStr(
-          offers.priceCurrency ?? detectCurrency(price)
-        );
-
-        return { price, currency };
+        return {
+          price: toNumberPrice(rawPrice),
+          currency: toStr(offers.priceCurrency)
+        };
       };
 
       const deepFindProduct = (node) => {
         if (!node || typeof node !== 'object') return null;
-
         if (isProduct(node)) return node;
 
         for (const key in node) {
           const found = deepFindProduct(node[key]);
           if (found) return found;
         }
-
         return null;
       };
 
-      /* ================== JSON-LD (PRIORIDADE) ================== */
+      /* ================== JSON-LD ================== */
 
       const scripts = document.querySelectorAll(
         'script[type="application/ld+json"]'
@@ -111,7 +115,7 @@ export async function scrapeProduct(url) {
 
           return {
             name: toStr(product.name),
-            price: offer.price,
+            price: offer.price,        // ✅ NUMBER
             currency: offer.currency,
             image: toStr(
               Array.isArray(product.image)
@@ -123,7 +127,7 @@ export async function scrapeProduct(url) {
         }
       }
 
-      /* ================== META TAGS ================== */
+      /* ================== FALLBACKS ================== */
 
       const ogTitle = document.querySelector('meta[property="og:title"]');
       const ogPrice = document.querySelector(
@@ -136,27 +140,24 @@ export async function scrapeProduct(url) {
 
         return {
           name: toStr(ogTitle.content),
-          price: priceText,
+          price: toNumberPrice(priceText), // ✅ NUMBER
           currency: detectCurrency(priceText),
           image: toStr(ogImage?.content),
           method: 'meta-tags'
         };
       }
 
-      /* ================== VISUAL (ÚLTIMO RECURSO) ================== */
-
       const h1 = document.querySelector('h1');
       const bodyText = document.body.innerText;
-
-      const priceMatch = bodyText.match(
+      const match = bodyText.match(
         /(?:R\$|\$|€|£|¥)\s?\d{1,3}(?:\.\d{3})*(?:,\d{2})?/
       );
 
-      const priceText = toStr(priceMatch?.[0]);
+      const priceText = toStr(match?.[0]);
 
       return {
         name: toStr(h1?.innerText || document.title),
-        price: priceText,
+        price: toNumberPrice(priceText), // ✅ NUMBER
         currency: detectCurrency(priceText),
         image: toStr(document.querySelector('img')?.src),
         method: 'visual'

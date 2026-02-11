@@ -16,6 +16,7 @@ export function DashboardClient() {
   const [productList, setProductList] = useState<ProductHistory[]>([]);
   const [url, setUrl] = useState<string>("");
 
+  // ✅ sempre string no input
   const [priceTarget, setPriceTarget] = useState<string>("");
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,67 +24,67 @@ export function DashboardClient() {
   async function handleGetProduct() {
     try {
       const products = await getProducts();
-      if (products) {
-        setProductList(products);
-      }
+      if (products) setProductList(products);
     } catch (error) {
       console.error("Erro ao buscar:", error);
     }
   }
 
   useEffect(() => {
-    (async () => {
-      await handleGetProduct();
-    })();
+    handleGetProduct();
   }, []);
 
   const handleAddProduct = async () => {
     setLoading(true);
 
     try {
-      if (url.length === 0 || !url) {
+      if (!url.trim()) {
         toast.error("Insira um URL");
-        setLoading(false);
         return;
       }
 
-      if (productList.find((item) => item.url === url)) {
-        toast.warning("Produto ja cadastrado!");
-        setLoading(false);
+      if (productList.some((item) => item.url === url)) {
+        toast.warning("Produto já cadastrado!");
         return;
       }
 
-      const myNewProduct = await NewProduct(url, priceTarget);
+      const parsedPriceTarget = Number(priceTarget);
+
+      if (
+        parsedPriceTarget !== undefined &&
+        Number.isNaN(parsedPriceTarget)
+      ) {
+        toast.error("Valor inválido");
+        return;
+      }
+
+      const myNewProduct = await NewProduct(url, parsedPriceTarget);
 
       if (!myNewProduct) return;
 
       setUrl("");
+      setPriceTarget("");
 
       await handleGetProduct();
 
       toast.success("Produto adicionado com sucesso!");
     } catch (error) {
-      console.error("Erro ao buscar:", error);
-      setLoading(false);
+      console.error("Erro ao adicionar:", error);
       toast.error("Erro ao adicionar produto!");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   async function handleDeleteProduct(id: string) {
     try {
-      if (id.length === 0 || !id) return;
-
       const deletedProduct = await deleteProduct(id);
-
       if (!deletedProduct) return;
 
       await handleGetProduct();
-
       toast.warning("Produto deletado com sucesso!");
     } catch (error) {
-      console.error("Erro ao buscar:", error);
+      console.error("Erro ao deletar:", error);
     }
   }
 
@@ -95,16 +96,21 @@ export function DashboardClient() {
 
       <div className="flex gap-4">
         <Input
+          type="url"
           placeholder="Insira a URL do produto"
-          onChange={(e) => setUrl(e.target.value)}
           value={url}
+          onChange={(e) => setUrl(e.target.value)}
         />
+
         <Input
-          placeholder="Insira o valor desejado do produto"
-          onChange={(e) => setPriceTarget(e.target.value)}
+          type="number"
+          step="0.01"
+          placeholder="Insira o valor desejado"
           value={priceTarget}
+          onChange={(e) => setPriceTarget(e.target.value)}
         />
-        <Button className="cursor-pointer" onClick={handleAddProduct}>
+
+        <Button onClick={handleAddProduct} disabled={loading}>
           {loading ? (
             <>
               <LoaderCircle className="animate-spin" />
@@ -122,73 +128,64 @@ export function DashboardClient() {
       <div className="grid gap-4 mt-6">
         {productList.length === 0 ? (
           <div className="text-center py-10 text-gray-500 bg-white rounded shadow">
-            Nenhum dado carregado. Clique no botão acima.
+            Nenhum dado carregado.
           </div>
         ) : (
-          productList.map((item, index) => (
+          productList.map((item) => (
             <div
-              key={item.id || index}
-              className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              key={item.id}
+              className="bg-white p-6 rounded-lg shadow-sm border"
             >
               <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <p className="font-bold text-lg text-gray-800">
+                <div>
+                  <p className="font-bold text-lg">
                     {item.name || "Produto sem nome"}
                   </p>
                   <a
                     href={item.url}
                     target="_blank"
-                    className="text-blue-600 text-sm hover:underline block truncate max-w-xl"
+                    className="text-blue-600 text-sm truncate block max-w-xl"
                   >
                     {item.url}
                   </a>
                 </div>
-                <div>
-                  <Image
-                    src={item.image as string}
-                    alt={item.name as string}
-                    className="w-16 h-16 object-cover rounded-md"
-                    width={100}
-                    height={100}
-                  />
-                </div>
 
-                <div className="text-right">
-                  {item.currency === "BRL" ? (
-                    <p className="text-2xl font-bold text-green-600 gap-2">
-                      R$ {item.price || "---"}
-                    </p>
-                  ) : (
-                    <p className="text-2xl font-bold text-green-600">
-                      {item.price || "---"}
-                    </p>
-                  )}
-
-                  {item.currency ? (
-                    <p className="text-xs text-gray-400">{item.currency}</p>
-                  ) : (
-                    <p className="text-xs text-gray-400">Sem informação</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-2 items-center">
-                <Trash
-                  className="cursor-pointer hover:text-red-600 transition-all hover:scale-110 duration-200"
-                  size={25}
-                  onClick={() => handleDeleteProduct(item.id)}
+                <Image
+                  src={item.image as string}
+                  alt={item.name as string}
+                  width={64}
+                  height={64}
+                  className="rounded-md object-cover"
                 />
 
-                <EditURL product={item} handleGetProduct={handleGetProduct} />
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-green-600">
+                    {item.currency === "BRL" ? "R$ " : ""}
+                    {item.price ?? "---"}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {item.currency || "Sem informação"}
+                  </p>
+                </div>
               </div>
 
-              <div className="mt-4 text-xs text-gray-400 border-t pt-2 flex gap-4">
-                <span>
-                  Extraído em:{" "}
-                  {item.scrapedAt
-                    ? new Date(item.scrapedAt).toLocaleString()
-                    : "-"}
-                </span>
+              <div className="flex gap-2 items-center mt-4">
+                <Trash
+                  size={24}
+                  className="cursor-pointer hover:text-red-600"
+                  onClick={() => handleDeleteProduct(item.id)}
+                />
+                <EditURL
+                  product={item}
+                  handleGetProduct={handleGetProduct}
+                />
+              </div>
+
+              <div className="mt-4 text-xs text-gray-400 border-t pt-2">
+                Extraído em:{" "}
+                {item.scrapedAt
+                  ? new Date(item.scrapedAt).toLocaleString()
+                  : "-"}
               </div>
             </div>
           ))

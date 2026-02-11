@@ -91,11 +91,11 @@ model Verification {
 
 model ProductHistory {
   id        String      @id @default(cuid())
-  url       String
+  url       String      @unique
   name      String?
-  price     String?
-  priceTarget String?
-  currency  String?
+  price     Float
+  priceTarget Float?
+  currency  String?     @default("BRL")
   image     String?
   method    String?
   scrapedAt DateTime @default(now())
@@ -104,5 +104,19 @@ model ProductHistory {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  history     PriceHistory[]
+
   @@map("produtos_historico")
+}
+
+model PriceHistory {
+  id          String   @id @default(cuid())
+  price       Float    
+  createdAt   DateTime @default(now()) 
+
+  productId   String
+  product     ProductHistory  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+
+  @@index([productId, createdAt])
 }

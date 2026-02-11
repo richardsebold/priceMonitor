@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { scrapeProduct } from '../actions/scrape-product';
 
-export async function NewProduct (url: string, priceTarget: string) {
+export async function NewProduct (url: string, priceTarget: number) {
 
     const session = await auth.api.getSession({
         headers: await headers()
