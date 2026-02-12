@@ -96,7 +96,6 @@ export function DashboardClient() {
 
       <div className="flex gap-4">
         <Input
-          type="url"
           placeholder="Insira a URL do produto"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
