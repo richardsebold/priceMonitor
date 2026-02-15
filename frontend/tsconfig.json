@@ -30,6 +30,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "index.ts"  ],
+, "index.ts", "wpp-web-connection.js"  ],
   "exclude": ["node_modules"]
 }
