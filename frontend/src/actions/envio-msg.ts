@@ -24,6 +24,10 @@ export async function enviarAlertaTelegram({}) {
   // messages.
   bot.on("message", (msg) => {
     const chatId = msg.chat.id;
+    const message = msg.text;
+
+    // send a message to the chat acknowledging receipt of their message
+    bot.sendMessage(chatId, "Received your message: " + message);
 
     // send a message to the chat acknowledging receipt of their message
     bot.sendMessage(chatId, "Received your message");
