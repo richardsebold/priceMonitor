@@ -50,6 +50,8 @@ export default async function Dashboard() {
       </div>
 
       <DashboardClient />
+
+      <a href="https://t.me/PriceTrackerRapidoBot" target="_blank" >Clique aqui para habilitar o envio de mensagens no Telegram</a>
       
     </div>
   );

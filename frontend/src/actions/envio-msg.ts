@@ -1,35 +1,24 @@
-import TelegramBot from "node-telegram-bot-api";
+import { Telegraf } from "telegraf";
+import { message } from 'telegraf/filters'
 
-const token = process.env.TELEGRAM_BOT_TOKEN;
+const bot = new Telegraf(process.env.BOT_TOKEN as string);
 
-if (!token) {
-  throw new Error("TELEGRAM_BOT_TOKEN não está definido no ambiente.");
+
+export async function sendTelegramMessage() {
+   await bot.telegram.sendMessage("6776231882", "Hello, this is a message from the bot!");
+   console.log("Alerta enviado com sucesso!");
 }
 
-export async function enviarAlertaTelegram({}) {
-  // Matches "/echo [whatever]"
-  bot.onText(/\/echo (.+)/, (msg, match) => {
-    // 'msg' is the received Message from Telegram
-    // 'match' is the result of executing the regexp above on the text content
-    // of the message
 
-    const chatId = msg.chat.id;
-    const resp = match[1]; // the captured "whatever"
 
-    // send back the matched "whatever" to the chat
-    bot.sendMessage(chatId, resp);
-  });
 
-  // Listen for any kind of message. There are different kinds of
-  // messages.
-  bot.on("message", (msg) => {
-    const chatId = msg.chat.id;
-    const message = msg.text;
 
-    // send a message to the chat acknowledging receipt of their message
-    bot.sendMessage(chatId, "Received your message: " + message);
+bot.start((ctx) => ctx.reply("Welcome"));
+bot.help((ctx) => ctx.reply("Send me a sticker"));
+bot.on(message("sticker"), (ctx) => ctx.reply("👍"));
+bot.hears("hi", (ctx) => ctx.reply("Hey there"));
+bot.launch();
 
-    // send a message to the chat acknowledging receipt of their message
-    bot.sendMessage(chatId, "Received your message");
-  });
-}
+// Enable graceful stop
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));

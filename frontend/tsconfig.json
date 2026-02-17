@@ -30,6 +30,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "index.ts", "wpp-web-connection.js"  ],
+, "index.ts", "wpp-web-connection.js", "src/actions/envio-msg.ts"  ],
   "exclude": ["node_modules"]
 }
