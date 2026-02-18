@@ -13,6 +13,7 @@ export default function Home() {
           Price Tracker
         </a>
         <LoginForm />
+        
       </div>
     </div>
   )

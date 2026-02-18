@@ -1,12 +1,16 @@
+
 import { headers } from "next/headers";
 import { ButtonSignOut } from "@/components/button-signout";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { DashboardClient } from "../../components/dashboard-client"; 
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { setChatIdUser } from "@/actions/post-chat-id";
 
 
 export default async function Dashboard() {
+  
 
 
   const session = await auth.api.getSession({
@@ -16,6 +20,50 @@ export default async function Dashboard() {
   if (!session) {
     redirect("/");
   }
+
+
+  async function handleGetChatId(systemUserId : string) {
+    
+
+
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/getUpdates`);
+
+        const data = await response.json();
+
+        if (!data.ok) {
+            console.error("Erro na API do Telegram:", data.description);
+            return null;
+        }
+
+        for (const update of data.result) {
+            
+            if (update.message && update.message.text) {
+                const text = update.message.text;
+                const chatId = update.message.chat.id;
+
+
+                const parts = text.split(' ');
+
+                if (parts[0] === '/start' && parts[1] === systemUserId) {
+                    
+                    console.log(`Encontrado! O usuário ${systemUserId} tem o Chat ID: ${chatId}`);
+                    
+
+                    await setChatIdUser(chatId);
+
+                    return chatId; 
+                }
+            }
+        }
+        
+        console.log("Nenhuma mensagem de ativação encontrada para este usuário ainda.");
+        return null;
+
+    } catch (error) {
+        console.error("Erro ao obter chatId:", error);
+    }
+}
 
   const userImage = session.user.image;
 
@@ -27,6 +75,9 @@ export default async function Dashboard() {
           <div className="text-sm text-gray-500">
             {session.user.name} • {session.user.email}
           </div>
+          <Button onClick={() => handleGetChatId(session.user.id)} className="mt-2">
+            <a href={`https://t.me/PriceTrackerRapidoBot?start=${session.user.id}`} target="_blank" >Clique aqui para habilitar o envio de mensagens no Telegram</a>
+            </Button>
         </div>
 
         <div className="flex items-center gap-4">
@@ -45,13 +96,13 @@ export default async function Dashboard() {
           )}
           
             <ButtonSignOut />
-        
+            
         </div>
       </div>
 
       <DashboardClient />
 
-      <a href="https://t.me/PriceTrackerRapidoBot" target="_blank" >Clique aqui para habilitar o envio de mensagens no Telegram</a>
+      
       
     </div>
   );

@@ -14,8 +14,6 @@ export async function getProducts () {
         return [];
     }
 
-
-
     
     try {
     const products = await prisma.productHistory.findMany({
