@@ -13,11 +13,7 @@ export function TelegramButton({ userId }: TelegramButtonProps) {
     const [loading, setLoading] = useState(false);
 
     const handleLink = async () => {
-
-        window.open(`https://t.me/PriceTrackerRapidoBot?start=${userId}`, '_blank');
-        
-        handleVerify();
-
+        window.open(`https://t.me/PriceTrackerRapidoBot?start=${userId}`, '_blank'); 
     };
 
     const handleVerify = async () => {

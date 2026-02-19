@@ -1,6 +1,6 @@
 'use server'
 
-import { setChatIdUser } from "@/actions/post-chat-id"; // Sua função de salvar no banco
+import { setChatIdUser } from "@/actions/post-chat-id"; 
 
 export async function checkAndLinkTelegram(systemUserId: string) {
     const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -10,9 +10,9 @@ export async function checkAndLinkTelegram(systemUserId: string) {
     }
 
     try {
-        // 1. Busca updates no Telegram (Isso roda no servidor, seguro)
-        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates`, {
-            cache: 'no-store' // Importante para não cachear a resposta
+
+        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates`, { 
+            cache: 'no-store' 
         });
         
         const data = await response.json();
@@ -21,20 +21,17 @@ export async function checkAndLinkTelegram(systemUserId: string) {
             return { success: false, message: `Erro Telegram: ${data.description}` };
         }
 
-        // 2. Procura a mensagem correta
-        // Percorre de trás para frente para achar a mais recente primeiro (opcional)
         const updates = data.result.reverse(); 
 
         for (const update of updates) {
             if (update.message && update.message.text) {
                 const text = update.message.text;
-                const chatId = update.message.chat.id.toString(); // Converte para string
+                const chatId = update.message.chat.id.toString();
                 const parts = text.split(' ');
 
-                // Verifica se é /start SEU_ID
+
                 if (parts[0] === '/start' && parts[1] === systemUserId) {
                     
-                    // 3. Chama sua função de salvar no banco
                     await setChatIdUser(chatId);
                     
                     return { success: true, message: "Vinculado com sucesso!" };
