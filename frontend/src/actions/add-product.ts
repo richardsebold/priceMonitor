@@ -37,6 +37,13 @@ export async function NewProduct(url: string, priceTarget: number) {
 
     if (!produto) return;
 
+    await prisma.priceHistory.create({
+      data: {
+        price: newProduct.price,
+        productId: produto.id,
+      },
+    }); 
+
     return produto;
 
   } catch (error) {

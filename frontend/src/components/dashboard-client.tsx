@@ -16,7 +16,6 @@ export function DashboardClient() {
   const [productList, setProductList] = useState<ProductHistory[]>([]);
   const [url, setUrl] = useState<string>("");
 
-  // ✅ sempre string no input
   const [priceTarget, setPriceTarget] = useState<string>("");
 
   const [loading, setLoading] = useState<boolean>(false);

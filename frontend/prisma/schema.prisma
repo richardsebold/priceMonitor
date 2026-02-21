@@ -95,7 +95,7 @@ model ProductHistory {
   url       String      @unique
   name      String?
   price     Float
-  priceTarget Float?
+  priceTarget Float
   currency  String?     @default("BRL")
   image     String?
   method    String?
