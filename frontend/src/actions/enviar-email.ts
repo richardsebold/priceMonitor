@@ -1,9 +1,9 @@
 
 import { Resend } from "resend";
 import { EmailTemplate } from "../components/email-template";
-import { ProductHistory, User } from "../../generated/prisma/client";
+import { ProductHistory } from "../../generated/prisma/client";
 
-export async function sendPriceAlert( product: ProductHistory, user: User) {
+export async function sendPriceAlert( product: ProductHistory) {
 
   const resend = new Resend(process.env.RESEND_API_KEY as string);
 
@@ -12,7 +12,7 @@ export async function sendPriceAlert( product: ProductHistory, user: User) {
        from: 'Acme <onboarding@resend.dev>',
        to: ['richardsebold21@gmail.com'],
        subject: 'Hello world',
-       react: EmailTemplate({ product, user }),
+       react: EmailTemplate({ product }),
      });
  
      if (error) {

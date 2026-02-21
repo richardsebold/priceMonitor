@@ -44,7 +44,7 @@ export async function runPriceCheckJob() {
         });
 
         if (user) {
-          await sendPriceAlert(product, user);
+          await sendPriceAlert(product);
         }
       }
 
