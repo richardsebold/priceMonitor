@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { scrapeProduct } from "../actions/scrape-product"; 
+import { scrapeProduct } from "./scrape-product";
+import { sendPriceAlert } from "../actions/enviar-email";
 
 export async function runPriceCheckJob() {
   console.log("Iniciando rotina de verificação de preços...");
-
 
   const products = await prisma.productHistory.findMany();
 
@@ -12,14 +12,13 @@ export async function runPriceCheckJob() {
     return;
   }
 
-
   for (const product of products) {
     try {
       console.log(`Buscando preço para: ${product.url}`);
-      
-      const newSearch = await scrapeProduct(product.url);
-      if (!newSearch) continue;
 
+      const newSearch = await scrapeProduct(product.url);
+
+      if (!newSearch) continue;
 
       if (product.price !== newSearch.price) {
         await prisma.productHistory.update({
@@ -28,7 +27,6 @@ export async function runPriceCheckJob() {
         });
       }
 
-
       await prisma.priceHistory.create({
         data: {
           price: newSearch.price,
@@ -36,9 +34,18 @@ export async function runPriceCheckJob() {
         },
       });
 
-
       if (newSearch.price <= product.priceTarget) {
-        console.log(`[ALERTA] Meta atingida para o produto ${product.id} (Usuário: ${product.userId})`);
+        console.log(
+          `[ALERTA] Meta atingida para o produto ${product.name} (Usuário: ${product.userId})`,
+        );
+
+        const user = await prisma.user.findUnique({
+          where: { id: product.userId },
+        });
+
+        if (user) {
+          await sendPriceAlert(product, user);
+        }
       }
 
     } catch (error) {

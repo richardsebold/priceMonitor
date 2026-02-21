@@ -11,6 +11,8 @@ import { LoaderCircle, Plus, Trash } from "lucide-react";
 import { deleteProduct } from "@/actions/delete-product";
 import { toast } from "sonner";
 import EditURL from "./EditURL";
+import TestPage from "./button-teste-api";
+
 
 export function DashboardClient() {
   const [productList, setProductList] = useState<ProductHistory[]>([]);
@@ -189,6 +191,10 @@ export function DashboardClient() {
           ))
         )}
       </div>
+
+      <TestPage />
+
+
     </div>
   );
 }
