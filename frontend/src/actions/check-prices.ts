@@ -5,7 +5,12 @@ import { sendPriceAlert } from "../actions/enviar-email";
 export async function runPriceCheckJob() {
   console.log("Iniciando rotina de verificação de preços...");
 
-  const products = await prisma.productHistory.findMany();
+
+  const products = await prisma.productHistory.findMany({
+    include: {
+      user: true, 
+    }
+  });
 
   if (!products || products.length === 0) {
     console.log("Nenhum produto cadastrado para verificar.");
@@ -14,7 +19,8 @@ export async function runPriceCheckJob() {
 
   for (const product of products) {
     try {
-      console.log(`Buscando preço para: ${product.url}`);
+
+      console.log(`Buscando preço de ${product.url} para o usuário: ${product.user.email}`);
 
       const newSearch = await scrapeProduct(product.url);
 
@@ -36,15 +42,11 @@ export async function runPriceCheckJob() {
 
       if (newSearch.price <= product.priceTarget) {
         console.log(
-          `[ALERTA] Meta atingida para o produto ${product.name} (Usuário: ${product.userId})`,
+          `[ALERTA] Meta atingida para o produto ${product.name} (Usuário: ${product.user.email})`
         );
 
-        const user = await prisma.user.findUnique({
-          where: { id: product.userId },
-        });
-
-        if (user) {
-          await sendPriceAlert(product);
+        if (product.user && product.user.email) {
+          await sendPriceAlert(product, product.user.email, product.user.name);
         }
       }
 
