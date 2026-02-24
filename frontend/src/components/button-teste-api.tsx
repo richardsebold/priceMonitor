@@ -13,7 +13,7 @@ export default function TestPage() {
   };
 
   return (
-    <button onClick={handleTest} className="p-4 bg-blue-500 text-white rounded">
+    <button onClick={handleTest} className="p-4 bg-blue-500 text-white rounded mt-4 cursor-pointer">
       Testar Robô de Preços
     </button>
   );

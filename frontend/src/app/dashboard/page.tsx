@@ -18,7 +18,7 @@ export default async function Dashboard() {
   const userImage = session.user.image;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className="min-h-screen bg-gray-50 pb-10 sm:ml-14">
       <div className="mx-auto flex justify-between items-center bg-white shadow px-8 py-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
