@@ -92,7 +92,37 @@ export function DashboardClient() {
 
   return (
     <div className="container mx-auto px-8">
-      <h2 className="text-xl font-semibold mb-4 text-white ">
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
+
+          <div className="w-full h-50 flex rounded-2xl shadow-md">
+            <div className="p-4">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Total de Produtos
+              </h3>
+              <p className="text-2xl font-bold text-green-600">
+                {productList.length}
+              </p>
+              <p>
+                Em monitoramento ativo
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full h-50 flex rounded-2xl shadow-md">
+            <div className="p-4">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Preço alvo atingido
+              </h3>
+              <p className="text-2xl font-bold text-green-600">
+                {productList.filter((item) => item.price !== null && item.priceTarget !== null && item.price <= item.priceTarget).length}
+              </p>
+            </div>
+          </div>
+      </div>
+
+
+      <h2 className="text-xl font-semibold mb-4 text-gray-800">
         Histórico de Monitoramento
       </h2>
 
@@ -130,7 +160,7 @@ export function DashboardClient() {
 
       <div className="grid gap-4 mt-6">
         {productList.length === 0 ? (
-          <div className="text-center py-10 text-white bg-[#10120F] rounded-xl shadow">
+          <div className="text-center py-10 text-gray-500 rounded-xl shadow">
             Nenhum dado carregado.
           </div>
         ) : (

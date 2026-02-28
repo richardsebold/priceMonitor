@@ -42,7 +42,7 @@ export default function Sidebar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="/dashboard"
+                  href="/produtos"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
                   prefetch={false}
                 >

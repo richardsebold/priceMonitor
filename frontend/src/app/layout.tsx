@@ -3,9 +3,7 @@ import "./globals.css";
 
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import Sidebar from "@/components/sidebar";
-import { auth } from "@/lib/auth";
-import { headers } from "next/dist/server/request/headers";
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,9 +23,6 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
 
   return (
     <html lang="en" suppressHydrationWarning={true}>
@@ -36,8 +31,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <Toaster position="top-center" richColors />
-        {/* only show sidebar when user is authenticated */}
-        {session ? <Sidebar /> : null}
+    
         {children}
       </body>
     </html>

@@ -2,6 +2,8 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { DashboardClient } from "../../components/dashboard-client"; 
+import Sidebar from "@/components/sidebar";
+import { Input } from "@/components/ui/input";
 
 // import { TelegramButton } from "../../components/telegram-button"; 
 
@@ -15,18 +17,17 @@ export default async function Dashboard() {
   }
 
 
-
   return (
-    <div className="min-h-screen bg-[#040E07] pb-10 sm:ml-14">
-      <div className="mx-auto flex justify-between items-center bg-[#040E07] shadow px-8 py-4 mb-8">
+    
+    <div className="min-h-screen pb-10 sm:ml-14">
+
+      <Sidebar  />
+      
+
+
+      <div className="mx-auto flex justify-between items-center shadow px-8 py-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <div className="text-sm text-white">
-            {session.user.name} • {session.user.email}
-          </div>
-          
-          
-          
+          <Input placeholder="Buscar produtos..." className="w-80 ml-40" />
         </div>
 
         <div className="flex items-center gap-4">
