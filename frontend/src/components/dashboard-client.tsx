@@ -12,6 +12,7 @@ import { deleteProduct } from "@/actions/delete-product";
 import { toast } from "sonner";
 import EditURL from "./EditURL";
 import TestPage from "./button-teste-api";
+import { ChartAreaInteractive } from "./chart-area-interactive";
 
 
 export function DashboardClient() {
@@ -91,11 +92,13 @@ export function DashboardClient() {
 
   return (
     <div className="container mx-auto px-8">
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">
+      <h2 className="text-xl font-semibold mb-4 text-white ">
         Histórico de Monitoramento
       </h2>
 
-      <div className="flex gap-4">
+      <ChartAreaInteractive />
+
+      <div className="flex gap-4 mt-4">
         <Input
           placeholder="Insira a URL do produto"
           value={url}
@@ -127,7 +130,7 @@ export function DashboardClient() {
 
       <div className="grid gap-4 mt-6">
         {productList.length === 0 ? (
-          <div className="text-center py-10 text-gray-500 bg-white rounded shadow">
+          <div className="text-center py-10 text-white bg-[#10120F] rounded-xl shadow">
             Nenhum dado carregado.
           </div>
         ) : (
@@ -163,7 +166,7 @@ export function DashboardClient() {
                     {item.currency === "BRL" ? "R$ " : ""}
                     {item.price ?? "---"}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs">
                     {item.currency || "Sem informação"}
                   </p>
                 </div>
@@ -181,7 +184,7 @@ export function DashboardClient() {
                 />
               </div>
 
-              <div className="mt-4 text-xs text-gray-400 border-t pt-2">
+              <div className="mt-4 text-xs border-t pt-2">
                 Extraído em:{" "}
                 {item.scrapedAt
                   ? new Date(item.scrapedAt).toLocaleString()

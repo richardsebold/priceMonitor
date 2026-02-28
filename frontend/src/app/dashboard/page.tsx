@@ -1,10 +1,9 @@
 import { headers } from "next/headers";
-import { ButtonSignOut } from "@/components/button-signout";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { DashboardClient } from "../../components/dashboard-client"; 
-import Image from "next/image";
-import { TelegramButton } from "../../components/telegram-button"; 
+
+// import { TelegramButton } from "../../components/telegram-button"; 
 
 export default async function Dashboard() {
   const session = await auth.api.getSession({
@@ -15,23 +14,28 @@ export default async function Dashboard() {
     redirect("/");
   }
 
-  const userImage = session.user.image;
+
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10 sm:ml-14">
-      <div className="mx-auto flex justify-between items-center bg-white shadow px-8 py-4 mb-8">
+    <div className="min-h-screen bg-[#040E07] pb-10 sm:ml-14">
+      <div className="mx-auto flex justify-between items-center bg-[#040E07] shadow px-8 py-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-          <div className="text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+          <div className="text-sm text-white">
             {session.user.name} • {session.user.email}
           </div>
           
-          <TelegramButton userId={session.user.id} />
+          
           
         </div>
 
         <div className="flex items-center gap-4">
-          {userImage ? (
+
+
+          {/* <TelegramButton userId={session.user.id} /> */}
+
+
+          {/* {userImage ? (
             <Image
               className="w-10 h-10 rounded-full border border-gray-200"
               src={userImage}
@@ -45,6 +49,7 @@ export default async function Dashboard() {
             </div>
           )}
           <ButtonSignOut />
+           */}
         </div>
       </div>
 

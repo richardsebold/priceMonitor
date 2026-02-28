@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "../ui/sheet";
-import { BadgeQuestionMark, Bell, DollarSign, Home, LayoutDashboard, Package, PackageSearch, PanelBottom, Settings } from "lucide-react";
+import { BadgeQuestionMark, Bell, DollarSign, Home, LayoutDashboard, LogOut, Package, PackageSearch, PanelBottom, Settings } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { UserMenu } from "../user-menu";
 
 export default function Sidebar() {
   return (
     <div className="flex w-full flex-col bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-10 w-14 border-r bg-background hidden sm:flex flex-col">
+      <aside className="fixed inset-y-0 left-0 z-10 w-14 border-r-2 border-gray-900 bg-[#10120F] hidden sm:flex flex-col">
         <nav className="flex flex-col items-center gap-4 px-2 py-5">
           <TooltipProvider>
             <div className="mb-10">
@@ -25,7 +26,7 @@ export default function Sidebar() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
                   prefetch={false}
                 >
                   <LayoutDashboard className="h-5 w-5 transition-all" />
@@ -42,7 +43,7 @@ export default function Sidebar() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
                   prefetch={false}
                 >
                   <PackageSearch className="h-5 w-5 transition-all" />
@@ -58,7 +59,7 @@ export default function Sidebar() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
                   prefetch={false}
                 >
                   <Bell className="h-5 w-5 transition-all" />
@@ -75,13 +76,13 @@ export default function Sidebar() {
           </TooltipProvider>
         </nav>
 
-        <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-5">
+        <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-5 mb-10">
             <TooltipProvider>
                 <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
                   prefetch={false}
                 >
                   <Settings className="h-5 w-5 transition-all" />
@@ -98,7 +99,7 @@ export default function Sidebar() {
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
                   prefetch={false}
                 >
                   <BadgeQuestionMark className="h-5 w-5 transition-all" />
@@ -109,6 +110,28 @@ export default function Sidebar() {
                 Ajuda
               </TooltipContent>
             </Tooltip>
+
+
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/dashboard"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-red-400"
+                  prefetch={false}
+                >
+                  <LogOut className="h-5 w-5 transition-all" />
+                  <span className="sr-only">Sair</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Sair
+              </TooltipContent>
+            </Tooltip>
+
+            <UserMenu />
+
+            
             </TooltipProvider>
         </nav>
       </aside>

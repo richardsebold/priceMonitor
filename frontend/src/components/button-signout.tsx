@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@/components/ui/button";
+
 import { useRouter } from "next/navigation";
 import { authClient } from '@/lib/auth-client'
 
@@ -19,8 +19,8 @@ export function ButtonSignOut() {
   }
 
   return (
-    <Button onClick={signOut} className="cursor-pointer">
+    <button onClick={signOut} className="cursor-pointer">
       Sair da conta
-    </Button>
+    </button>
   );
 }
