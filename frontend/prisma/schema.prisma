@@ -7,6 +7,8 @@ datasource db {
   provider = "postgresql"
 }
 
+
+
 model User {
   id            String    @id @default(cuid())
   chatId        String?   @unique 
@@ -31,9 +33,22 @@ model User {
   sessions Session[]
   accounts Account[]
 
+  planId             String?   
+  plan               Plan?     @relation(fields: [planId], references: [id])
+  subscriptionStatus String    @default("FREE") 
+  subscriptionEnd    DateTime? 
+
   @@map("user")
 }
 
+model Plan {
+  id          String   @id @default(cuid())
+  name        String  
+  description String?  
+  price       Int     
+  
+  users       User[]   
+}
 
 
 model Session {
