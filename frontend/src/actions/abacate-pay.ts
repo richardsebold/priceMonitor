@@ -49,7 +49,7 @@ export async function createAbacatePayCheckout(planId: string) {
     const options = {
       method: "POST",
       headers: {
-        Authorization: "Bearer abc_dev_j4Ng5w5fmqBdRtq4cDfhnazA",
+        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
