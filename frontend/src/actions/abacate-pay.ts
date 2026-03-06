@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { getUser } from "./get-user";
 
 export async function createAbacatePayCheckout(planId: string) {
   const session = await auth.api.getSession({
@@ -21,9 +22,11 @@ export async function createAbacatePayCheckout(planId: string) {
     throw new Error("Plano não encontrado");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
+  const user = await getUser();
+
+  if (!user) {
+    throw new Error("Usuário não encontrado");
+  }
 
   // Monta o payload
   const payload = {
@@ -69,7 +72,7 @@ export async function createAbacatePayCheckout(planId: string) {
         ],
         returnUrl: "http://localhost:3000/dashboard",
         completionUrl: "http://localhost:3000/produtos",
-        customerId: "cust_abcdefghij",
+        customerId: "",
         customer: {
           name: payload.customer.name,
           cellphone: payload.customer.phone,

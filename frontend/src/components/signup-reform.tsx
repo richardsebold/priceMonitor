@@ -26,6 +26,7 @@ import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { signupReformSchema, SignupReformValues } from "@/schema-reform";
+import { getUser } from "@/actions/get-user";
 
 export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -45,16 +46,21 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
 
   const registerWithMask = useHookFormMask(register);
 
-  async function handleGetUser() {
-    try {
-      const user = await getUser(session.user.id);
-      console.log("Usuário:", user);
-    } catch (error) {
-      console.error("Erro ao buscar usuário:", error);
+  async function handleGetUser(){
+    const user = await getUser();
+
+    if (user) {
+      setValue("email", user.email);
+      setValue("firstname", user.name.split(" ")[0]);
+      setValue("lastname", user.name.split(" ")[1] || "");
+
+      return;
     }
   }
 
+  
   async function handleZipCodeBlur(event: React.FocusEvent<HTMLInputElement>) {
+
     const zipCode = event.target.value;
 
     const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${zipCode}`);
@@ -65,6 +71,8 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
       setValue("city", data.city);
     }
   }
+
+  handleGetUser();
 
   async function onSubmit(formData: SignupReformValues) {
     console.log("Form Data Submitted:");

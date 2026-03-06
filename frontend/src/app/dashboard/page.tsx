@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { DashboardClient } from "../../components/dashboard-client"; 
 import Sidebar from "@/components/sidebar";
 import { Input } from "@/components/ui/input";
+import { getUser } from "@/actions/get-user";
+import Plans from "@/components/planos";
 
 // import { TelegramButton } from "../../components/telegram-button"; 
 
@@ -17,6 +19,7 @@ export default async function Dashboard() {
   }
 
 
+
   return (
     
     <div className="min-h-screen pb-10 sm:ml-14">
@@ -27,6 +30,8 @@ export default async function Dashboard() {
       <div className="mx-auto flex justify-between items-center shadow px-8 py-4 mb-8 bg-red-500 text-white uppercase font-bold">
         <h1> Para ter acesso completo a plataforma finalize seu cadastro. </h1>
       </div>
+
+      <Plans />
         
       
 
