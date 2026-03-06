@@ -81,7 +81,7 @@ export default function Sidebar() {
                 <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="/dashboard"
+                  href="/settings"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
                   prefetch={false}
                 >
@@ -185,7 +185,7 @@ export default function Sidebar() {
                 </Link>
 
                 <Link
-                  href="/"
+                  href="/settings"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >

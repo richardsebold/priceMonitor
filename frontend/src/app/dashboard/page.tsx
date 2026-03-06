@@ -22,10 +22,16 @@ export default async function Dashboard() {
     <div className="min-h-screen pb-10 sm:ml-14">
 
       <Sidebar  />
+
+
+      <div className="mx-auto flex justify-between items-center shadow px-8 py-4 mb-8 bg-red-500 text-white uppercase font-bold">
+        <h1> Para ter acesso completo a plataforma finalize seu cadastro. </h1>
+      </div>
+        
       
 
 
-      <div className="mx-auto flex justify-between items-center shadow px-8 py-4 mb-8">
+      <div className="mx-auto flex justify-between items-center px-8 py-4 mb-8">
         <div>
           <Input placeholder="Buscar produtos..." className="w-80 ml-40" />
         </div>

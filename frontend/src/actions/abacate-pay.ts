@@ -21,15 +21,18 @@ export async function createAbacatePayCheckout(planId: string) {
     throw new Error("Plano não encontrado");
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
+
   // Monta o payload
   const payload = {
 
     customer: {
-      email: session.user.email,
-      name: session.user.name,
-      // phone: session.user.phone  Pegar no db, usar apenas o session id para buscar o usuario no banco e retornar de forma completa ele.
-      // As demais propriedades do cliente (cellphone, taxId) podem ser opcionais ou preenchidas com dados fictícios para testes
-
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      taxId: user.cpf, // CPF ou CNPJ
     },
 
     products: [
@@ -58,7 +61,7 @@ export async function createAbacatePayCheckout(planId: string) {
         products: [
           {
             externalId: "products.ext",
-            name: "Plano Hacker",
+            name: payload.products[0].name,
             description: payload.products[0].description,
             quantity: 1,
             price: 1990,
@@ -69,9 +72,9 @@ export async function createAbacatePayCheckout(planId: string) {
         customerId: "cust_abcdefghij",
         customer: {
           name: payload.customer.name,
-          cellphone: "47997714395",
+          cellphone: payload.customer.phone,
           email: payload.customer.email,
-          taxId: "12537948980",
+          taxId: payload.customer.taxId,
         },
         allowCoupons: false,
         coupons: ["TTEESSTTE10", "tEsTe10", "PRACA10"],
