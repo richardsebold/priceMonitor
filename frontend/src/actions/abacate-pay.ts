@@ -63,12 +63,11 @@ export async function createAbacatePayCheckout(planId: string) {
           name: payload.products[0].name,
           description: payload.products[0].description,
           quantity: 1,
-          price: 1990,
+          price: payload.products[0].price
         },
       ],
-      returnUrl: "http://localhost:3000/dashboard",
-      completionUrl: "http://localhost:3000/produtos",
-      customerId: "",
+      returnUrl: "http://localhost:3000/cancelado",
+      completionUrl: "http://localhost:3000/sucesso",
       customer: {
         name: payload.customer.name,
         cellphone: payload.customer.phone,
@@ -77,9 +76,8 @@ export async function createAbacatePayCheckout(planId: string) {
       },
       allowCoupons: false,
       coupons: ["TTEESSTTE10", "tEsTe10", "PRACA10"],
-      externalId: "seu_id_123",
       metadata: {
-        userId: user.id,
+        userId: user.id, 
         planId: plan.id,
       },
     }),

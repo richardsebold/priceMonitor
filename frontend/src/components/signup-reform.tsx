@@ -16,17 +16,17 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { EyeIcon, EyeOffIcon, Loader } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useHookFormMask } from "use-mask-input";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Checkbox } from "./ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { signupReformSchema, SignupReformValues } from "@/schema-reform";
 import { getUser } from "@/actions/get-user";
+import { updateUserData } from "@/actions/update-user";
 
 export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -34,7 +34,6 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
 
   const {
     register,
-    reset,
     handleSubmit,
     setValue,
     formState: { isSubmitting, errors },
@@ -46,17 +45,17 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
 
   const registerWithMask = useHookFormMask(register);
 
-  async function handleGetUser(){
-    const user = await getUser();
-
-    if (user) {
-      setValue("email", user.email);
-      setValue("firstname", user.name.split(" ")[0]);
-      setValue("lastname", user.name.split(" ")[1] || "");
-
-      return;
+  useEffect(() => {
+    async function fetchUser() {
+      const user = await getUser();
+      if (user) {
+        setValue("email", user.email);
+        setValue("firstname", user.name.split(" ")[0]);
+        setValue("lastname", user.name.split(" ")[1] || "");
+      }
     }
-  }
+    fetchUser();
+  }, [setValue]);
 
   
   async function handleZipCodeBlur(event: React.FocusEvent<HTMLInputElement>) {
@@ -72,36 +71,18 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
     }
   }
 
-  handleGetUser();
 
   async function onSubmit(formData: SignupReformValues) {
-    console.log("Form Data Submitted:");
-    console.log(formData);
+    console.log("Form Data Submitted:", formData);
 
-    const {} = await authClient.signUp.email(
-      {
-        name: `${formData.firstname} ${formData.lastname}`,
-        email: formData.email,
-        password: formData.password,
-        callbackURL: "/",
-      },
-      {
-        onRequest: (ctx) => {
-          console.log("User registering:", ctx);
-        },
-        onSuccess: (ctx) => {
-          toast.success("Conta criada com sucesso!");
-          reset();
-          console.log("User registered:", ctx);
-          router.replace("/");
-        },
+    const result = await updateUserData(formData);
 
-        onError: (ctx) => {
-          toast.error("Erro ao criar conta: " + ctx.error.message);
-          console.log("User registration failed:", ctx);
-        },
-      },
-    );
+    if (result.success) {
+      toast.success("Dados cadastrados com sucesso!");
+      router.push("/dashboard"); 
+    } else {
+      toast.error(result.error || "Ocorreu um erro no cadastro.");
+    }
   }
 
   return (

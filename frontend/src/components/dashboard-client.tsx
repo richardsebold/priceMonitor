@@ -14,14 +14,20 @@ import EditURL from "./EditURL";
 import TestPage from "./button-teste-api";
 import { ChartAreaInteractive } from "./chart-area-interactive";
 
+interface DashboardClientProps {
+  planLimit: number;
+}
 
-export function DashboardClient() {
+
+export function DashboardClient({ planLimit }: DashboardClientProps) {
   const [productList, setProductList] = useState<ProductHistory[]>([]);
   const [url, setUrl] = useState<string>("");
 
   const [priceTarget, setPriceTarget] = useState<string>("");
 
   const [loading, setLoading] = useState<boolean>(false);
+  
+  const isLimitReached = productList.length >= planLimit;
 
   async function handleGetProduct() {
     try {
@@ -103,9 +109,21 @@ export function DashboardClient() {
               <p className="text-2xl font-bold text-green-600">
                 {productList.length}
               </p>
-              <p>
-                Em monitoramento ativo
-              </p>
+              {/* 4. Display da cota de URLs */}
+            <p className="text-sm text-gray-500 mt-1 font-medium">
+              {
+                `${productList.length} de ${planLimit} disponíveis`}
+            </p>
+            
+            {/* Barra de progresso visual (opcional, mas fica ótimo) */}
+
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div 
+                  className={`h-2 rounded-full ${isLimitReached ? 'bg-red-500' : 'bg-green-500'}`}
+                  style={{ width: `${Math.min((productList.length / planLimit) * 100, 100)}%` }}
+                ></div>
+              </div>
+
             </div>
           </div>
 
@@ -131,6 +149,7 @@ export function DashboardClient() {
       <div className="flex gap-4 mt-4">
         <Input
           placeholder="Insira a URL do produto"
+          disabled={isLimitReached}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
@@ -138,12 +157,16 @@ export function DashboardClient() {
         <Input
           type="number"
           step="0.01"
+          disabled={isLimitReached}
           placeholder="Insira o valor desejado"
           value={priceTarget}
           onChange={(e) => setPriceTarget(e.target.value)}
         />
 
-        <Button onClick={handleAddProduct} disabled={loading}>
+        <Button 
+        onClick={handleAddProduct} 
+        disabled={loading || isLimitReached}>
+        
           {loading ? (
             <>
               <LoaderCircle className="animate-spin" />
@@ -231,3 +254,6 @@ export function DashboardClient() {
     </div>
   );
 }
+
+
+

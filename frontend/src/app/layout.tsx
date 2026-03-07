@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import { Inter } from "next/font/google";
+import { Fustat } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 
 
-const inter = Inter({
+const fustat = Fustat({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
-  weight: ["400", "600", "700"],
+  variable: "--font-fustat",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -27,7 +27,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body
-        className={`${inter.variable} min-h-screen bg-background antialiased`}
+        className={`${fustat.variable} min-h-screen bg-background antialiased`}
         suppressHydrationWarning
       >
         <Toaster position="top-center" richColors />

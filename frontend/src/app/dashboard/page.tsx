@@ -4,12 +4,25 @@ import { redirect } from "next/navigation";
 import { DashboardClient } from "../../components/dashboard-client"; 
 import Sidebar from "@/components/sidebar";
 import { Input } from "@/components/ui/input";
-import { getUser } from "@/actions/get-user";
 import Plans from "@/components/planos";
+import { getUser } from "@/actions/get-user";
 
 // import { TelegramButton } from "../../components/telegram-button"; 
 
+const PLAN_LIMITS: Record<string, number> = {
+  "plano_free": 1,          // 0 projetos
+  "plano_noob_mensal": 7,   // 1 projeto
+  "plano_pro_mensal": 15, // Ilimitado (um número bem alto)
+  "plano_hacker_mensal": 30, // Ilimitado
+};
+
+
+
 export default async function Dashboard() {
+  const user = await getUser();
+  const currentPlan = user?.planId || "plano_free";
+  const userLimit = PLAN_LIMITS[currentPlan] || 0;
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -18,8 +31,6 @@ export default async function Dashboard() {
     redirect("/");
   }
 
-
-
   return (
     
     <div className="min-h-screen pb-10 sm:ml-14">
@@ -27,11 +38,15 @@ export default async function Dashboard() {
       <Sidebar  />
 
 
-      <div className="mx-auto flex justify-between items-center shadow px-8 py-4 mb-8 bg-red-500 text-white uppercase font-bold">
-        <h1> Para ter acesso completo a plataforma finalize seu cadastro. </h1>
-      </div>
+      { user?.cpf === null || user?.cpf === "" ? (
+        <div className="mx-auto flex justify-between items-center shadow px-8 py-4 mb-8 bg-red-500 text-white uppercase font-bold">
+          <h1> Para ter acesso completo a plataforma finalize seu cadastro. </h1>
+        </div>
+      ) : (
+        ""
+      )}
 
-      <Plans />
+      <Plans currentPlanId={user?.planId || null} />
         
       
 
@@ -65,7 +80,7 @@ export default async function Dashboard() {
         </div>
       </div>
 
-      <DashboardClient />
+      <DashboardClient planLimit={userLimit} />
     </div>
   );
 }

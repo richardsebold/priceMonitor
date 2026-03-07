@@ -13,19 +13,31 @@ export async function POST(request: Request) {
     // Geralmente é algo como "BILLING.PAID" ou "payment.succeeded"
     const eventType = body.event; 
 
-    if (eventType === "BILLING.PAID") {
-      // 3. Extrai o metadata que nós enviamos lá no checkout
-      const { userId, planId } = body.data.metadata;
+    if (eventType === "billing.paid" || eventType === "BILLING.PAID") {
+      
+      const email = body.data?.billing?.customer?.metadata?.email;
+      const planId = body.data?.billing?.products?.[0]?.externalId;
 
-      // 4. Atualiza o usuário no banco de dados usando o Prisma
+      if (!email || !planId) {
+        console.error("Email ou ID do plano não encontrados! Payload:", JSON.stringify(body.data, null, 2));
+        return NextResponse.json({ error: "Dados do usuário ausentes no webhook" }, { status: 400 });
+      }
+
+      const dataExpiracao = new Date();
+      
+      dataExpiracao.setDate(dataExpiracao.getDate() + 30);
+
+      // 4. Atualiza o banco buscando pelo EMAIL em vez do ID
       await prisma.user.update({
-        where: { id: userId },
+        where: { email: email }, // Como o email é único no Prisma, isso funciona perfeitamente
         data: {
-          planId: planId
+          planId: planId,
+          subscriptionStatus: "active",
+          subscriptionEnd: dataExpiracao, // Salva o vencimento exato do plano
         },
       });
 
-      console.log(`Plano atualizado com sucesso para o usuário ${userId}`);
+      console.log(`Plano ${planId} ativado com sucesso (e com 30 dias de validade) para o email ${email}`);
     }
 
     // 5. Retorna 200 OK para a AbacatePay saber que você recebeu a notificação
