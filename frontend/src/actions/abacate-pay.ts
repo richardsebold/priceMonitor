@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "./get-user";
+import { redirect } from "next/navigation";
 
 export async function createAbacatePayCheckout(planId: string) {
   const session = await auth.api.getSession({
@@ -28,70 +29,79 @@ export async function createAbacatePayCheckout(planId: string) {
     throw new Error("Usuário não encontrado");
   }
 
-  // Monta o payload
   const payload = {
-
     customer: {
       email: user.email,
       name: user.name,
       phone: user.phone,
-      taxId: user.cpf, // CPF ou CNPJ
+      taxId: user.cpf,
     },
 
     products: [
       {
-        externalId: plan.id, // O ID do banco
-        name: plan.name, // Ex: "Plano Ilimitado"
-        quantity: 1, // Sempre 1 assinatura
-        price: plan.price, // Lembre-se: em centavos! (Ex: 1500)
+        externalId: plan.id,
+        name: plan.name,
+        quantity: 1,
+        price: plan.price,
         description: plan.description || "Assinatura mensal do Price Tracker",
       },
     ],
-
   };
 
-  // 4. Faz a requisição para a API da AbacatePay
-
-    const options = {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        frequency: "ONE_TIME",
-        methods: ["PIX", "CARD"],
-        products: [
-          {
-            externalId: "products.ext",
-            name: payload.products[0].name,
-            description: payload.products[0].description,
-            quantity: 1,
-            price: 1990,
-          },
-        ],
-        returnUrl: "http://localhost:3000/dashboard",
-        completionUrl: "http://localhost:3000/produtos",
-        customerId: "",
-        customer: {
-          name: payload.customer.name,
-          cellphone: payload.customer.phone,
-          email: payload.customer.email,
-          taxId: payload.customer.taxId,
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      frequency: "ONE_TIME",
+      methods: ["PIX", "CARD"],
+      products: [
+        {
+          externalId: payload.products[0].externalId,
+          name: payload.products[0].name,
+          description: payload.products[0].description,
+          quantity: 1,
+          price: 1990,
         },
-        allowCoupons: false,
-        coupons: ["TTEESSTTE10", "tEsTe10", "PRACA10"],
-        externalId: "seu_id_123",
-        metadata: { externalId: "123" },
-      }),
-    };
+      ],
+      returnUrl: "http://localhost:3000/dashboard",
+      completionUrl: "http://localhost:3000/produtos",
+      customerId: "",
+      customer: {
+        name: payload.customer.name,
+        cellphone: payload.customer.phone,
+        email: payload.customer.email,
+        taxId: payload.customer.taxId,
+      },
+      allowCoupons: false,
+      coupons: ["TTEESSTTE10", "tEsTe10", "PRACA10"],
+      externalId: "seu_id_123",
+      metadata: {
+        userId: user.id,
+        planId: plan.id,
+      },
+    }),
+  };
 
-    fetch("https://api.abacatepay.com/v1/billing/create", options)
-      .then((res) => res.json())
-      .then((res) => console.log(res))
-      .catch((err) => console.error(err));
+  const response = await fetch(
+    "https://api.abacatepay.com/v1/billing/create",
+    options,
+  );
+  const data = await response.json();
 
-    }
+  if (!response.ok) {
+    console.error("Erro na AbacatePay:", data);
+    throw new Error("Falha ao criar o checkout de pagamento.");
+  }
 
+  const checkoutUrl = data.data?.url || data.url;
 
+  if (!checkoutUrl) {
+    console.error("Resposta inesperada:", data);
+    throw new Error("A API não retornou o link de pagamento.");
+  }
 
+  redirect(checkoutUrl);
+}
