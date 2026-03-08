@@ -2,6 +2,7 @@
 import { createAbacatePayCheckout } from "@/actions/abacate-pay";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 
 // Adicionamos a tipagem para receber a prop do componente pai
 interface PlansProps {
@@ -81,9 +82,9 @@ export default function Plans({ currentPlanId }: PlansProps) {
               }`}
             >
               {plan.isPopular && (
-                <span className="bg-green-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide self-start mb-4">
+                <Badge className="">
                   Mais Popular
-                </span>
+                </Badge>
               )}
 
               {!plan.isPopular && <div className="h-6 mb-4"></div>}
@@ -115,7 +116,7 @@ export default function Plans({ currentPlanId }: PlansProps) {
                     : plan.planId === "plano_free"
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed" // <-- REGRA NOVA: Deixa o Free cinza claro e bloqueado
                       : plan.isPopular
-                        ? "bg-green-600 text-white hover:bg-green-700 cursor-pointer"
+                        ? "cursor-pointer"
                         : "bg-gray-100 text-gray-900 hover:bg-gray-200 cursor-pointer"
                 }`}
               >

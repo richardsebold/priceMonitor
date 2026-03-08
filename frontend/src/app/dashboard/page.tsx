@@ -51,34 +51,7 @@ export default async function Dashboard() {
       
 
 
-      <div className="mx-auto flex justify-between items-center px-8 py-4 mb-8">
-        <div>
-          <Input placeholder="Buscar produtos..." className="w-80 ml-40" />
-        </div>
 
-        <div className="flex items-center gap-4">
-
-
-          {/* <TelegramButton userId={session.user.id} /> */}
-
-
-          {/* {userImage ? (
-            <Image
-              className="w-10 h-10 rounded-full border border-gray-200"
-              src={userImage}
-              alt={`Foto de ${session.user.name}`}
-              width={40}
-              height={40}
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">
-              {session.user.name?.charAt(0)}
-            </div>
-          )}
-          <ButtonSignOut />
-           */}
-        </div>
-      </div>
 
       <DashboardClient planLimit={userLimit} />
     </div>

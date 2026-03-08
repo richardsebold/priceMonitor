@@ -76,10 +76,10 @@ export default function Sidebar() {
             
           </TooltipProvider>
         </nav>
-        
 
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-5 mb-10">
-          <ModeToggle />
+            <ModeToggle />
+
             <TooltipProvider>
                 <Tooltip>
               <TooltipTrigger asChild>
@@ -165,7 +165,7 @@ export default function Sidebar() {
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
-                  <Home className="h-5 w-5 transition-all" />
+                  <LayoutDashboard className="h-5 w-5 transition-all" />
                   <span className="">Dashboard</span>
                 </Link>
 
@@ -175,7 +175,7 @@ export default function Sidebar() {
                   prefetch={false}
                 >
                   <PackageSearch className="h-5 w-5 transition-all" />
-                  <span className="">Produtos</span>
+                  <span className="">Produtos Rastreados</span>
                 </Link>
 
                 <Link
@@ -183,7 +183,7 @@ export default function Sidebar() {
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
-                  <Home className="h-5 w-5 transition-all" />
+                  <Bell className="h-5 w-5 transition-all" />
                   <span className="">Alertas</span>
                 </Link>
 
@@ -192,12 +192,32 @@ export default function Sidebar() {
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                   prefetch={false}
                 >
-                  <Home className="h-5 w-5 transition-all" />
+                  <Settings className="h-5 w-5 transition-all" />
                   <span className="">Configurações</span>
                 </Link>
-                <ModeToggle />
+
+                <Link
+                  href="/settings"
+                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                  prefetch={false}
+                >
+                  <BadgeQuestionMark className="h-5 w-5 transition-all" />
+                  <span className="">Ajuda</span>
+                </Link>
+                <Link
+                  href="/settings"
+                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                  prefetch={false}
+                >
+                  <LogOut className="h-5 w-5 transition-all" />
+                  <span className="">Sair</span>
+                </Link>
+                
               </nav>
             </SheetContent>
+
+            <ModeToggle />
+
           </Sheet>
           <h2>Menu</h2>
         </header>
