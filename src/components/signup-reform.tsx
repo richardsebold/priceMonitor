@@ -49,17 +49,20 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
     async function fetchUser() {
       const user = await getUser();
       if (user) {
-        setValue("email", user.email);
-        setValue("firstname", user.name.split(" ")[0]);
-        setValue("lastname", user.name.split(" ")[1] || "");
+        setValue("email", user.email || "");
+        setValue("firstname", user.name?.split(" ")[0] || "");
+        setValue("lastname", user.name?.split(" ")[1] || "");
+        setValue("cpf", user.cpf || "");
+        setValue("phone", user.phone || "");
+        setValue("zipcode", user.zipCode || "");
+        setValue("address", user.address || "");
+        setValue("city", user.city || "");
       }
     }
     fetchUser();
   }, [setValue]);
 
-  
   async function handleZipCodeBlur(event: React.FocusEvent<HTMLInputElement>) {
-
     const zipCode = event.target.value;
 
     const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${zipCode}`);
@@ -71,7 +74,6 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
     }
   }
 
-
   async function onSubmit(formData: SignupReformValues) {
     console.log("Form Data Submitted:", formData);
 
@@ -79,7 +81,7 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
 
     if (result.success) {
       toast.success("Dados cadastrados com sucesso!");
-      router.push("/dashboard"); 
+      router.push("/dashboard");
     } else {
       toast.error(result.error || "Ocorreu um erro no cadastro.");
     }
@@ -88,9 +90,12 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
   return (
     <Card className="shadow-2xl" {...props}>
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Cadastre seus dados</CardTitle>
+        <CardTitle className="text-2xl font-bold">
+          Atualize seus dados
+        </CardTitle>
         <CardDescription>
-          Insira seus dados abaixo para completar cadastro e ter acesso completo a plataforma.
+          Insira seus dados abaixo para completar cadastro e ter acesso completo
+          a plataforma.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -100,7 +105,7 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
               <FieldLabel htmlFor="firstname">Primeiro Nome</FieldLabel>
               <Input
                 id="firstname"
-                type="text" 
+                type="text"
                 placeholder="John Doe"
                 className="disabled:bg-slate-200"
                 disabled
@@ -185,7 +190,7 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
                   </p>
                 )}
               </FieldDescription>
-            </Field>    
+            </Field>
             <Field>
               <FieldLabel htmlFor="confirm-password">
                 Confirme sua senha

@@ -11,6 +11,7 @@ import {
   BellIcon,
   CreditCardIcon,
   LogOutIcon,
+  PlaneTakeoff,
 } from "lucide-react";
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
@@ -18,6 +19,7 @@ import { redirect } from "next/dist/client/components/navigation";
 import { headers } from "next/dist/server/request/headers";
 import { auth } from "@/lib/auth";
 import { ButtonSignOut } from "./button-signout";
+import Link from "next/link";
 export async function UserMenu() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -32,26 +34,34 @@ export async function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger className="cursor-pointer" asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
           <Avatar>
             <AvatarImage src={userImage || "https://github.com/shadcn.png"} alt="shadcn" />
-            <AvatarBadge className="bg-green-500 dark:bg-green-800" />
+            <AvatarBadge className="bg-green-500 dark:bg-green-700" />
             <AvatarFallback>LR</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">
             <BadgeCheckIcon />
-            Conta
+            <Link href="/conta">
+              Minha Conta
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">
+            <PlaneTakeoff />
+            <Link href="/planos">
+              Planos
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">
             <CreditCardIcon />
             Pagamentos
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">
             <BellIcon />
             Notificações
           </DropdownMenuItem>

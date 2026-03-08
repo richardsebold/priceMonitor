@@ -2,7 +2,7 @@
 import Sidebar from "@/components/sidebar";
 import { SignupReform } from "@/components/signup-reform";
 
-export default function Settings() {
+export default function Account() {
  return (
    <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
 

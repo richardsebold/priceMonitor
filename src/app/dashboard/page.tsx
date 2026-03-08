@@ -45,13 +45,7 @@ export default async function Dashboard() {
       ) : (
         ""
       )}
-
-      <Plans currentPlanId={user?.planId || null} />
-        
       
-
-
-
 
       <DashboardClient planLimit={userLimit} />
     </div>
