@@ -3,6 +3,8 @@ import "./globals.css";
 
 import { Fustat } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/theme-provider";
 
 
 const fustat = Fustat({
@@ -22,17 +24,23 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="pt-BR" suppressHydrationWarning={true}>
       <body
-        className={`${fustat.variable} min-h-screen bg-background antialiased`}
-        suppressHydrationWarning
+        className={cn(
+          "min-h-screen antialiased font-sans",
+          fustat.variable
+        )}
       >
         <Toaster position="top-center" richColors />
-    
-        {children}
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
       </body>
     </html>
   );

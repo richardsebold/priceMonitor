@@ -1,5 +1,7 @@
 'use client'
 import { createAbacatePayCheckout } from "@/actions/abacate-pay";
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
 
 // Adicionamos a tipagem para receber a prop do componente pai
 interface PlansProps {
@@ -69,28 +71,28 @@ export default function Plans({ currentPlanId }: PlansProps) {
           const isCurrentPlan = plan.planId === activePlanId;
 
           return (
-            <div
+            <Card
               key={plan.planId}
-              className={`flex flex-col p-8 rounded-2xl border bg-white h-full ${
+              className={`flex flex-col p-8 rounded-2xl border h-full ${
                 plan.isPopular 
-                  ? "border-blue-500 shadow-xl lg:scale-105 relative z-10"
+                  ? "border-green-600 shadow-xl lg:scale-105 relative z-10"
                   : isCurrentPlan ? "border-green-500 shadow-md" // Destaque extra se for o plano atual
                   : "border-gray-200 shadow-sm"
               }`}
             >
               {plan.isPopular && (
-                <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide self-start mb-4">
+                <span className="bg-green-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide self-start mb-4">
                   Mais Popular
                 </span>
               )}
 
               {!plan.isPopular && <div className="h-6 mb-4"></div>}
 
-              <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
+              <h3 className="text-2xl font-bold">{plan.name}</h3>
               
               <div className="mt-4 mb-6">
                 <span className="text-4xl font-extrabold">{plan.price}</span>
-                <span className="text-gray-500 font-medium">{plan.period}</span>
+                <span className="font-medium">{plan.period}</span>
               </div>
 
               <ul className="flex-1 space-y-4 mb-8">
@@ -104,7 +106,7 @@ export default function Plans({ currentPlanId }: PlansProps) {
                 ))}
               </ul>
 
-              <button
+              <Button
                 onClick={() => handleSubscribe(plan.planId)}
                 disabled={isCurrentPlan || plan.planId === "plano_free"} 
                 className={`w-full py-3 px-4 rounded-xl font-bold transition-colors ${
@@ -113,13 +115,13 @@ export default function Plans({ currentPlanId }: PlansProps) {
                     : plan.planId === "plano_free"
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed" // <-- REGRA NOVA: Deixa o Free cinza claro e bloqueado
                       : plan.isPopular
-                        ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+                        ? "bg-green-600 text-white hover:bg-green-700 cursor-pointer"
                         : "bg-gray-100 text-gray-900 hover:bg-gray-200 cursor-pointer"
                 }`}
               >
                 {isCurrentPlan ? "Plano Atual" : `Assinar ${plan.name}`}
-              </button>
-            </div>
+              </Button>
+            </Card>
           );
         })}
       </div>

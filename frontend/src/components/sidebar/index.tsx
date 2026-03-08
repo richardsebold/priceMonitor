@@ -4,6 +4,7 @@ import { Sheet, SheetTrigger, SheetContent } from "../ui/sheet";
 import { BadgeQuestionMark, Bell, DollarSign, Home, LayoutDashboard, LogOut, Package, PackageSearch, PanelBottom, Settings } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { UserMenu } from "../user-menu";
+import { ModeToggle } from "../theme-toogle";
 
 export default function Sidebar() {
   return (
@@ -75,8 +76,10 @@ export default function Sidebar() {
             
           </TooltipProvider>
         </nav>
+        
 
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-5 mb-10">
+          <ModeToggle />
             <TooltipProvider>
                 <Tooltip>
               <TooltipTrigger asChild>
@@ -192,6 +195,7 @@ export default function Sidebar() {
                   <Home className="h-5 w-5 transition-all" />
                   <span className="">Configurações</span>
                 </Link>
+                <ModeToggle />
               </nav>
             </SheetContent>
           </Sheet>

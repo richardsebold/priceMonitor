@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import EditURL from "./EditURL";
 import TestPage from "./button-teste-api";
 import { ChartAreaInteractive } from "./chart-area-interactive";
+import { Card } from "./ui/card";
 
 interface DashboardClientProps {
   planLimit: number;
@@ -101,23 +102,23 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
 
       <div className="grid grid-cols-2 gap-4 mb-4">
 
-          <div className="w-full h-50 flex rounded-2xl shadow-md">
+          <Card className="w-full h-50 flex rounded-2xl shadow-md">
             <div className="p-4">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <h3 className="text-lg font-semibold mb-2">
                 Total de Produtos
               </h3>
               <p className="text-2xl font-bold text-green-600">
                 {productList.length}
               </p>
               {/* 4. Display da cota de URLs */}
-            <p className="text-sm text-gray-500 mt-1 font-medium">
+            <p className="text-sm mt-1 font-medium">
               {
                 `${productList.length} de ${planLimit} disponíveis`}
             </p>
             
             {/* Barra de progresso visual (opcional, mas fica ótimo) */}
 
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+              <div className="w-full rounded-full h-2 mt-2">
                 <div 
                   className={`h-2 rounded-full ${isLimitReached ? 'bg-red-500' : 'bg-green-500'}`}
                   style={{ width: `${Math.min((productList.length / planLimit) * 100, 100)}%` }}
@@ -125,9 +126,9 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
               </div>
 
             </div>
-          </div>
+          </Card>
 
-          <div className="w-full h-50 flex rounded-2xl shadow-md">
+          <Card className="w-full h-50 flex rounded-2xl shadow-md">
             <div className="p-4">
               <h3 className="text-lg font-semibold text-gray-700 mb-2">
                 Preço alvo atingido
@@ -136,11 +137,11 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                 {productList.filter((item) => item.price !== null && item.priceTarget !== null && item.price <= item.priceTarget).length}
               </p>
             </div>
-          </div>
+          </Card>
       </div>
 
 
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">
+      <h2 className="text-xl font-semibold mb-4">
         Histórico de Monitoramento
       </h2>
 
@@ -183,14 +184,14 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
 
       <div className="grid gap-4 mt-6">
         {productList.length === 0 ? (
-          <div className="text-center py-10 text-gray-500 rounded-xl shadow">
+          <Card className="text-center py-10 text-gray-500 rounded-xl shadow">
             Nenhum dado carregado.
-          </div>
+          </Card>
         ) : (
           productList.map((item) => (
-            <div
+            <Card
               key={item.id}
-              className="bg-white p-6 rounded-lg shadow-sm border"
+              className="p-6 rounded-lg shadow-sm border"
             >
               <div className="flex justify-between items-start">
                 <div>
@@ -243,7 +244,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                   ? new Date(item.scrapedAt).toLocaleString()
                   : "-"}
               </div>
-            </div>
+            </Card>
           ))
         )}
       </div>
