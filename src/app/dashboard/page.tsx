@@ -3,16 +3,14 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { DashboardClient } from "../../components/dashboard-client"; 
 import Sidebar from "@/components/sidebar";
-import { Input } from "@/components/ui/input";
-import Plans from "@/components/planos";
 import { getUser } from "@/actions/get-user";
+import Hero from "@/components/hero";
 
 // import { TelegramButton } from "../../components/telegram-button"; 
 
 const PLAN_LIMITS: Record<string, number> = {
-  "plano_free": 1,          // 0 projetos
-  "plano_noob_mensal": 7,   // 1 projeto
-  "plano_pro_mensal": 15, // Ilimitado (um número bem alto)
+  "plano_noob_mensal": 3,   // 1 projeto
+  "plano_pro_mensal": 10, // Ilimitado (um número bem alto)
   "plano_hacker_mensal": 30, // Ilimitado
 };
 
@@ -37,6 +35,8 @@ export default async function Dashboard() {
 
       <Sidebar  />
 
+      
+
 
       { user?.cpf === null || user?.cpf === "" ? (
         <div className="mx-auto flex justify-between items-center shadow px-8 py-4 mb-8 bg-red-500 text-white uppercase font-bold">
@@ -45,6 +45,8 @@ export default async function Dashboard() {
       ) : (
         ""
       )}
+
+      <Hero />
       
 
       <DashboardClient planLimit={userLimit} />

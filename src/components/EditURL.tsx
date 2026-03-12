@@ -49,10 +49,14 @@ export default function EditTask({ product, handleGetProduct }: ProductProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <SquarePen
-          className="cursor-pointer hover:text-blue-600 transition-all hover:scale-110 duration-200"
-          size={25}
-        />
+
+        <div className="flex items-center w-full cursor-pointer">
+          <SquarePen
+            className="hover:text-blue-600 transition-all hover:scale-110 duration-200"
+            size={20}
+          />
+          <span className="ml-4">Editar</span>
+        </div>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

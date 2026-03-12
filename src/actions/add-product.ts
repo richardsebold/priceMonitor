@@ -7,10 +7,9 @@ import { scrapeProduct } from "../actions/scrape-product";
 import { getUser } from "./get-user";
 
 const PLAN_LIMITS: Record<string, number> = {
-  "plano_free": 1,          // 0 projetos
-  "plano_noob_mensal": 7,   // 1 projeto
-  "plano_pro_mensal": 15, // Ilimitado (um número bem alto)
-  "plano_hacker_mensal": 30, // Ilimitado
+  "plano_noob_mensal": 3,  
+  "plano_pro_mensal": 10, 
+  "plano_hacker_mensal": 30, 
 };
 
 

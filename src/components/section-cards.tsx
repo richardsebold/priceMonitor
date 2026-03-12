@@ -1,5 +1,6 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
+"use client" // Declarando explicitamente que é um componente cliente
 
+import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -9,15 +10,40 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { PriceChart } from "./recart-graph"
+import { getProducts } from "@/actions/get-products-from-db"
+import { useEffect, useState } from "react" // 👈 Importando os hooks
+import { ProductHistory } from "../../generated/prisma/client"
+
 
 export function SectionCards() {
+
+  const [products, setProducts] = useState<ProductHistory[]>([])
+
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const data = await getProducts();
+        if (data) {
+          setProducts(data);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar produtos:", error);
+      }
+    }
+
+    fetchProducts();
+  }, [])
+
   return (
     <div className="grid md:grid-cols-4 gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card mb-12">
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
+          <CardDescription>Produtos Monitorados</CardDescription>
+          {/* 3. Agora a renderização é segura. Mostrará 0 enquanto carrega, e depois atualiza. */}
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
+            {products.length}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -30,11 +56,12 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-2 font-medium">
             Trending up this month <IconTrendingUp className="size-4" />
           </div>
-          <div className="text-muted-foreground">
+          <div className="text-muted-foreground"> 
             Visitors for the last 6 months
           </div>
         </CardFooter>
       </Card>
+
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>New Customers</CardDescription>
@@ -49,14 +76,10 @@ export function SectionCards() {
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period <IconTrendingDown className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Acquisition needs attention
-          </div>
+          <PriceChart />
         </CardFooter>
       </Card>
+
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Active Accounts</CardDescription>
@@ -77,6 +100,7 @@ export function SectionCards() {
           <div className="text-muted-foreground">Engagement exceed targets</div>
         </CardFooter>
       </Card>
+
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Growth Rate</CardDescription>

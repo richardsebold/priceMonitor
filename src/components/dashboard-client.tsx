@@ -13,14 +13,12 @@ import {
   Eye,
   LoaderCircle,
   MoreVertical,
-  Pencil,
   Plus,
   Sigma,
   Trash,
 } from "lucide-react";
 import { deleteProduct } from "@/actions/delete-product";
 import { toast } from "sonner";
-import EditURL from "./EditURL";
 import TestPage from "./button-teste-api";
 import { ChartAreaInteractive } from "./chart-area-interactive";
 import { Card } from "./ui/card";
@@ -32,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Badge } from "./ui/badge";
+import EditTask from "./EditURL";
 
 interface DashboardClientProps {
   planLimit: number;
@@ -170,7 +169,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
             )}
             <div className="flex items-center">
               <Sigma className="mr-2" />
-              <p>
+              <p className="justify-end">
                 {productList.length} / {planLimit} produtos monitorados
               </p>
             </div>
@@ -178,7 +177,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
 
           <Card className="grid gap-4 px-4">
             {productList.length === 0 ? (
-              <div className="text-center py-10 text-slate-500 rounded-xl bg-[#111827] border border-slate-800">
+              <div className="text-center py-10 text-slate-500 rounded-xl border border-slate-800">
                 Nenhum dado carregado.
               </div>
             ) : (
@@ -199,7 +198,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                   >
                     {/* Imagem do Produto */}
                     <div className="shrink-0">
-                      <div className="w-20 h-20 bg-white rounded-lg p-1 overflow-hidden flex items-center justify-center">
+                      <div className="w-20 h-20 rounded-lg p-1 overflow-hidden flex items-center justify-center">
                         <Image
                           src={item.image as string}
                           alt={item.name as string}
@@ -272,9 +271,15 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                             <Eye className="mr-2 h-4 w-4" /> Ver histórico
                           </DropdownMenuItem>
 
-                          {/* Como você tem o componente <EditURL />, você pode adaptá-lo para abrir ao clicar aqui */}
-                          <DropdownMenuItem className="hover:bg-slate-800 hover:text-white cursor-pointer">
-                            <Pencil className="mr-2 h-4 w-4" /> Editar alerta
+
+                          <DropdownMenuItem
+                            className="hover:bg-slate-800 hover:text-white cursor-pointer"
+                            onSelect={(e) => e.preventDefault()} 
+                          >
+                            <EditTask
+                              product={item}
+                              handleGetProduct={handleGetProduct}
+                            />
                           </DropdownMenuItem>
 
                           <DropdownMenuItem

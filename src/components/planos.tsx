@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getUser } from "@/actions/get-user"
+import { useEffect, useState } from "react"
 
 interface Plan {
   name: string
@@ -32,8 +34,8 @@ interface PlansProps {
 const plans: Plan[] = [
   {
     name: "Noob",
-    price: "R$ 4,90",
-    period: "/mês",
+    price: "Grátis", // Atualizei aqui visualmente para ficar mais claro que é o plano base
+    period: "",
     planId: "plano_noob_mensal",
     description: "Ideal para quem está começando.",
     features: ["Acesso básico ao sistema", "Suporte via email", "1 Projeto ativo"],
@@ -70,12 +72,31 @@ const plans: Plan[] = [
 ]
 
 export default function Plans({ currentPlanId }: PlansProps) {
-  const activePlanId = currentPlanId ?? "plano_free"
 
-  const handleSubscribe = (planId: string) => {
-    if (planId === activePlanId || planId === "plano_free") return
-    createAbacatePayCheckout(planId)
+
+  
+  const [userPlanId, setUserPlanId] = useState<string | null | undefined>(currentPlanId)
+
+  useEffect(() => {
+    async function fetchUser() {
+      const user = await getUser();
+      
+      if (user && user.planId) {
+        setUserPlanId(user.planId);
+      }
+    }
+    fetchUser();
+  }, []);
+
+  const activePlanId = userPlanId ?? "plano_noob_mensal"
+
+  const handleSubscribe = async (planId: string) => {
+
+    if (planId === activePlanId || planId === "plano_noob_mensal") return
+    
+    await createAbacatePayCheckout(planId)
   }
+  
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-16">
@@ -91,8 +112,9 @@ export default function Plans({ currentPlanId }: PlansProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
         {plans.map((plan) => {
           const isCurrentPlan = plan.planId === activePlanId
-          const isFree = plan.planId === "plano_free"
-          const isDisabled = isCurrentPlan || isFree
+
+          const isFreePlan = plan.planId === "plano_noob_mensal"
+          const isDisabled = isCurrentPlan || isFreePlan
 
           return (
             <Card
@@ -143,9 +165,14 @@ export default function Plans({ currentPlanId }: PlansProps) {
                   onClick={() => handleSubscribe(plan.planId)}
                   disabled={isDisabled}
                   variant={plan.isPopular ? "default" : "outline"}
-                  className="w-full cursor-pointer"
+                  className="w-full cursor-pointer disabled:cursor-not-allowed"
                 >
-                  {isCurrentPlan ? "Plano Atual" : `Assinar ${plan.name}`}
+
+                  {isCurrentPlan 
+                    ? "Plano Atual" 
+                    : isFreePlan 
+                      ? "Plano Gratuito" 
+                      : `Assinar ${plan.name}`}
                 </Button>
               </CardFooter>
             </Card>
