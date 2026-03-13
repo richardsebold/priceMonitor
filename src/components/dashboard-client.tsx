@@ -217,8 +217,8 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
 
                       {/* Tags (Loja e Estoque) */}
                       <div className="flex gap-2 items-center mt-1.5">
-                        <span className="text-slate-300 text-[11px] font-medium px-2.5 py-0.5 rounded-full">
-                          name
+                        <span className="text-blue-500 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-slate-500/20 underline">
+                          <a href={item.url} target="_blank" rel="noreferrer">{item.store || "Sem loja"}</a>
                         </span>
                         <span className="text-emerald-400 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                           Em estoque

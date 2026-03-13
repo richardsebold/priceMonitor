@@ -10,10 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { PriceChart } from "./recart-graph"
+import { GoalsChart } from "./goals-graph"
 import { getProducts } from "@/actions/get-products-from-db"
 import { useEffect, useState } from "react" // 👈 Importando os hooks
 import { ProductHistory } from "../../generated/prisma/client"
+import { PriceChart } from "./price-stonks-graph"
+import { MediaVariantChart } from "./media-variant-graph"
+import { ProductsChart } from "./products-graph"
 
 
 export function SectionCards() {
@@ -53,18 +56,15 @@ export function SectionCards() {
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground"> 
-            Visitors for the last 6 months
-          </div>
+
+          <ProductsChart />
+
         </CardFooter>
       </Card>
 
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>New Customers</CardDescription>
+          <CardDescription>Metas atingidas</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             1,234
           </CardTitle>
@@ -76,15 +76,17 @@ export function SectionCards() {
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <PriceChart />
+
+          <GoalsChart />
+
         </CardFooter>
       </Card>
 
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
+          <CardDescription>Economia potencial</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
+            R$ 345,90
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -93,17 +95,16 @@ export function SectionCards() {
             </Badge>
           </CardAction>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
+       <CardFooter className="flex-col items-start gap-1.5 text-sm">
+
+          <PriceChart />
+
         </CardFooter>
       </Card>
 
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
+          <CardDescription>Variação média</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             4.5%
           </CardTitle>
@@ -115,10 +116,9 @@ export function SectionCards() {
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance increase <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
+
+          <MediaVariantChart />
+
         </CardFooter>
       </Card>
     </div>

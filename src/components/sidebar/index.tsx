@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "../ui/sheet";
-import { BadgeQuestionMark, Bell, DollarSign, Home, LayoutDashboard, LogOut, Package, PackageSearch, PanelBottom, Settings } from "lucide-react";
+import { BadgeQuestionMark, Bell, DollarSign, LayoutDashboard, LogOut, Package, PackageSearch, PanelBottom, Settings } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { UserMenu } from "../user-menu";
 import { ModeToggle } from "../theme-toogle";
@@ -59,7 +59,7 @@ export default function Sidebar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="/dashboard"
+                  href="/alertas"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
                   prefetch={false}
                 >

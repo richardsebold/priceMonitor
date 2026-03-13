@@ -91,6 +91,15 @@ export async function scrapeProduct(url) {
         return null;
       };
 
+      // ✅ NOVO: Helper para extrair o nome da loja
+      const getStoreName = () => {
+        const ogSiteName = document.querySelector('meta[property="og:site_name"]');
+        if (ogSiteName && ogSiteName.content) {
+          return toStr(ogSiteName.content);
+        }
+        return window.location.hostname.replace(/^www\./, '');
+      };
+
       /* ================== JSON-LD ================== */
 
       const scripts = document.querySelectorAll(
@@ -122,6 +131,7 @@ export async function scrapeProduct(url) {
                 ? product.image[0]
                 : product.image?.url || product.image
             ),
+            store: getStoreName(),     // ✅ Adicionado aqui
             method: 'json-ld'
           };
         }
@@ -143,6 +153,7 @@ export async function scrapeProduct(url) {
           price: toNumberPrice(priceText), // ✅ NUMBER
           currency: detectCurrency(priceText),
           image: toStr(ogImage?.content),
+          store: getStoreName(),           // ✅ Adicionado aqui
           method: 'meta-tags'
         };
       }
@@ -160,6 +171,7 @@ export async function scrapeProduct(url) {
         price: toNumberPrice(priceText), // ✅ NUMBER
         currency: detectCurrency(priceText),
         image: toStr(document.querySelector('img')?.src),
+        store: getStoreName(),           // ✅ Adicionado aqui
         method: 'visual'
       };
     });

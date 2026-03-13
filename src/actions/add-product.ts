@@ -64,6 +64,7 @@ export async function NewProduct(url: string, priceTarget: number) {
         currency: newProduct.currency,
         image: newProduct.image,
         method: newProduct.method,
+        store: newProduct.store,
         userId: session.user.id,
       },
     });

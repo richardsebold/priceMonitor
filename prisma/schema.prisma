@@ -115,6 +115,7 @@ model ProductHistory {
   image     String?
   method    String?
   scrapedAt DateTime @default(now())
+  store       String?
   
 
   userId    String
