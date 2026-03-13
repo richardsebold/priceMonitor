@@ -94,8 +94,7 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
           Atualize seus dados
         </CardTitle>
         <CardDescription>
-          Insira seus dados abaixo para completar cadastro e ter acesso completo
-          a plataforma.
+          Mantenha seus dados atualizados para ter uma melhor experiência.
         </CardDescription>
       </CardHeader>
       <CardContent>
