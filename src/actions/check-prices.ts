@@ -5,11 +5,10 @@ import { sendPriceAlert } from "../actions/enviar-email";
 export async function runPriceCheckJob() {
   console.log("Iniciando rotina de verificação de preços...");
 
-
   const products = await prisma.productHistory.findMany({
     include: {
-      user: true, 
-    }
+      user: true,
+    },
   });
 
   if (!products || products.length === 0) {
@@ -19,8 +18,9 @@ export async function runPriceCheckJob() {
 
   for (const product of products) {
     try {
-
-      console.log(`Buscando preço de ${product.url} para o usuário: ${product.user.email}`);
+      console.log(
+        `Buscando preço de ${product.url} para o usuário: ${product.user.email}`,
+      );
 
       const newSearch = await scrapeProduct(product.url);
 
@@ -40,16 +40,25 @@ export async function runPriceCheckJob() {
         },
       });
 
-      if (newSearch.price <= product.priceTarget) {
+      if (newSearch.price <= product.priceTarget && !product.targetReached) {
         console.log(
-          `[ALERTA] Meta atingida para o produto ${product.name} (Usuário: ${product.user.email})`
+          `[ALERTA] Meta atingida para o produto ${product.name} (Usuário: ${product.user.email})`,
         );
+        await prisma.productHistory.update({
+          where: { id: product.id },
+          data: { targetReached: true },
+        });
 
-        if (product.user && product.user.email) {
-          await sendPriceAlert(product, product.user.email, product.user.name);
-        }
+        await sendPriceAlert(product, product.user.email, product.user.name);
+      } else if (
+        newSearch.price > product.priceTarget &&
+        product.targetReached
+      ) {
+        await prisma.productHistory.update({
+          where: { id: product.id },
+          data: { targetReached: false },
+        });
       }
-
     } catch (error) {
       console.error(`Erro ao atualizar produto ${product.id}:`, error);
     }

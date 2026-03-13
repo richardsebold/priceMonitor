@@ -1,4 +1,4 @@
-"use client" // Declarando explicitamente que é um componente cliente
+"use client"
 
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
 import { Badge } from "@/components/ui/badge"
@@ -10,33 +10,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { GoalsChart } from "./goals-graph"
 import { getProducts } from "@/actions/get-products-from-db"
-import { useEffect, useState } from "react" // 👈 Importando os hooks
+import { useEffect, useState } from "react"
 import { ProductHistory } from "../../generated/prisma/client"
-import { PriceChart } from "./price-stonks-graph"
-import { MediaVariantChart } from "./media-variant-graph"
-import { ProductsChart } from "./products-graph"
+import { getReachedTargetsCount } from "@/actions/get-reached-count"
+import { getPotentialSavings } from "@/actions/get-potential-savings"
+import { getBiggestDrop } from "@/actions/get-biggest-drop"
+import { getUser } from "@/actions/get-user"
 
+type DropData = {
+  name: string;
+  drop: string;
+  oldPrice: number;
+  currentPrice: number;
+} | null;
 
 export function SectionCards() {
-
   const [products, setProducts] = useState<ProductHistory[]>([])
-
+  const [reachedTargets, setReachedTargets] = useState<number>(0)
+  const [savings, setSavings] = useState<number>(0)
+  const [biggestDrop, setBiggestDrop] = useState<DropData>(null)
 
   useEffect(() => {
-    async function fetchProducts() {
+    async function fetchData() {
+      const user = await getUser();
+
+      if (!user) return;
+
       try {
-        const data = await getProducts();
-        if (data) {
-          setProducts(data);
-        }
+        const [productsData, targetsData, savingsData, dropData] = await Promise.all([
+          getProducts(),
+          getReachedTargetsCount(user.id),
+          getPotentialSavings(),
+          getBiggestDrop()
+        ])
+        
+        if (productsData) setProducts(productsData)
+        if (targetsData !== undefined) setReachedTargets(targetsData)
+        if (savingsData !== undefined) setSavings(savingsData)
+        if (dropData) setBiggestDrop(dropData)
       } catch (error) {
-        console.error("Erro ao buscar produtos:", error);
+        console.error(error)
       }
     }
 
-    fetchProducts();
+    fetchData()
   }, [])
 
   return (
@@ -44,7 +62,6 @@ export function SectionCards() {
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Produtos Monitorados</CardDescription>
-          {/* 3. Agora a renderização é segura. Mostrará 0 enquanto carrega, e depois atualiza. */}
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {products.length}
           </CardTitle>
@@ -56,9 +73,12 @@ export function SectionCards() {
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-
-          <ProductsChart />
-
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            Total de produtos já cadastrados
+          </div>
+          <div className="text-muted-foreground">
+            Acquisition needs attention
+          </div>
         </CardFooter>
       </Card>
 
@@ -66,7 +86,7 @@ export function SectionCards() {
         <CardHeader>
           <CardDescription>Metas atingidas</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,234
+            {reachedTargets}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -76,9 +96,12 @@ export function SectionCards() {
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-
-          <GoalsChart />
-
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            Alertas enviados para seu e-mail
+          </div>
+          <div className="text-muted-foreground">
+            Acquisition needs attention
+          </div>
         </CardFooter>
       </Card>
 
@@ -86,7 +109,7 @@ export function SectionCards() {
         <CardHeader>
           <CardDescription>Economia potencial</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            R$ 345,90
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(savings)}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -96,29 +119,35 @@ export function SectionCards() {
           </CardAction>
         </CardHeader>
        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-
-          <PriceChart />
-
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            Se comprar todos os itens em baixa hoje
+          </div>
+          <div className="text-muted-foreground">
+            Acquisition needs attention
+          </div>
         </CardFooter>
       </Card>
 
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Variação média</CardDescription>
+          <CardDescription>Maior variação de preço</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
+            {biggestDrop ? `-${biggestDrop.drop}%` : "0%"}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +4.5%
+            <Badge variant="outline" className={biggestDrop ? "border-green-500 text-green-500" : ""}>
+              <IconTrendingDown className="size-4 mr-1" />
+              Destaque
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-
-          <MediaVariantChart />
-
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {biggestDrop ? biggestDrop.name : "Nenhuma variação"}
+          </div>
+          <div className="text-muted-foreground">
+            {biggestDrop ? `De R$ ${biggestDrop.oldPrice.toFixed(2)} por R$ ${biggestDrop.currentPrice.toFixed(2)}` : "Aguardando"}
+          </div>
         </CardFooter>
       </Card>
     </div>
