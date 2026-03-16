@@ -39,10 +39,9 @@ interface DashboardClientProps {
 export function DashboardClient({ planLimit }: DashboardClientProps) {
   const [productList, setProductList] = useState<ProductHistory[]>([]);
   const [url, setUrl] = useState<string>("");
-
   const [priceTarget, setPriceTarget] = useState<string>("");
-
   const [loading, setLoading] = useState<boolean>(false);
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
 
   const isLimitReached = productList.length >= planLimit;
 
@@ -110,6 +109,10 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
     }
   }
 
+  function toggleHistory(id: string) {
+    setExpandedItemId((prev) => (prev === id ? null : id));
+  }
+
   return (
     <div className="container mx-auto">
       <div className="mx-4 md:mx-0 mt-12">
@@ -118,8 +121,6 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
         <h2 className="text-xl font-semibold mb-4">
           Histórico de Monitoramento
         </h2>
-
-        <ChartAreaInteractive />
 
         <div className="flex gap-4 mt-4">
           <Input
@@ -157,7 +158,6 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
         </div>
 
         <div className="ounded-2xl w-full mt-8 shadow-xl">
-          {/* Cabeçalho da Lista */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-white">
               Últimas Atualizações
@@ -175,14 +175,13 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
             </div>
           </div>
 
-          <Card className="grid gap-4 px-4">
+          <Card className="grid gap-4 px-4 py-4">
             {productList.length === 0 ? (
               <div className="text-center py-10 text-slate-500 rounded-xl border border-slate-800">
                 Nenhum dado carregado.
               </div>
             ) : (
               productList.map((item) => {
-                // Pequena lógica visual para a porcentagem do alvo
                 const price = item.price || 0;
                 const target = item.priceTarget || 0;
                 const percentDiff =
@@ -190,122 +189,128 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                     ? (((price - target) / target) * 100).toFixed(1)
                     : 0;
                 const isAboveTarget = price > target;
+                const isExpanded = expandedItemId === item.id;
 
                 return (
                   <div
                     key={item.id}
-                    className="p-5 rounded-xl border border-slate-800/80 flex items-start gap-5 hover:border-slate-700 transition-colors group"
+                    className="rounded-xl border border-slate-800/80 hover:border-slate-700 transition-colors group flex flex-col overflow-hidden"
                   >
-                    {/* Imagem do Produto */}
-                    <div className="shrink-0">
-                      <div className="w-20 h-20 rounded-lg p-1 overflow-hidden flex items-center justify-center">
-                        <Image
-                          src={item.image as string}
-                          alt={item.name as string}
-                          width={80}
-                          height={80}
-                          className="object-contain w-full h-full"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Detalhes do Produto */}
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <h3 className="text-white font-semibold text-base truncate pr-8">
-                        {item.name || "Produto sem nome"}
-                      </h3>
-
-                      {/* Tags (Loja e Estoque) */}
-                      <div className="flex gap-2 items-center mt-1.5">
-                        <span className="text-blue-500 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-slate-500/20 underline">
-                          <a href={item.url} target="_blank" rel="noreferrer">{item.store || "Sem loja"}</a>
-                        </span>
-                        <span className="text-emerald-400 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                          Em estoque
-                        </span>
+                    <div className="p-5 flex items-start gap-5">
+                      <div className="shrink-0">
+                        <div className="w-20 h-20 rounded-lg p-1 overflow-hidden flex items-center justify-center">
+                          <Image
+                            src={item.image as string}
+                            alt={item.name as string}
+                            width={80}
+                            height={80}
+                            className="object-contain w-full h-full"
+                          />
+                        </div>
                       </div>
 
-                      {/* Preço e Meta */}
-                      <div className="mt-3">
-                        <p className="text-2xl font-bold text-white tracking-tight">
-                          {item.currency === "BRL" ? "R$ " : ""}
-                          {item.price?.toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          }) ?? "---"}
-                        </p>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <h3 className="text-white font-semibold text-base truncate pr-8">
+                          {item.name || "Produto sem nome"}
+                        </h3>
 
-                        <div className="flex items-center gap-2 mt-1">
-                          {isAboveTarget ? (
-                            <span className="text-red-400 text-xs font-medium">
-                              ↗ {percentDiff}%
-                            </span>
-                          ) : (
-                            <span className="text-emerald-400 text-xs font-medium">
-                              ↘ {Math.abs(Number(percentDiff))}%
-                            </span>
-                          )}
-                          <span className="text-slate-500 text-xs">
-                            Alvo: R${" "}
-                            {item.priceTarget?.toLocaleString("pt-BR", {
-                              minimumFractionDigits: 2,
-                            }) ?? "---"}
+                        <div className="flex gap-2 items-center mt-1.5">
+                          <span className="text-blue-500 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-slate-500/20 underline">
+                            <a href={item.url} target="_blank" rel="noreferrer">
+                              {item.store || "Sem loja"}
+                            </a>
+                          </span>
+                          <span className="text-emerald-400 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                            Em estoque
                           </span>
                         </div>
+
+                        <div className="mt-3">
+                          <p className="text-2xl font-bold text-white tracking-tight">
+                            {item.currency === "BRL" ? "R$ " : ""}
+                            {item.price?.toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                            }) ?? "---"}
+                          </p>
+
+                          <div className="flex items-center gap-2 mt-1">
+                            {isAboveTarget ? (
+                              <span className="text-red-400 text-xs font-medium">
+                                ↗ {percentDiff}%
+                              </span>
+                            ) : (
+                              <span className="text-emerald-400 text-xs font-medium">
+                                ↘ {Math.abs(Number(percentDiff))}%
+                              </span>
+                            )}
+                            <span className="text-slate-500 text-xs">
+                              Alvo: R${" "}
+                              {item.priceTarget?.toLocaleString("pt-BR", {
+                                minimumFractionDigits: 2,
+                              }) ?? "---"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end justify-between self-stretch shrink-0">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="text-slate-500 hover:text-white p-1 rounded-md hover:bg-slate-800 transition-colors">
+                              <MoreVertical size={20} />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-48 border-slate-700 text-slate-300"
+                          >
+                            <DropdownMenuItem 
+                              className="hover:bg-slate-800 hover:text-white cursor-pointer"
+                              onClick={() => toggleHistory(item.id)}
+                            >
+                              <Eye className="mr-2 h-4 w-4" /> {isExpanded ? "Ocultar histórico" : "Ver histórico"}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              className="hover:bg-slate-800 hover:text-white cursor-pointer"
+                              onSelect={(e) => e.preventDefault()} 
+                            >
+                              <EditTask
+                                product={item}
+                                handleGetProduct={handleGetProduct}
+                              />
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              className="hover:bg-slate-800 hover:text-white cursor-pointer"
+                              onClick={() => window.open(item.url, "_blank")}
+                            >
+                              <ExternalLink className="mr-2 h-4 w-4" /> Abrir loja
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              className="text-red-400 hover:bg-red-400/10 hover:text-red-300 cursor-pointer"
+                              onClick={() => handleDeleteProduct(item.id)}
+                            >
+                              <Trash className="mr-2 h-4 w-4" /> Remover
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        {isAboveTarget && (
+                          <div className="flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[11px] font-semibold px-2.5 py-1 rounded-md mt-4">
+                            <Bell size={12} />
+                            <span>{percentDiff}% acima</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* Coluna da Direita (Ações e Badge) */}
-                    <div className="flex flex-col items-end justify-between self-stretch shrink-0">
-                      {/* Menu de 3 Pontinhos */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="text-slate-500 hover:text-white p-1 rounded-md hover:bg-slate-800 transition-colors">
-                            <MoreVertical size={20} />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="w-48 border-slate-700 text-slate-300"
-                        >
-                          <DropdownMenuItem className="hover:bg-slate-800 hover:text-white cursor-pointer">
-                            <Eye className="mr-2 h-4 w-4" /> Ver histórico
-                          </DropdownMenuItem>
-
-
-                          <DropdownMenuItem
-                            className="hover:bg-slate-800 hover:text-white cursor-pointer"
-                            onSelect={(e) => e.preventDefault()} 
-                          >
-                            <EditTask
-                              product={item}
-                              handleGetProduct={handleGetProduct}
-                            />
-                          </DropdownMenuItem>
-
-                          <DropdownMenuItem
-                            className="hover:bg-slate-800 hover:text-white cursor-pointer"
-                            onClick={() => window.open(item.url, "_blank")}
-                          >
-                            <ExternalLink className="mr-2 h-4 w-4" /> Abrir loja
-                          </DropdownMenuItem>
-
-                          <DropdownMenuItem
-                            className="text-red-400 hover:bg-red-400/10 hover:text-red-300 cursor-pointer"
-                            onClick={() => handleDeleteProduct(item.id)}
-                          >
-                            <Trash className="mr-2 h-4 w-4" /> Remover
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-
-                      {/* Badge flutuante de Alerta (opcional baseado no alvo) */}
-                      {isAboveTarget && (
-                        <div className="flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[11px] font-semibold px-2.5 py-1 rounded-md mt-4">
-                          <Bell size={12} />
-                          <span>{percentDiff}% acima</span>
-                        </div>
-                      )}
-                    </div>
+                    {isExpanded && (
+                      <div className="px-5 pb-5 pt-2 border-t border-slate-800/80 bg-slate-900/20">
+                         <ChartAreaInteractive productId={item.id} />
+                      </div>
+                    )}
                   </div>
                 );
               })
