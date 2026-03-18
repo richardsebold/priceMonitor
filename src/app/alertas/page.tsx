@@ -5,7 +5,7 @@ import { BellRing, ExternalLink, TrendingDown } from "lucide-react"
 import Link from "next/link"
 import Sidebar from "@/components/sidebar"
 
-export default async function Alerts() {
+export default async function AlertasPage() {
   const alerts = await getLatestAlerts()
 
   return (
@@ -13,13 +13,44 @@ export default async function Alerts() {
 
       <Sidebar />
 
-      
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Histórico de Alertas</h1>
         <p className="text-muted-foreground mt-2">
           Confira os últimos avisos de queda de preço enviados para o seu e-mail.
         </p>
       </div>
+
+      {alerts.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <Card className="border-none shadow-sm">
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Total de Alertas</p>
+              <p className="text-2xl font-bold mt-1">{alerts.length}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-none shadow-sm">
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Menor Preço</p>
+              <p className="text-2xl font-bold mt-1 text-green-500">
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Math.min(...alerts.map((a) => a.price)))}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-none shadow-sm col-span-2 sm:col-span-1">
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Último Alerta</p>
+              <p className="text-2xl font-bold mt-1">
+                {new Date(
+                  Math.max(...alerts.map((a) => new Date(a.scrapedAt).getTime()))
+                ).toLocaleDateString("pt-BR")}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -29,7 +60,6 @@ export default async function Alerts() {
           </CardTitle>
           <CardDescription>Produtos que atingiram ou ficaram abaixo da sua meta.</CardDescription>
         </CardHeader>
-        
         <CardContent>
           {alerts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
