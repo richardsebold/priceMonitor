@@ -5,6 +5,8 @@ import { DashboardClient } from "../../components/dashboard-client";
 import Sidebar from "@/components/sidebar";
 import { getUser } from "@/actions/get-user";
 import Hero from "@/components/hero";
+import ClientAlerts from "@/components/alert-items";
+import { getLatestAlerts } from "@/actions/get-latest-alerts";
 
 // import { TelegramButton } from "../../components/telegram-button"; 
 
@@ -18,6 +20,7 @@ const PLAN_LIMITS: Record<string, number> = {
 
 export default async function Dashboard() {
   const user = await getUser();
+  const alerts = await getLatestAlerts()
   const currentPlan = user?.planId || "plano_free";
   const userLimit = PLAN_LIMITS[currentPlan] || 0;
 
@@ -50,6 +53,8 @@ export default async function Dashboard() {
       
 
       <DashboardClient planLimit={userLimit} />
+
+      <ClientAlerts alerts={alerts} />
     </div>
   );
 }

@@ -1,10 +1,27 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "../ui/sheet";
-import { BadgeQuestionMark, Bell, DollarSign, LayoutDashboard, LogOut, Package, PackageSearch, PanelBottom, Settings } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import {
+  BadgeQuestionMark,
+  Bell,
+  DollarSign,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  PackageSearch,
+  PanelBottom,
+  Settings,
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 import { UserMenu } from "../user-menu";
 import { ModeToggle } from "../theme-toogle";
+
+import TooltipAddProduct from "../btn-cadastro-produto";
 
 export default function Sidebar() {
   return (
@@ -13,15 +30,17 @@ export default function Sidebar() {
         <nav className="flex flex-col items-center gap-4 px-2 py-5">
           <TooltipProvider>
             <div className="mb-10">
-                <Link
-                  href="/dashboard"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                  prefetch={false}
-                >
-                  <DollarSign className="h-5 w-5 transition-all" />
-                  <span className="sr-only">Logo Price Tracker</span>
-                </Link>
+              <Link
+                href="/dashboard"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                prefetch={false}
+              >
+                <DollarSign className="h-5 w-5 transition-all" />
+                <span className="sr-only">Logo Price Tracker</span>
+              </Link>
             </div>
+
+            <TooltipAddProduct />
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -34,12 +53,9 @@ export default function Sidebar() {
                   <span className="sr-only">Dashboard</span>
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">
-                Dashboard
-              </TooltipContent>
+              <TooltipContent side="right">Dashboard</TooltipContent>
             </Tooltip>
 
-            
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -51,11 +67,9 @@ export default function Sidebar() {
                   <span className="sr-only">Produtos Rastreados</span>
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">
-                Produtos Rastreados
-              </TooltipContent>
+              <TooltipContent side="right">Produtos Rastreados</TooltipContent>
             </Tooltip>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -67,21 +81,16 @@ export default function Sidebar() {
                   <span className="sr-only">Alertas</span>
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">
-                Alertas
-              </TooltipContent>
+              <TooltipContent side="right">Alertas</TooltipContent>
             </Tooltip>
-
-            
-            
           </TooltipProvider>
         </nav>
 
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-5 mb-10">
-            <ModeToggle />
+          <ModeToggle />
 
-            <TooltipProvider>
-                <Tooltip>
+          <TooltipProvider>
+            <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/settings"
@@ -92,12 +101,9 @@ export default function Sidebar() {
                   <span className="sr-only">Configurações</span>
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">
-                Configurações
-              </TooltipContent>
+              <TooltipContent side="right">Configurações</TooltipContent>
             </Tooltip>
 
-            
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -109,12 +115,8 @@ export default function Sidebar() {
                   <span className="sr-only">Ajuda</span>
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">
-                Ajuda
-              </TooltipContent>
+              <TooltipContent side="right">Ajuda</TooltipContent>
             </Tooltip>
-
-
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -127,15 +129,11 @@ export default function Sidebar() {
                   <span className="sr-only">Sair</span>
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">
-                Sair
-              </TooltipContent>
+              <TooltipContent side="right">Sair</TooltipContent>
             </Tooltip>
 
             <UserMenu />
-
-            
-            </TooltipProvider>
+          </TooltipProvider>
         </nav>
       </aside>
 
@@ -212,12 +210,10 @@ export default function Sidebar() {
                   <LogOut className="h-5 w-5 transition-all" />
                   <span className="">Sair</span>
                 </Link>
-                
               </nav>
             </SheetContent>
 
             <ModeToggle />
-
           </Sheet>
           <h2>Menu</h2>
         </header>

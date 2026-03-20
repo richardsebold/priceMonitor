@@ -48,7 +48,14 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
   async function handleGetProduct() {
     try {
       const products = await getProducts();
-      if (products) setProductList(products);
+      
+      if (products && products.length > 0) {
+        setProductList(products);
+        setExpandedItemId(products[0].id);
+      } else {
+        setProductList([]);
+        setExpandedItemId(null);
+      }
     } catch (error) {
       console.error("Erro ao buscar:", error);
     }
@@ -118,9 +125,6 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
       <div className="mx-4 md:mx-0 mt-12">
         <SectionCards />
 
-        <h2 className="text-xl font-semibold mb-4">
-          Histórico de Monitoramento
-        </h2>
 
         <div className="flex gap-4 mt-4">
           <Input
@@ -256,7 +260,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                       <div className="flex flex-col items-end justify-between self-stretch shrink-0">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="text-slate-500 hover:text-white p-1 rounded-md hover:bg-slate-800 transition-colors">
+                            <button className="hover:text-white p-1 rounded-md hover:bg-slate-800 transition-colors cursor-pointer">
                               <MoreVertical size={20} />
                             </button>
                           </DropdownMenuTrigger>
@@ -267,6 +271,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                             <DropdownMenuItem 
                               className="hover:bg-slate-800 hover:text-white cursor-pointer"
                               onClick={() => toggleHistory(item.id)}
+                              
                             >
                               <Eye className="mr-2 h-4 w-4" /> {isExpanded ? "Ocultar histórico" : "Ver histórico"}
                             </DropdownMenuItem>
@@ -307,7 +312,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                     </div>
 
                     {isExpanded && (
-                      <div className="px-5 pb-5 pt-2 border-t border-slate-800/80 bg-slate-900/20">
+                      <div className="px-5 pb-5 pt-2">
                          <ChartAreaInteractive productId={item.id} />
                       </div>
                     )}
@@ -318,7 +323,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
           </Card>
         </div>
 
-        <TestPage />
+        {/* <TestPage /> */}
       </div>
     </div>
   );

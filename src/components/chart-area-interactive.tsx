@@ -28,7 +28,7 @@ import {
 const chartConfig = {
   price: {
     label: "Preço",
-    color: "#3b82f6", 
+    color: "#6CA651", 
   },
 } satisfies ChartConfig
 
@@ -115,7 +115,7 @@ export function ChartAreaInteractive({ productId }: ChartAreaInteractiveProps) {
         ) : (
           <ChartContainer
             config={chartConfig}
-            className="aspect-auto h-[250px] w-full"
+            className="aspect-auto h-62.5 w-full"
           >
             <AreaChart data={filteredData}>
               <defs>
@@ -168,7 +168,7 @@ export function ChartAreaInteractive({ productId }: ChartAreaInteractiveProps) {
                         day: "numeric",
                       })
                     }}
-                    formatter={(value: any) => (
+                    formatter={(value: unknown) => (
                       <span className="font-semibold">
                         R$ {Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                       </span>

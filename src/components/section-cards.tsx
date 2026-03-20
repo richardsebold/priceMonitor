@@ -122,7 +122,7 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-2 font-medium">
             Se comprar todos os itens em baixa hoje
           </div>
-          <div className="text-muted-foreground">
+          <div className="text-muted-foreground ">
             Acquisition needs attention
           </div>
         </CardFooter>
