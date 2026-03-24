@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { deleteProduct } from "@/actions/delete-product";
 import { toast } from "sonner";
-import TestPage from "./button-teste-api";
+// import TestPage from "./button-teste-api";
 import { ChartAreaInteractive } from "./chart-area-interactive";
 import { Card } from "./ui/card";
 import { SectionCards } from "./section-cards";
@@ -163,7 +163,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
 
         <div className="ounded-2xl w-full mt-8 shadow-xl">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold">
               Últimas Atualizações
             </h2>
             {isLimitReached && (
@@ -214,7 +214,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                       </div>
 
                       <div className="flex flex-col flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-base truncate pr-8">
+                        <h3 className="font-semibold text-base truncate pr-8">
                           {item.name || "Produto sem nome"}
                         </h3>
 
@@ -230,7 +230,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                         </div>
 
                         <div className="mt-3">
-                          <p className="text-2xl font-bold text-white tracking-tight">
+                          <p className="text-2xl font-bold tracking-tight">
                             {item.currency === "BRL" ? "R$ " : ""}
                             {item.price?.toLocaleString("pt-BR", {
                               minimumFractionDigits: 2,
@@ -260,24 +260,23 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                       <div className="flex flex-col items-end justify-between self-stretch shrink-0">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="hover:text-white p-1 rounded-md hover:bg-slate-800 transition-colors cursor-pointer">
+                            <button className="p-1 rounded-md transition-colors cursor-pointer">
                               <MoreVertical size={20} />
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent
                             align="end"
-                            className="w-48 border-slate-700 text-slate-300"
+                            className="w-48 text-slate-300"
                           >
                             <DropdownMenuItem 
-                              className="hover:bg-slate-800 hover:text-white cursor-pointer"
+                              className="cursor-pointer"
                               onClick={() => toggleHistory(item.id)}
-                              
                             >
                               <Eye className="mr-2 h-4 w-4" /> {isExpanded ? "Ocultar histórico" : "Ver histórico"}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
-                              className="hover:bg-slate-800 hover:text-white cursor-pointer"
+                              className="cursor-pointer"
                               onSelect={(e) => e.preventDefault()} 
                             >
                               <EditTask
@@ -287,7 +286,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
-                              className="hover:bg-slate-800 hover:text-white cursor-pointer"
+                              className="cursor-pointer"
                               onClick={() => window.open(item.url, "_blank")}
                             >
                               <ExternalLink className="mr-2 h-4 w-4" /> Abrir loja
