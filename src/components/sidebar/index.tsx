@@ -26,7 +26,7 @@ import TooltipAddProduct from "../btn-cadastro-produto";
 export default function Sidebar() {
   return (
     <div className="flex w-full flex-col bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-10 w-14 border-r-2 border-gray-900 bg-[#10120F] hidden sm:flex flex-col">
+      <aside className="fixed inset-y-0 left-0 z-10 w-14 border-r-2 border-gray-900 hidden sm:flex flex-col">
         <nav className="flex flex-col items-center gap-4 px-2 py-5">
           <TooltipProvider>
             <div className="mb-10">

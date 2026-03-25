@@ -14,7 +14,7 @@ export default function TooltipAddProduct() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <DialogTrigger asChild>
-                    <Button className="flex items-center justify-center p-2 hover:bg-muted rounded-md transition-all cursor-pointer bg-muted">
+                    <Button className="flex items-center justify-center p-2 rounded-md transition-all cursor-pointer">
                       <Plus className="h-5 w-5" />
                       <span className="sr-only">Adicionar Produto</span>
                     </Button>

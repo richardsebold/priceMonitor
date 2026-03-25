@@ -31,6 +31,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Badge } from "./ui/badge";
 import EditTask from "./EditURL";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 
 interface DashboardClientProps {
   planLimit: number;
@@ -48,7 +49,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
   async function handleGetProduct() {
     try {
       const products = await getProducts();
-      
+
       if (products && products.length > 0) {
         setProductList(products);
         setExpandedItemId(products[0].id);
@@ -125,47 +126,58 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
       <div className="mx-4 md:mx-0 mt-12">
         <SectionCards />
 
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="px-6 py-6" disabled={isLimitReached}>
+              <Plus className="h-4 w-4" />
+              <span>CADASTRAR PRODUTO</span>
+            </Button>
+          </DialogTrigger>
 
-        <div className="flex gap-4 mt-4">
-          <Input
-            placeholder="Insira a URL do produto"
-            disabled={isLimitReached}
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Cadastrar Produto</DialogTitle>
+            </DialogHeader>
 
-          <Input
-            type="number"
-            step="0.01"
-            disabled={isLimitReached}
-            placeholder="Insira o valor desejado"
-            value={priceTarget}
-            onChange={(e) => setPriceTarget(e.target.value)}
-          />
-
-          <Button
-            onClick={handleAddProduct}
-            disabled={loading || isLimitReached}
-          >
-            {loading ? (
-              <>
-                <LoaderCircle className="animate-spin" />
-                <span>Cadastrando...</span>
-              </>
-            ) : (
-              <>
-                <Plus />
-                <span>Cadastrar</span>
-              </>
-            )}
-          </Button>
-        </div>
+            <div className="flex flex-col gap-4 mt-4">
+              <Input
+                placeholder="Insira a URL do produto"
+                disabled={isLimitReached}
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+              />
+              <Input
+                type="number"
+                step="0.01"
+                disabled={isLimitReached}
+                placeholder="Insira o valor desejado"
+                value={priceTarget}
+                onChange={(e) => setPriceTarget(e.target.value)}
+              />
+              <Button
+                onClick={handleAddProduct}
+                disabled={loading || isLimitReached}
+                className="w-full"
+              >
+                {loading ? (
+                  <>
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                    <span>Cadastrando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    <span>Cadastrar</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <div className="ounded-2xl w-full mt-8 shadow-xl">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">
-              Últimas Atualizações
-            </h2>
+            <h2 className="text-xl font-bold">Últimas Atualizações</h2>
             {isLimitReached && (
               <Badge className="ml-4 px-3 p-4 text-sm bg-red-500 rounded-full">
                 Limite de plano atingido
@@ -268,16 +280,19 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                             align="end"
                             className="w-48 text-slate-300"
                           >
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="cursor-pointer"
                               onClick={() => toggleHistory(item.id)}
                             >
-                              <Eye className="mr-2 h-4 w-4" /> {isExpanded ? "Ocultar histórico" : "Ver histórico"}
+                              <Eye className="mr-2 h-4 w-4" />{" "}
+                              {isExpanded
+                                ? "Ocultar histórico"
+                                : "Ver histórico"}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
                               className="cursor-pointer"
-                              onSelect={(e) => e.preventDefault()} 
+                              onSelect={(e) => e.preventDefault()}
                             >
                               <EditTask
                                 product={item}
@@ -289,7 +304,8 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                               className="cursor-pointer"
                               onClick={() => window.open(item.url, "_blank")}
                             >
-                              <ExternalLink className="mr-2 h-4 w-4" /> Abrir loja
+                              <ExternalLink className="mr-2 h-4 w-4" /> Abrir
+                              loja
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
@@ -312,7 +328,7 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
 
                     {isExpanded && (
                       <div className="px-5 pb-5 pt-2">
-                         <ChartAreaInteractive productId={item.id} />
+                        <ChartAreaInteractive productId={item.id} />
                       </div>
                     )}
                   </div>
