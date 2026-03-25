@@ -31,7 +31,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Badge } from "./ui/badge";
 import EditTask from "./EditURL";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 
 interface DashboardClientProps {
   planLimit: number;
@@ -125,10 +125,12 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
     <div className="container mx-auto">
       <div className="mx-4 md:mx-0 mt-12">
         <SectionCards />
-
+        
+        <div className="flex justify-center items-center">
+        
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="px-6 py-6" disabled={isLimitReached}>
+            <Button className="px-6 py-6 cursor-pointer" disabled={isLimitReached}>
               <Plus className="h-4 w-4" />
               <span>CADASTRAR PRODUTO</span>
             </Button>
@@ -154,10 +156,12 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                 value={priceTarget}
                 onChange={(e) => setPriceTarget(e.target.value)}
               />
+              
+              <DialogClose asChild>
               <Button
                 onClick={handleAddProduct}
                 disabled={loading || isLimitReached}
-                className="w-full"
+                className="w-full cursor-pointer"
               >
                 {loading ? (
                   <>
@@ -171,10 +175,13 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
                   </>
                 )}
               </Button>
+              </DialogClose>
+
             </div>
           </DialogContent>
         </Dialog>
-
+        </div>
+        
         <div className="ounded-2xl w-full mt-8 shadow-xl">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold">Últimas Atualizações</h2>
