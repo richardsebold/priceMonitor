@@ -40,20 +40,22 @@ export async function runPriceCheckJob() {
         },
       });
 
-      if (newSearch.price <= product.priceTarget && !product.targetReached) {
+      const isBelowTarget = newSearch.price <= product.priceTarget;
+      const dropped10Percent = newSearch.price <= (product.price * 0.9);
+
+      if ((isBelowTarget || dropped10Percent) && !product.targetReached) {
         console.log(
           `[ALERTA] Meta atingida para o produto ${product.name} (Usuário: ${product.user.email})`,
         );
+        
         await prisma.productHistory.update({
           where: { id: product.id },
           data: { targetReached: true },
         });
 
         await sendPriceAlert(product, product.user.email, product.user.name);
-      } else if (
-        newSearch.price > product.priceTarget &&
-        product.targetReached
-      ) {
+        
+      } else if (newSearch.price > product.priceTarget && product.targetReached) {
         await prisma.productHistory.update({
           where: { id: product.id },
           data: { targetReached: false },

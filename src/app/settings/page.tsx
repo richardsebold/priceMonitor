@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import Sidebar from "@/components/sidebar"
+import Link from "next/link"
 
 export default function SettingsPage() {
   return (
@@ -71,7 +72,7 @@ export default function SettingsPage() {
                 <div className="space-y-0.5">
                   <Label className="text-base">Alertas de Preço</Label>
                   <p className="text-sm text-muted-foreground">
-                    Receba um e-mail quando a meta for atingida.
+                    Receba um e-mail quando a meta for atingida ou o preço cair 10% do primeiro valor cadastrado.
                   </p>
                 </div>
                 <Switch defaultChecked />
@@ -106,7 +107,9 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter className="flex gap-4">
-              <Button variant="default">Fazer Upgrade</Button>
+              <Link href="/planos">
+              <Button variant="default"  className="cursor-pointer">Fazer Upgrade</Button>
+              </Link>
               <Button variant="outline" className="text-destructive hover:text-destructive">
                 Cancelar Assinatura
               </Button>

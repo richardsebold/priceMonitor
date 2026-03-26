@@ -63,7 +63,7 @@ export async function UserMenu() {
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">
             <BellIcon />
-            Notificações
+            <Link href="/alertas">Alertas</Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
