@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import Sidebar from "@/components/sidebar"
 import Link from "next/link"
+import { SignupReform } from "@/components/signup-reform"
 
 export default function SettingsPage() {
   return (
@@ -36,27 +37,7 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="profile">
-          <Card>
-            <CardHeader>
-              <CardTitle>Perfil</CardTitle>
-              <CardDescription>
-                Atualize suas informações pessoais.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1">
-                <Label htmlFor="name">Nome</Label>
-                <Input id="name" defaultValue="Richard" />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="email">E-mail</Label>
-                <Input id="email" defaultValue="richard@example.com" disabled />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button>Salvar alterações</Button>
-            </CardFooter>
-          </Card>
+          <SignupReform />
         </TabsContent>
 
         <TabsContent value="notifications">

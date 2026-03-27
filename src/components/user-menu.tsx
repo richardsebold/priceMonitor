@@ -37,7 +37,7 @@ export async function UserMenu() {
       <DropdownMenuTrigger className="cursor-pointer" asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
           <Avatar>
-            <AvatarImage src={userImage || "https://github.com/shadcn.png"} alt="shadcn" />
+            <AvatarImage src={userImage || ""} alt="account-image" />
             <AvatarBadge className="bg-green-500 dark:bg-green-700" />
             <AvatarFallback>LR</AvatarFallback>
           </Avatar>
@@ -57,17 +57,13 @@ export async function UserMenu() {
               Planos
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
-            <CreditCardIcon />
-            Pagamentos
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem className="cursor-pointer ">
             <BellIcon />
             <Link href="/alertas">Alertas</Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer hover:bg-red-500">
           <LogOutIcon />
           <ButtonSignOut />
         </DropdownMenuItem>

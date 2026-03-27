@@ -21,15 +21,15 @@ import {
 import { UserMenu } from "../user-menu";
 import { ModeToggle } from "../theme-toogle";
 
-import TooltipAddProduct from "../btn-cadastro-produto";
+
 
 export default function Sidebar() {
   return (
     <div className="flex w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 w-14 border-r-2 border-gray-900 hidden sm:flex flex-col">
-        <nav className="flex flex-col items-center gap-4 px-2 py-5">
+        <nav className="flex flex-col items-center gap-4 px-2 mt-10">
           <TooltipProvider>
-            <div className="mb-10">
+            <div>
               <Link
                 href="/dashboard"
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
@@ -39,8 +39,6 @@ export default function Sidebar() {
                 <span className="sr-only">Logo Price Tracker</span>
               </Link>
             </div>
-
-            <TooltipAddProduct />
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -86,7 +84,7 @@ export default function Sidebar() {
           </TooltipProvider>
         </nav>
 
-        <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-5 mb-10">
+        <nav className="mt-auto flex flex-col items-center gap-4 px-2 mb-10">
           <ModeToggle />
 
           <TooltipProvider>
@@ -118,7 +116,7 @@ export default function Sidebar() {
               <TooltipContent side="right">Ajuda</TooltipContent>
             </Tooltip>
 
-            <Tooltip>
+            {/* <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/dashboard"
@@ -130,7 +128,7 @@ export default function Sidebar() {
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">Sair</TooltipContent>
-            </Tooltip>
+            </Tooltip> */}
 
             <UserMenu />
           </TooltipProvider>
