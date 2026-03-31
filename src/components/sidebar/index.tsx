@@ -85,7 +85,6 @@ export default function Sidebar() {
         </nav>
 
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 mb-10">
-          <ModeToggle />
 
           <TooltipProvider>
             <Tooltip>
@@ -116,19 +115,7 @@ export default function Sidebar() {
               <TooltipContent side="right">Ajuda</TooltipContent>
             </Tooltip>
 
-            {/* <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-red-400"
-                  prefetch={false}
-                >
-                  <LogOut className="h-5 w-5 transition-all" />
-                  <span className="sr-only">Sair</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Sair</TooltipContent>
-            </Tooltip> */}
+
 
             <UserMenu />
           </TooltipProvider>
@@ -211,7 +198,7 @@ export default function Sidebar() {
               </nav>
             </SheetContent>
 
-            <ModeToggle />
+
           </Sheet>
           <h2>Menu</h2>
         </header>

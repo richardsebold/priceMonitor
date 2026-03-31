@@ -200,8 +200,13 @@ export function LoginForm({
       </Card>
       <FieldDescription className="px-6 text-center">
         Ao clicar em continuar, você concorda com nossos{" "}
-        <a href="#">Termos de serviço</a> e{" "}
-        <a href="#">Política de Privacidade</a>.
+        <a href="/termos" target="_blank" rel="noopener noreferrer">
+          Termos de serviço
+        </a>{" "}
+        e{" "}
+        <a href="/privacidade" target="_blank" rel="noopener noreferrer">
+          Política de Privacidade
+        </a>.
       </FieldDescription>
     </div>
   );

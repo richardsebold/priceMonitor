@@ -47,7 +47,7 @@ export async function UserMenu() {
         <DropdownMenuGroup>
           <DropdownMenuItem className="cursor-pointer">
             <BadgeCheckIcon />
-            <Link href="/conta">
+            <Link href="/settings">
               Minha Conta
             </Link>
           </DropdownMenuItem>
