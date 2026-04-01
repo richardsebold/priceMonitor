@@ -59,7 +59,7 @@ export function SectionCards() {
 
   return (
     <div className="grid md:grid-cols-4 gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card mb-12">
-      <Card className="@container/card">
+      <Card className="@container/card h-full">
         <CardHeader>
           <CardDescription>Produtos Monitorados</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -72,17 +72,17 @@ export function SectionCards() {
             </Badge>
           </CardAction>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
             Total de produtos já cadastrados
           </div>
           <div className="text-muted-foreground">
-            Acquisition needs attention
+            Contando com os produtos inativados.
           </div>
         </CardFooter>
       </Card>
 
-      <Card className="@container/card">
+      <Card className="@container/card h-full">
         <CardHeader>
           <CardDescription>Metas atingidas</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -95,17 +95,17 @@ export function SectionCards() {
             </Badge>
           </CardAction>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Alertas enviados para seu e-mail
+            Alertas enviados para seu e-maila
           </div>
           <div className="text-muted-foreground">
-            Acquisition needs attention
+            Acesse as configurações para desativar notificações.
           </div>
         </CardFooter>
       </Card>
 
-      <Card className="@container/card">
+      <Card className="@container/card h-full">
         <CardHeader>
           <CardDescription>Economia potencial</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -118,17 +118,17 @@ export function SectionCards() {
             </Badge>
           </CardAction>
         </CardHeader>
-       <CardFooter className="flex-col items-start gap-1.5 text-sm">
+       <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
             Se comprar todos os itens em baixa hoje
           </div>
           <div className="text-muted-foreground ">
-            Acquisition needs attention
+            Importante verificar os alertas de preço para não perder oportunidades.
           </div>
         </CardFooter>
       </Card>
 
-      <Card className="@container/card">
+      <Card className="@container/card h-full">
         <CardHeader>
           <CardDescription>Maior variação de preço</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -141,7 +141,7 @@ export function SectionCards() {
             </Badge>
           </CardAction>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
             {biggestDrop ? biggestDrop.name : "Nenhuma variação"}
           </div>
