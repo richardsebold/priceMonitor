@@ -2,24 +2,27 @@ import puppeteer from 'puppeteer';
 
 export async function scrapeProduct(url) {
   const browser = await puppeteer.launch({
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
+    });
 
   const page = await browser.newPage();
 
-  await page.setUserAgent(
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
-  );
+  // await page.setUserAgent(
+  //   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+  // );
 
-  await page.setViewport({ width: 1920, height: 1080 });
+  // await page.setViewport({ width: 1920, height: 1080 });
 
-  await page.setRequestInterception(true);
-  page.on('request', req => {
-    if (['image', 'font', 'media'].includes(req.resourceType())) {
-      req.abort();
-    } else req.continue();
-  });
+  // await page.setRequestInterception(true);
+  // page.on('request', req => {
+  //   if (['image', 'font', 'media'].includes(req.resourceType())) {
+  //     req.abort();
+  //   } else req.continue();
+  // });
 
   try {
     await page.goto(url, {
