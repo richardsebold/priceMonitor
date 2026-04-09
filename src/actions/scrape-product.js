@@ -1,4 +1,5 @@
-import puppeteer from 'puppeteer';
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 
 export async function scrapeProduct(url) {
   const browser = await puppeteer.launch({
