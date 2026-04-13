@@ -1,3 +1,5 @@
+'use server'
+
 import { prisma } from "@/lib/prisma";
 import { scrapeProduct } from "./scrape-product";
 import { sendPriceAlert } from "../actions/enviar-email";
