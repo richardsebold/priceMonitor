@@ -2,10 +2,13 @@
 
 import { prisma } from "@/lib/prisma";
 
-export async function getBiggestDrop() {
+export async function getBiggestDrop(userId: string) {
   const products = await prisma.productHistory.findMany({
     include: {
       history: true
+    },
+    where: {
+      userId: userId
     }
   })
 

@@ -41,8 +41,8 @@ export function SectionCards() {
         const [productsData, targetsData, savingsData, dropData] = await Promise.all([
           getProducts(),
           getReachedTargetsCount(user.id),
-          getPotentialSavings(),
-          getBiggestDrop()
+          getPotentialSavings(user.id),
+          getBiggestDrop(user.id)
         ])
         
         if (productsData) setProducts(productsData)

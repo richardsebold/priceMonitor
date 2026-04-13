@@ -223,7 +223,11 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
                   )}
                 </Button>
                 <Button variant="outline" type="button" onClick={handleLoginWithGoogle} disabled={isSubmitting}>
-                  Criar conta com Google
+                  {isSubmitting ? (
+                    <Loader className="animate-spin" color="green" size={50} />
+                  ) : (
+                  "Criar conta com Google"
+                   )}
                 </Button>
                 <FieldDescription className="px-6 text-center">
                   Já tem uma conta? <a href="#">Entrar</a>

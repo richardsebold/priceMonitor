@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { runPriceCheckJob } from "@/actions/check-prices";
 
 // Só permite requisições GET
@@ -9,8 +8,11 @@ export async function GET(request: Request) {
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response("Não autorizado", { status: 401 });
   }
-
-  runPriceCheckJob();
-
-  return NextResponse.json({ message: "Job iniciado com sucesso!" });
+  try {
+    runPriceCheckJob();
+    return new Response("Job iniciado com sucesso!", { status: 200 });
+  } catch (error) {
+    return new Response("Erro interno", { status: 500 });
+  }
+  
 }

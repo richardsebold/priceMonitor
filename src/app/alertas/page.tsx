@@ -2,9 +2,21 @@ import { getLatestAlerts } from "@/actions/get-latest-alerts"
 import Sidebar from "@/components/sidebar"
 import AlertCards from "@/components/alert-cards"
 import ClientAlerts from "@/components/alert-items"
+import { useEffect, useState } from "react";
+import { ProductHistory } from "../../../generated/prisma/browser";
 
-export default async function AlertasPage() {
-  const alerts = await getLatestAlerts()
+export default function AlertasPage() {
+
+
+  const [alerts, setAlerts] = useState<ProductHistory[]>([]); 
+
+  useEffect(() => {
+    async function carregarAlertas() {
+      const data = await getLatestAlerts();
+      setAlerts(data); 
+    }
+    carregarAlertas();
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 space-y-8">

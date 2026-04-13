@@ -2,10 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 
-export async function getPotentialSavings() {
+export async function getPotentialSavings(userId: string) {
   const products = await prisma.productHistory.findMany({
     where: { 
-      targetReached: true 
+      targetReached: true,
+      userId: userId
     },
   })
 
