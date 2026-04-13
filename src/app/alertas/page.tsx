@@ -1,11 +1,10 @@
-'use client'
 
 import { getLatestAlerts } from "@/actions/get-latest-alerts"
 import Sidebar from "@/components/sidebar"
 import AlertCards from "@/components/alert-cards"
 import ClientAlerts from "@/components/alert-items"
 import { useEffect, useState } from "react";
-import { ProductHistory } from "../../../generated/prisma/browser";
+import type { ProductHistory } from "../../../generated/prisma/browser";
 
 export default function AlertasPage() {
 
