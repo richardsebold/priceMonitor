@@ -17,6 +17,7 @@ import { getReachedTargetsCount } from "@/actions/get-reached-count"
 import { getPotentialSavings } from "@/actions/get-potential-savings"
 import { getBiggestDrop } from "@/actions/get-biggest-drop"
 import { getUser } from "@/actions/get-user"
+import { ChartSpline, PackageSearch, PiggyBank, Target } from "lucide-react"
 
 type DropData = {
   name: string;
@@ -66,10 +67,9 @@ export function SectionCards() {
             {products.length}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
+
+              <PackageSearch className="" />
+
           </CardAction>
         </CardHeader>
         <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
@@ -89,10 +89,9 @@ export function SectionCards() {
             {reachedTargets}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <IconTrendingDown />
-              -20%
-            </Badge>
+            
+            <Target className="" />
+
           </CardAction>
         </CardHeader>
         <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
@@ -112,10 +111,7 @@ export function SectionCards() {
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(savings)}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
+            <PiggyBank className="" />
           </CardAction>
         </CardHeader>
        <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
@@ -135,10 +131,7 @@ export function SectionCards() {
             {biggestDrop ? `-${biggestDrop.drop}%` : "0%"}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline" className={biggestDrop ? "border-green-500 text-green-500" : ""}>
-              <IconTrendingDown className="size-4 mr-1" />
-              Destaque
-            </Badge>
+            <ChartSpline className="" />
           </CardAction>
         </CardHeader>
         <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">

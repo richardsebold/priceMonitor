@@ -1,3 +1,5 @@
+'use client'
+
 import { getLatestAlerts } from "@/actions/get-latest-alerts"
 import Sidebar from "@/components/sidebar"
 import AlertCards from "@/components/alert-cards"
