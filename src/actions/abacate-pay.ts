@@ -63,7 +63,7 @@ export async function createAbacatePayCheckout(planId: string) {
 
   if (!response.ok) {
     console.error("Erro na AbacatePay:", data);
-    throw new Error("Falha ao criar o checkout de pagamento.");
+    throw new Error("Falha ao criar o checkout de pagamento. Erro de versao da api ou chave de acesso invalida.");
   }
 
   const checkoutUrl = data.data?.url || data.url;
