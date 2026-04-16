@@ -43,13 +43,13 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
   const [priceTarget, setPriceTarget] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
-
+  const [isFetching, setIsFetching] = useState<boolean>(true);
   const isLimitReached = productList.length >= planLimit;
 
   async function handleGetProduct() {
     try {
+      setIsFetching(true); 
       const products = await getProducts();
-
       if (products && products.length > 0) {
         setProductList(products);
         setExpandedItemId(products[0].id);
@@ -59,6 +59,9 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
       }
     } catch (error) {
       console.error("Erro ao buscar:", error);
+    }
+    finally {
+      setIsFetching(false);
     }
   }
 
@@ -120,6 +123,34 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
   function toggleHistory(id: string) {
     setExpandedItemId((prev) => (prev === id ? null : id));
   }
+
+  // Adicione isso no final do seu arquivo ou fora da função DashboardClient
+function ProductSkeleton() {
+  return (
+    <div className="rounded-xl border border-slate-800/80 p-5 flex items-start gap-5 animate-pulse bg-card">
+      {/* Imagem Placeholder */}
+      <div className="shrink-0">
+        <div className="w-20 h-20 rounded-lg bg-slate-800/50"></div>
+      </div>
+
+      {/* Textos Placeholder */}
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className="h-5 bg-slate-800/50 rounded-md w-3/4 mb-3"></div>
+        
+        <div className="flex gap-2 mb-4">
+          <div className="h-5 bg-slate-800/50 rounded-full w-16"></div>
+          <div className="h-5 bg-slate-800/50 rounded-full w-20"></div>
+        </div>
+
+        <div className="h-7 bg-slate-800/50 rounded-md w-32 mb-2"></div>
+        <div className="h-4 bg-slate-800/50 rounded-md w-24"></div>
+      </div>
+
+      {/* Menu lateral Placeholder */}
+      <div className="w-5 h-5 bg-slate-800/50 rounded-md shrink-0"></div>
+    </div>
+  );
+}
 
   return (
     <div className="container mx-auto">
@@ -199,7 +230,14 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
           </div>
 
           <Card className="grid gap-4 px-4 py-4">
-            {productList.length === 0 ? (
+            {isFetching ? (
+              <>
+                <ProductSkeleton />
+                <ProductSkeleton />
+                <ProductSkeleton />
+              </>
+            ) : productList.length === 0 ? (
+              // Mostra vazio se não tiver nada
               <div className="text-center py-10 text-slate-500 rounded-xl border border-slate-800">
                 Nenhum dado carregado.
               </div>

@@ -1,44 +1,55 @@
 import { ProductHistory } from "../../generated/prisma/client";
-import { Card, CardContent } from "./ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
 interface AlertsProps {
   alerts: ProductHistory[]
 }
 
 export default function AlertCards({ alerts }: AlertsProps) {
- return (
-   <div>
-        {alerts.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <Card className="border-none shadow-sm">
-            <CardContent className="pt-4 pb-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Total de Alertas</p>
-              <p className="text-2xl font-bold mt-1">{alerts.length}</p>
-            </CardContent>
+  return (
+    <div>
+      {alerts.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs dark:*:data-[slot=card]:bg-card mb-8">
+          
+          <Card className="@container/card h-full">
+            <CardHeader>
+              <CardDescription>Total de Alertas</CardDescription>
+              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                {alerts.length}
+              </CardTitle>
+            </CardHeader>
           </Card>
-          <Card className="border-none shadow-sm">
-            <CardContent className="pt-4 pb-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Menor Preço</p>
-              <p className="text-2xl font-bold mt-1 text-green-500">
+
+          <Card className="@container/card h-full">
+            <CardHeader>
+              <CardDescription>Menor Preço</CardDescription>
+              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-emerald-500">
                 {new Intl.NumberFormat("pt-BR", {
                   style: "currency",
                   currency: "BRL",
                 }).format(Math.min(...alerts.map((a) => a.price)))}
-              </p>
-            </CardContent>
+              </CardTitle>
+            </CardHeader>
           </Card>
-          <Card className="border-none shadow-sm col-span-2 sm:col-span-1">
-            <CardContent className="pt-4 pb-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Último Alerta</p>
-              <p className="text-2xl font-bold mt-1">
+
+          <Card className="@container/card h-full col-span-2 sm:col-span-1">
+            <CardHeader>
+              <CardDescription>Último Alerta</CardDescription>
+              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {new Date(
                   Math.max(...alerts.map((a) => new Date(a.scrapedAt).getTime()))
                 ).toLocaleDateString("pt-BR")}
-              </p>
-            </CardContent>
+              </CardTitle>
+            </CardHeader>
           </Card>
+
         </div>
       )}
-   </div>
- );
+    </div>
+  );
 }

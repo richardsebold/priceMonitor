@@ -38,9 +38,6 @@ export default async function Dashboard() {
 
       <Sidebar  />
 
-      
-
-
       { user?.cpf === null || user?.cpf === "" ? (
         <div className="mx-auto flex justify-between items-center shadow px-8 py-4 mb-8 bg-red-500 text-white uppercase font-bold">
           <h1> Para ter acesso completo a plataforma finalize seu cadastro. </h1>
@@ -51,7 +48,6 @@ export default async function Dashboard() {
 
       <Hero />
       
-
       <DashboardClient planLimit={userLimit} />
 
       <ClientAlerts alerts={alerts} />
