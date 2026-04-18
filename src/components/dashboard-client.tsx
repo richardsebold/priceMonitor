@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { deleteProduct } from "@/actions/delete-product";
 import { toast } from "sonner";
-// import TestPage from "./button-teste-api";
 import { ChartAreaInteractive } from "./chart-area-interactive";
 import { Card } from "./ui/card";
 import { SectionCards } from "./section-cards";

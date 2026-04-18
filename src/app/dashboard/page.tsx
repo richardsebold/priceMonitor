@@ -7,6 +7,8 @@ import { getUser } from "@/actions/get-user";
 import Hero from "@/components/hero";
 import ClientAlerts from "@/components/alert-items";
 import { getLatestAlerts } from "@/actions/get-latest-alerts";
+import { HeroSkeleton } from "@/components/hero-skeleton";
+import { Suspense } from "react";
 
 // import { TelegramButton } from "../../components/telegram-button"; 
 
@@ -46,7 +48,9 @@ export default async function Dashboard() {
         ""
       )}
 
-      <Hero />
+      <Suspense fallback={<HeroSkeleton />}>
+        <Hero />
+      </Suspense>
       
       <DashboardClient planLimit={userLimit} />
 
