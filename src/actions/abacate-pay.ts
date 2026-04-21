@@ -29,7 +29,7 @@ export async function createAbacatePayCheckout(planId: string) {
     throw new Error("Usuário não encontrado");
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_URL;
 
   const options = {
     method: "POST",
