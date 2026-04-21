@@ -53,8 +53,6 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
     });
   };
 
-
-
   async function onSubmit(formData: SignupFormValues) {
 
     const {} = await authClient.signUp.email(
@@ -63,7 +61,6 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
         email: formData.email,
         password: formData.password,
         callbackURL: "/",
-
       },
       {
         onRequest: (ctx) => {
@@ -103,9 +100,9 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
         <form onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup className="gap-2">
             <Field>
-              <FieldLabel htmlFor="firstname">Primeiro Nome</FieldLabel>
+              <FieldLabel htmlFor="name">Nome completo</FieldLabel>
               <Input
-                id="firstname"
+                id="name"
                 type="text"
                 placeholder="John Doe"
                 {...register("name")}

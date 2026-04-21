@@ -9,7 +9,6 @@ import {
 import {
   BadgeCheckIcon,
   BellIcon,
-  CreditCardIcon,
   LogOutIcon,
   PlaneTakeoff,
 } from "lucide-react";

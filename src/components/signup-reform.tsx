@@ -323,7 +323,7 @@ export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
 
                   <FieldLabel htmlFor="terms">
                     Aceito os{" "}
-                    <a href="#" className="underline">
+                    <a href="/termos" className="underline">
                       termos e condições de uso
                     </a>
                   </FieldLabel>
