@@ -9,6 +9,7 @@ import ClientAlerts from "@/components/alert-items";
 import { getLatestAlerts } from "@/actions/get-latest-alerts";
 import { HeroSkeleton } from "@/components/hero-skeleton";
 import { Suspense } from "react";
+import { CpfWarning } from "@/components/cpf-warning";
 
 // import { TelegramButton } from "../../components/telegram-button"; 
 
@@ -40,13 +41,7 @@ export default async function Dashboard() {
 
       <Sidebar  />
 
-      { user?.cpf === null || user?.cpf === "" ? (
-        <div className="mx-auto flex justify-between items-center shadow px-8 py-4 mb-8 bg-red-500 text-white uppercase font-bold">
-          <h1> Para ter acesso completo a plataforma finalize seu cadastro. </h1>
-        </div>
-      ) : (
-        ""
-      )}
+      <CpfWarning cpf={user?.cpf} />
 
       <Suspense fallback={<HeroSkeleton />}>
         <Hero />

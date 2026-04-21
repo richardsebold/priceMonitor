@@ -34,7 +34,7 @@ interface PlansProps {
 const plans: Plan[] = [
   {
     name: "Noob",
-    price: "Grátis", // Atualizei aqui visualmente para ficar mais claro que é o plano base
+    price: "Grátis", 
     period: "",
     planId: "plano_noob_mensal",
     description: "Ideal para quem está começando.",
@@ -73,8 +73,6 @@ const plans: Plan[] = [
 
 export default function Plans({ currentPlanId }: PlansProps) {
 
-
-  
   const [userPlanId, setUserPlanId] = useState<string | null | undefined>(currentPlanId)
 
   useEffect(() => {
