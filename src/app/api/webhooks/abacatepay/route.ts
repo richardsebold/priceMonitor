@@ -1,30 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
-    const rawBody = await request.text();
+    const url = new URL(request.url);
+    const secretFromUrl = url.searchParams.get("webhookSecret");
     
-    const signatureHeader = request.headers.get("x-webhook-signature") || request.headers.get("x-abacate-signature");
     const webhookSecret = process.env.ABACATEPAY_WEBHOOK_SECRET;
 
-    if (!signatureHeader || !webhookSecret) {
-      console.error("Falha na Segurança: Faltando assinatura ou secret configurado na Vercel.");
+    if (!secretFromUrl || secretFromUrl !== webhookSecret) {
+      console.error("Fraude detectada: A secret enviada na URL não confere.");
       return NextResponse.json({ error: "Acesso Negado" }, { status: 401 });
     }
 
-    const expectedSignature = crypto
-      .createHmac("sha256", webhookSecret)
-      .update(rawBody)
-      .digest("hex");
-
-    if (signatureHeader !== expectedSignature) {
-      console.error("Fraude detectada: A assinatura gerada não bate com a enviada.");
-      return NextResponse.json({ error: "Assinatura inválida" }, { status: 401 });
-    }
-
-    const body = JSON.parse(rawBody);
+    const body = await request.json();
     const eventType = body.event; 
 
     if (eventType === "billing.paid" || eventType === "BILLING.PAID") {
