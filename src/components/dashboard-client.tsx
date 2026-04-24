@@ -32,11 +32,19 @@ import { Badge } from "./ui/badge";
 import EditTask from "./EditURL";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 
+
 interface DashboardClientProps {
   planLimit: number;
+  hideSectionCards?: boolean; 
+  defaultExpandFirstItem?: boolean;
 }
 
-export function DashboardClient({ planLimit }: DashboardClientProps) {
+export function DashboardClient({ 
+  planLimit, 
+  hideSectionCards = false,
+  defaultExpandFirstItem = true
+}: DashboardClientProps) {
+  
   const [productList, setProductList] = useState<ProductHistory[]>([]);
   const [url, setUrl] = useState<string>("");
   const [priceTarget, setPriceTarget] = useState<string>("");
@@ -51,7 +59,11 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
       const products = await getProducts();
       if (products && products.length > 0) {
         setProductList(products);
-        setExpandedItemId(products[0].id);
+        if (defaultExpandFirstItem) {
+          setExpandedItemId(products[0].id);
+        } else {
+          setExpandedItemId(null);
+        }
       } else {
         setProductList([]);
         setExpandedItemId(null);
@@ -127,12 +139,11 @@ export function DashboardClient({ planLimit }: DashboardClientProps) {
 function ProductSkeleton() {
   return (
     <div className="rounded-xl border border-slate-800/80 p-5 flex items-start gap-5 animate-pulse bg-card">
-      {/* Imagem Placeholder */}
+
       <div className="shrink-0">
         <div className="w-20 h-20 rounded-lg bg-slate-800/50"></div>
       </div>
 
-      {/* Textos Placeholder */}
       <div className="flex flex-col flex-1 min-w-0">
         <div className="h-5 bg-slate-800/50 rounded-md w-3/4 mb-3"></div>
         
@@ -145,7 +156,6 @@ function ProductSkeleton() {
         <div className="h-4 bg-slate-800/50 rounded-md w-24"></div>
       </div>
 
-      {/* Menu lateral Placeholder */}
       <div className="w-5 h-5 bg-slate-800/50 rounded-md shrink-0"></div>
     </div>
   );
@@ -154,7 +164,8 @@ function ProductSkeleton() {
   return (
     <div className="container mx-auto">
       <div className="mx-4 md:mx-0 mt-12">
-        <SectionCards />
+
+        {!hideSectionCards && <SectionCards />}
         
         <div className="flex justify-center items-center">
         
