@@ -10,6 +10,7 @@ import {
   Package,
   PackageSearch,
   PanelBottom,
+  PlaneTakeoff,
   Settings,
 } from "lucide-react";
 import {
@@ -80,6 +81,21 @@ export default function Sidebar() {
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">Alertas</TooltipContent>
+            </Tooltip>
+
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/planos"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
+                  prefetch={false}
+                >
+                  <PlaneTakeoff className="h-5 w-5 transition-all" />
+                  <span className="sr-only">Planos</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Planos</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </nav>

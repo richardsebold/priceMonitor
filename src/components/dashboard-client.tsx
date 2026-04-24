@@ -161,84 +161,90 @@ function ProductSkeleton() {
   );
 }
 
-  return (
+return (
     <div className="container mx-auto">
       <div className="mx-4 md:mx-0 mt-12">
-
+        
+        {/* Renderiza os cards apenas se a prop não mandar esconder */}
         {!hideSectionCards && <SectionCards />}
         
-        <div className="flex justify-center items-center">
-        
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="px-6 py-6 cursor-pointer" disabled={isLimitReached}>
-              <Plus className="h-4 w-4" />
-              <span>CADASTRAR PRODUTO</span>
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Cadastrar Produto</DialogTitle>
-            </DialogHeader>
-
-            <div className="flex flex-col gap-4 mt-4">
-              <Input
-                placeholder="Insira a URL do produto"
-                disabled={isLimitReached}
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-              <Input
-                type="number"
-                step="0.01"
-                disabled={isLimitReached}
-                placeholder="Insira o valor desejado"
-                value={priceTarget}
-                onChange={(e) => setPriceTarget(e.target.value)}
-              />
-              
-              <DialogClose asChild>
-              <Button
-                onClick={handleAddProduct}
-                disabled={loading || isLimitReached}
-                className="w-full cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                    <span>Cadastrando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="mr-2 h-4 w-4" />
-                    <span>Cadastrar</span>
-                  </>
-                )}
-              </Button>
-              </DialogClose>
-
-            </div>
-          </DialogContent>
-        </Dialog>
-        </div>
-        
-        <div className="ounded-2xl w-full mt-8 shadow-xl">
-          <div className="flex justify-between items-center mb-6">
+        <div className="rounded-2xl w-full mt-8 shadow-xl">
+          
+          {/* NOVO CABEÇALHO: Título e Botão na mesma linha */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-xl font-bold">Últimas Atualizações</h2>
-            {isLimitReached && (
-              <Badge className="ml-4 px-3 p-4 text-sm bg-red-500 rounded-full">
-                Limite de plano atingido
-              </Badge>
-            )}
-            <div className="flex items-center">
-              <Sigma className="mr-2" />
-              <p className="justify-end">
-                {productList.length} / {planLimit} produtos monitorados
-              </p>
+
+            <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+              <div className="hidden sm:flex items-center text-sm text-muted-foreground">
+                <Sigma className="mr-2 h-4 w-4" />
+                <span>
+                  {productList.length} / {planLimit} monitorados
+                </span>
+              </div>
+
+              {isLimitReached && (
+                <Badge className="px-3 py-1 text-sm bg-red-500 rounded-full">
+                  Limite atingido
+                </Badge>
+              )}
+
+              {/* MODAL DE CADASTRAR PRODUTO (Agora fica aqui no canto direito) */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="cursor-pointer w-full sm:w-auto" disabled={isLimitReached}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    CADASTRAR PRODUTO
+                  </Button>
+                </DialogTrigger>
+
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Cadastrar Produto</DialogTitle>
+                  </DialogHeader>
+
+                  <div className="flex flex-col gap-4 mt-4">
+                    <Input
+                      placeholder="Insira a URL do produto"
+                      disabled={isLimitReached}
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                    />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      disabled={isLimitReached}
+                      placeholder="Insira o valor desejado"
+                      value={priceTarget}
+                      onChange={(e) => setPriceTarget(e.target.value)}
+                    />
+
+                    <DialogClose asChild>
+                      <Button
+                        onClick={handleAddProduct}
+                        disabled={loading || isLimitReached}
+                        className="w-full cursor-pointer"
+                      >
+                        {loading ? (
+                          <>
+                            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                            <span>Cadastrando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="mr-2 h-4 w-4" />
+                            <span>Cadastrar</span>
+                          </>
+                        )}
+                      </Button>
+                    </DialogClose>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              {/* FIM DO MODAL */}
             </div>
           </div>
 
+          {/* LISTA DE PRODUTOS */}
           <Card className="grid gap-4 px-4 py-4">
             {isFetching ? (
               <>
@@ -247,7 +253,6 @@ function ProductSkeleton() {
                 <ProductSkeleton />
               </>
             ) : productList.length === 0 ? (
-              // Mostra vazio se não tiver nada
               <div className="text-center py-10 text-slate-500 rounded-xl border border-slate-800">
                 Nenhum dado carregado.
               </div>
@@ -392,8 +397,6 @@ function ProductSkeleton() {
             )}
           </Card>
         </div>
-
-        {/* <TestPage /> */}
       </div>
     </div>
   );
