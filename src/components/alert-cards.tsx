@@ -28,7 +28,7 @@ export default function AlertCards({ alerts }: AlertsProps) {
           <Card className="@container/card h-full">
             <CardHeader>
               <CardDescription>Menor Preço</CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-emerald-500">
+              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl text-[#5a9600]">
                 {new Intl.NumberFormat("pt-BR", {
                   style: "currency",
                   currency: "BRL",

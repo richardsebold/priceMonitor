@@ -296,7 +296,7 @@ return (
                               {item.store || "Sem loja"}
                             </a>
                           </span>
-                          <span className="text-emerald-400 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                          <span className="text-[#5a9600] text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-[#345400]/20">
                             Em estoque
                           </span>
                         </div>
@@ -315,7 +315,7 @@ return (
                                 ↗ {percentDiff}%
                               </span>
                             ) : (
-                              <span className="text-emerald-400 text-xs font-medium">
+                              <span className="text-[#5a9600] text-xs font-medium">
                                 ↘ {Math.abs(Number(percentDiff))}%
                               </span>
                             )}

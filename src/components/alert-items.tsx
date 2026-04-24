@@ -42,7 +42,7 @@ export default function ClientAlerts( { alerts }: AlertsProps ) {
                   </div>
                   
                   <div className="flex items-center gap-4">
-                    <Badge variant="outline" className="border-green-500 text-green-500 flex gap-1.5 py-1 px-3">
+                    <Badge variant="outline" className="border-[#345400] text-[#5a9600] flex gap-1.5 py-1 px-3">
                       <TrendingDown className="size-4" />
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(alert.price)}
                     </Badge>
