@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -7,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
@@ -16,10 +17,12 @@ import Link from "next/link"
 import { SignupReform } from "@/components/signup-reform"
 import { useEffect, useState } from "react"
 import { getUser } from "@/actions/get-user"
+import type { User } from "../../../generated/prisma/client"
+
 
 export default function SettingsPage() {
 
-const [userInfos, setUserInfos] = useState(null);
+const [userInfos, setUserInfos] = useState<User | null>();
 
 useEffect(() => {
   async function fetchUser() {
@@ -100,7 +103,7 @@ useEffect(() => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-lg border p-4 bg-muted/50">
-                <p className="font-medium">Plano Atual: Noob</p>
+                <p className="font-medium">Plano Atual: {userInfos?.planId || "Gratuito"}</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Você está no plano gratuito. Limite de 1 produto.
                 </p>
