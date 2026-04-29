@@ -14,8 +14,27 @@ import { Switch } from "@/components/ui/switch"
 import Sidebar from "@/components/sidebar"
 import Link from "next/link"
 import { SignupReform } from "@/components/signup-reform"
+import { useEffect, useState } from "react"
+import { getUser } from "@/actions/get-user"
 
 export default function SettingsPage() {
+
+const [userInfos, setUserInfos] = useState(null);
+
+useEffect(() => {
+  async function fetchUser() {
+    try {
+      const user = await getUser();
+      setUserInfos(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }
+
+  fetchUser();
+}, []);
+
+
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       
