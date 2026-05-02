@@ -20,16 +20,18 @@ export async function getUser () {
     try {
     const user = await prisma.user.findUnique({
     where: { id: session.user.id },
+    include: { plan: true },
   });
 
 
-    if(!user)  return
-    
+    if(!user)  return null;
+
     return user;
 
     }
     catch (error) {
         console.error("Erro ao buscar:", error);
+        return null;
     }
 }
 
