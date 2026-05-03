@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import {
@@ -33,6 +33,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 import { NewProduct } from "@/actions/add-product";
 import { deleteProduct } from "@/actions/delete-product";
 import { getProductsListWithHistory } from "@/actions/get-products-list";
@@ -46,8 +52,9 @@ interface ProductsListProps {
   planLimit: number;
 }
 
-const GRID_COLS =
-  "minmax(0, 2.4fr) 150px minmax(0, 1fr) 110px 110px 40px";
+// Proporções exatas para: Produto | Preço | Variação | Meta | Ações
+// Substitua a linha do GRID_COLS por esta:
+const GRID_COLS = "minmax(0, 2.5fr) minmax(0, 1.2fr) 120px 110px 40px";
 
 const formatBRL = (n: number | null | undefined) =>
   n == null
@@ -67,110 +74,69 @@ function getDomain(url: string | null | undefined) {
 }
 
 function deriveStats(p: Product) {
-  const historyPrices = (p.history ?? []).map((h) => h.price);
-  const allPrices = [...historyPrices, p.price];
-  const maxPrice = Math.max(...allPrices);
-  const oldPrice = maxPrice > p.price ? maxPrice : null;
-  const variation = maxPrice > 0 ? ((maxPrice - p.price) / maxPrice) * 100 : 0;
-
-  const sparklinePoints =
-    historyPrices.length >= 2 ? historyPrices : [...historyPrices, p.price];
-
   const target = p.priceTarget || 0;
-  const percentDiff = target > 0 ? ((p.price - target) / target) * 100 : 0;
+  const absDiff = target > 0 ? target - p.price : 0;
+  const variation = target > 0 ? ((target - p.price) / target) * 100 : 0;
   const isAboveTarget = p.price > target;
 
   return {
-    sparklinePoints,
-    oldPrice,
-    variation,
     target,
-    percentDiff,
+    absDiff,
+    variation,
     isAboveTarget,
   };
 }
 
-function Sparkline({ points }: { points: number[] }) {
-  const rawId = useId();
-  const gradId = `spark-${rawId.replace(/:/g, "")}`;
-
-  const W = 120;
-  const H = 32;
-  const PAD = 3;
-
-  if (points.length < 2) {
+function VariationBadge({
+  value,
+  absDiff,
+  hasTarget,
+  currency,
+}: {
+  value: number;
+  absDiff: number;
+  hasTarget: boolean;
+  currency: string;
+}) {
+  if (!hasTarget) {
     return (
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <line
-          x1="0"
-          y1={H / 2}
-          x2={W}
-          y2={H / 2}
-          stroke="currentColor"
-          strokeOpacity="0.2"
-          strokeDasharray="2 4"
-        />
-      </svg>
-    );
-  }
-
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const range = max - min || 1;
-  const step = (W - 2) / (points.length - 1);
-
-  const coords = points.map(
-    (v, i) =>
-      [1 + i * step, PAD + (1 - (v - min) / range) * (H - PAD * 2)] as const,
-  );
-
-  const linePath =
-    "M " +
-    coords.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L ");
-  const areaPath = `${linePath} L ${W - 1} ${H} L 1 ${H} Z`;
-
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#84e620" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="#84e620" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={areaPath} fill={`url(#${gradId})`} />
-      <path
-        d={linePath}
-        fill="none"
-        stroke="#84e620"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function VariationBadge({ value }: { value: number }) {
-  const abs = Math.abs(value);
-  if (abs < 0.5) {
-    return (
-      <span className="inline-flex items-center justify-center rounded-full border border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-xs text-zinc-400">
-        ~ 0%
+      <span className="inline-flex items-center justify-center rounded-full border border-zinc-800 bg-transparent px-2.5 py-1 text-[11px] font-medium text-zinc-500">
+        sem meta
       </span>
     );
   }
-  const isDown = value > 0;
+  const abs = Math.abs(value);
+  if (abs < 0.5) {
+    return (
+      <span className="inline-flex items-center justify-center rounded-full border border-zinc-800 bg-transparent px-2.5 py-1 text-[11px] font-medium text-zinc-500">
+        na meta
+      </span>
+    );
+  }
+  const isBelowTarget = value > 0;
   return (
-    <span
-      className={[
-        "inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-xs font-medium",
-        isDown
-          ? "border-[#84e620]/30 bg-[#84e620]/10 text-[#a7ee47]"
-          : "border-red-500/30 bg-red-500/10 text-red-400",
-      ].join(" ")}
-    >
-      {isDown ? "↓" : "↑"} {abs.toFixed(0)}%
-    </span>
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className={`inline-flex cursor-default items-center justify-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium tracking-wide ${
+              isBelowTarget
+                ? "border-[#a7ee47]/30 bg-transparent text-[#a7ee47]"
+                : "border-red-500/30 bg-transparent text-red-400"
+            }`}
+          >
+            {isBelowTarget ? "↓" : "↑"} {abs.toFixed(1)}%
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          <span className="tabular-nums">
+            {isBelowTarget ? "abaixo da meta em " : "acima da meta em "}
+            {currency}
+            {formatBRL(Math.abs(absDiff))}
+          </span>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -178,20 +144,14 @@ function MetaStatus({ reached }: { reached: boolean }) {
   if (reached) {
     return (
       <span className="inline-flex items-center gap-1 text-xs text-[#a7ee47]">
-        <Check className="size-3.5" /> meta atingida
+        <Check className="size-3.5" /> Atingida
       </span>
     );
   }
-  return <span className="text-xs text-zinc-500">meta pendente</span>;
+  return <span className="text-xs text-zinc-500">Pendente</span>;
 }
 
-function ProductIcon({
-  src,
-  alt,
-}: {
-  src: string | null;
-  alt: string;
-}) {
+function ProductIcon({ src, alt }: { src: string | null; alt: string }) {
   if (!src) {
     return (
       <div className="size-12 rounded-lg bg-zinc-900 flex items-center justify-center text-zinc-500 shrink-0">
@@ -230,7 +190,6 @@ function ProductSkeleton() {
         <div className="h-4 bg-slate-800/50 rounded-md w-20" />
         <div className="h-3 bg-slate-800/50 rounded-md w-16" />
       </div>
-      <div className="h-8 bg-slate-800/50 rounded-md" />
       <div className="h-6 bg-slate-800/50 rounded-full w-16" />
       <div className="h-4 bg-slate-800/50 rounded-md w-20" />
       <div className="h-5 bg-slate-800/50 rounded-md w-5" />
@@ -253,14 +212,15 @@ function ProductItem({
   onDelete,
   onRefresh,
 }: ProductItemProps) {
-  const { sparklinePoints, variation, target } = deriveStats(product);
-  const currency = product.currency === "BRL" ? "R$ " : "";
+  const { variation, target, absDiff } = deriveStats(product);
+
   const domain = product.store || getDomain(product.url);
+  const currency = product.currency === "BRL" ? "R$ " : "";
 
   return (
     <div className="flex flex-col overflow-hidden hover:bg-zinc-900/30 transition-colors">
       <div
-        className="grid items-center gap-4 px-5 py-4"
+        className="grid items-center gap-4 px-5 py-5" // <-- py-5 aumenta o espaçamento inferior e superior da linha
         style={{ gridTemplateColumns: GRID_COLS }}
       >
         {/* PRODUTO */}
@@ -270,7 +230,7 @@ function ProductItem({
             alt={product.name ?? "Produto"}
           />
           <div className="min-w-0">
-            <p className="font-semibold text-sm truncate">
+            <p className="font-semibold text-sm truncate text-zinc-200">
               {product.name || "Produto sem nome"}
             </p>
             <div className="flex items-center gap-2 mt-1">
@@ -278,11 +238,11 @@ function ProductItem({
                 href={product.url}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[11px] text-blue-500 underline decoration-dotted underline-offset-2 truncate hover:text-blue-400"
+                className="text-[11px] text-zinc-500 hover:text-zinc-300 truncate block"
               >
                 {domain || "Sem loja"}
               </a>
-              <span className="text-[#5a9600] text-[10px] font-medium px-2 py-0.5 rounded-full border border-[#345400]/20 shrink-0">
+              <span className="text-[#a7ee47] text-[10px] font-medium px-2 py-0.5 rounded-full border border-[#a7ee47]/20 shrink-0">
                 Em estoque
               </span>
             </div>
@@ -291,7 +251,7 @@ function ProductItem({
 
         {/* PREÇO ATUAL */}
         <div className="min-w-0">
-          <p className="font-semibold text-sm">
+          <p className="font-semibold text-sm text-zinc-200">
             {currency}
             {formatBRL(product.price)}
           </p>
@@ -305,14 +265,14 @@ function ProductItem({
           )}
         </div>
 
-        {/* HISTÓRICO (30D) */}
-        <div className="text-zinc-500">
-          <Sparkline points={sparklinePoints} />
-        </div>
-
-        {/* VARIAÇÃO */}
-        <div>
-          <VariationBadge value={variation} />
+        {/* VARIAÇÃO (vs meta) */}
+        <div className="justify-self-start">
+          <VariationBadge
+            value={variation}
+            absDiff={absDiff}
+            hasTarget={target > 0}
+            currency={currency}
+          />
         </div>
 
         {/* META */}
@@ -325,7 +285,7 @@ function ProductItem({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="p-1 rounded-md transition-colors cursor-pointer hover:bg-zinc-800/60"
+                className="p-1 rounded-md transition-colors cursor-pointer text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60"
                 aria-label="Mais opções"
               >
                 <MoreVertical size={18} />
@@ -374,7 +334,10 @@ function ProductItem({
   );
 }
 
-export function ProductsList({ initialProducts, planLimit }: ProductsListProps) {
+export function ProductsList({
+  initialProducts,
+  planLimit,
+}: ProductsListProps) {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [query, setQuery] = useState("");
   const [url, setUrl] = useState("");
@@ -462,8 +425,7 @@ export function ProductsList({ initialProducts, planLimit }: ProductsListProps) 
         <div className="rounded-2xl w-full mt-8 shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-xl font-bold">
-              {products.length}{" "}
-              {products.length === 1 ? "produto" : "produtos"}
+              {products.length} {products.length === 1 ? "Produto" : "Produtos"}
             </h2>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
@@ -552,7 +514,6 @@ export function ProductsList({ initialProducts, planLimit }: ProductsListProps) 
             >
               <div>Produto</div>
               <div>Preço atual</div>
-              <div>Histórico (30D)</div>
               <div>Variação</div>
               <div>Meta</div>
               <div></div>

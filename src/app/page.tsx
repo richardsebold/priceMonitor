@@ -255,7 +255,7 @@ export default function LandingPage() {
                 key={step}
                 className="group relative overflow-hidden rounded-2xl border border-border bg-card/60 p-6 transition-colors hover:border-primary/30"
               >
-                <div className="absolute -right-4 -top-6 font-mono text-7xl font-black leading-none text-primary/5 transition-colors group-hover:text-primary/15">
+                <div className="absolute -right-0 -top-3 font-mono text-7xl font-black leading-none text-primary/5 transition-colors group-hover:text-primary/15">
                   {step}
                 </div>
                 <div className="relative flex size-11 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/25">
