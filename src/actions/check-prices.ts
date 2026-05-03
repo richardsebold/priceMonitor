@@ -26,7 +26,12 @@ export async function runPriceCheckJob() {
 
       const newSearch = await scrapeProduct(product.url);
 
-      if (!newSearch) continue;
+      if (!newSearch) {
+        console.error(
+          `[SCRAPE] Falha ao obter preço — produto "${product.name}" (id: ${product.id}, usuário: ${product.user.email}, url: ${product.url})`,
+        );
+        continue;
+      }
 
       if (product.price !== newSearch.price) {
         await prisma.productHistory.update({
