@@ -1,31 +1,72 @@
 "use client"
 
+import Image from "next/image"
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-import { ArrowDownRight, BadgeCheck, Bell } from "lucide-react"
+import { ArrowDownRight, ArrowUpRight, BadgeCheck, Bell, ShoppingBag } from "lucide-react"
 
-const data = [
-  { day: "01/04", price: 1299 },
-  { day: "05/04", price: 1289 },
-  { day: "09/04", price: 1289 },
-  { day: "13/04", price: 1199 },
-  { day: "17/04", price: 1199 },
-  { day: "21/04", price: 1099 },
-  { day: "25/04", price: 1099 },
-  { day: "29/04", price: 949 },
-  { day: "03/05", price: 949 },
-  { day: "07/05", price: 899 },
-  { day: "11/05", price: 879 },
-]
+type DemoProductData = {
+  name: string
+  store: string
+  image: string | null
+  initialPrice: number
+  currentPrice: number
+  priceTarget: number
+  targetReached: boolean
+  monitoringDays: number
+  history: { day: string; price: number }[]
+}
 
-const initialPrice = data[0].price
-const currentPrice = data[data.length - 1].price
-const savings = initialPrice - currentPrice
-const dropPercent = Math.round((savings / initialPrice) * 100)
+const fallbackData: DemoProductData = {
+  name: "iPhone 15 128GB · Preto",
+  store: "amazon.com.br",
+  image: null,
+  initialPrice: 5499,
+  currentPrice: 4125.99,
+  priceTarget: 4200,
+  targetReached: true,
+  monitoringDays: 41,
+  history: [
+    { day: "22/03", price: 5499 },
+    { day: "26/03", price: 5499 },
+    { day: "30/03", price: 5399 },
+    { day: "03/04", price: 5299 },
+    { day: "07/04", price: 5299 },
+    { day: "11/04", price: 4999 },
+    { day: "15/04", price: 4899 },
+    { day: "19/04", price: 4899 },
+    { day: "23/04", price: 4599 },
+    { day: "27/04", price: 4399 },
+    { day: "01/05", price: 4125.99 },
+  ],
+}
 
 const fmt = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 
-export function PriceHistoryDemo() {
+interface PriceHistoryDemoProps {
+  productData?: DemoProductData | null
+}
+
+export function PriceHistoryDemo({ productData }: PriceHistoryDemoProps) {
+  const product = productData ?? fallbackData
+  const {
+    name,
+    store,
+    image,
+    initialPrice,
+    currentPrice,
+    priceTarget,
+    targetReached,
+    monitoringDays,
+    history,
+  } = product
+
+  const diff = initialPrice - currentPrice
+  const dropPercent =
+    initialPrice > 0 ? Math.round((diff / initialPrice) * 100) : 0
+  const isDown = diff > 0
+  const savings = Math.abs(diff)
+
   return (
     <div className="relative isolate w-full overflow-hidden rounded-3xl border border-border/80 bg-card/70 p-1 shadow-2xl shadow-black/40 backdrop-blur">
       <div className="absolute inset-0 -z-10 bg-grid-chart opacity-40" />
@@ -35,15 +76,26 @@ export function PriceHistoryDemo() {
         {/* Product header */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary/80 text-xl">
-              📱
+            <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-secondary/80">
+              {image ? (
+                <Image
+                  src={image}
+                  alt={name}
+                  width={44}
+                  height={44}
+                  className="size-full object-contain p-1"
+                  unoptimized
+                />
+              ) : (
+                <ShoppingBag className="size-5 text-muted-foreground" />
+              )}
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-foreground">
-                iPhone 15 128GB · Preto
+                {name}
               </p>
               <p className="truncate text-[11px] uppercase tracking-widest text-muted-foreground">
-                amazon.com.br · monitorando há 41 dias
+                {store} · monitorando há {monitoringDays} dias
               </p>
             </div>
           </div>
@@ -70,16 +122,27 @@ export function PriceHistoryDemo() {
                 <span className="absolute inset-x-0 top-1/2 h-px -rotate-3 bg-muted-foreground/70" />
               </span>
               <span>·</span>
-              <span className="text-foreground/70">há 41 dias</span>
+              <span className="text-foreground/70">há {monitoringDays} dias</span>
             </div>
           </div>
           <div className="text-right">
-            <span className="inline-flex items-center gap-1 rounded-lg bg-primary/15 px-2 py-1 font-mono text-sm font-semibold text-primary">
-              <ArrowDownRight className="size-3.5" />
-              {dropPercent}%
+            <span
+              className={[
+                "inline-flex items-center gap-1 rounded-lg px-2 py-1 font-mono text-sm font-semibold",
+                isDown
+                  ? "bg-primary/15 text-primary"
+                  : "bg-red-500/15 text-red-400",
+              ].join(" ")}
+            >
+              {isDown ? (
+                <ArrowDownRight className="size-3.5" />
+              ) : (
+                <ArrowUpRight className="size-3.5" />
+              )}
+              {Math.abs(dropPercent)}%
             </span>
             <p className="mt-1.5 font-mono text-xs text-foreground/70">
-              economia de {fmt(savings)}
+              {isDown ? "economia" : "alta"} de {fmt(savings)}
             </p>
           </div>
         </div>
@@ -87,7 +150,7 @@ export function PriceHistoryDemo() {
         {/* Chart */}
         <div className="mt-5 h-44 w-full sm:h-52">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: -28 }}>
+            <AreaChart data={history} margin={{ top: 8, right: 4, bottom: 0, left: -28 }}>
               <defs>
                 <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="oklch(0.85 0.21 130)" stopOpacity={0.55} />
@@ -99,14 +162,17 @@ export function PriceHistoryDemo() {
                 tick={{ fill: "oklch(0.66 0.01 240)", fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
-                interval={1}
+                interval={Math.max(0, Math.floor(history.length / 8))}
               />
               <YAxis
                 tick={{ fill: "oklch(0.66 0.01 240)", fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(v: number) => `R$${(v / 1000).toFixed(1)}k`}
+                tickFormatter={(v: number) =>
+                  v >= 1000 ? `R$${(v / 1000).toFixed(1)}k` : `R$${v.toFixed(0)}`
+                }
                 width={50}
+                domain={["auto", "auto"]}
               />
               <Tooltip
                 cursor={{ stroke: "oklch(0.85 0.21 130)", strokeOpacity: 0.4, strokeWidth: 1 }}
@@ -145,10 +211,12 @@ export function PriceHistoryDemo() {
             </div>
             <div className="min-w-0">
               <p className="truncate font-medium text-foreground">
-                Alerta enviado · Telegram
+                {targetReached ? "Alerta enviado · Telegram" : "Monitorando meta"}
               </p>
               <p className="truncate text-muted-foreground">
-                preço caiu abaixo da sua meta de R$ 950
+                {targetReached
+                  ? `preço caiu abaixo da sua meta de ${fmt(priceTarget)}`
+                  : `meta definida em ${fmt(priceTarget)}`}
               </p>
             </div>
           </div>
@@ -158,10 +226,12 @@ export function PriceHistoryDemo() {
             </div>
             <div className="min-w-0">
               <p className="truncate font-medium text-foreground">
-                Hora de comprar
+                {targetReached ? "Hora de comprar" : "Aguardando o melhor momento"}
               </p>
               <p className="truncate text-muted-foreground">
-                menor preço dos últimos 90 dias
+                {isDown
+                  ? `${Math.abs(dropPercent)}% abaixo do preço inicial`
+                  : `${Math.abs(dropPercent)}% acima do preço inicial`}
               </p>
             </div>
           </div>

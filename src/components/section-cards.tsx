@@ -1,5 +1,3 @@
-"use client"
-
 import {
   Card,
   CardAction,
@@ -8,171 +6,107 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { getProducts } from "@/actions/get-products-from-db"
-import { useEffect, useState } from "react"
-import { ProductHistory } from "../../generated/prisma/client"
-import { getReachedTargetsCount } from "@/actions/get-reached-count"
-import { getPotentialSavings } from "@/actions/get-potential-savings"
-import { getBiggestDrop } from "@/actions/get-biggest-drop"
-import { getUser } from "@/actions/get-user"
 import { ChartSpline, PackageSearch, PiggyBank, Target } from "lucide-react"
+import type { ProductHistory } from "../../generated/prisma/client"
 
 type DropData = {
-  name: string;
-  drop: string;
-  oldPrice: number;
-  currentPrice: number;
-} | null;
+  name: string | null
+  drop: string
+  oldPrice: number
+  currentPrice: number
+} | null
 
-function SectionCardSkeleton() {
-  return (
-    <Card className="@container/card h-full animate-pulse">
-      <CardHeader>
-        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-32 mb-2"></div>
-        <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-16"></div>
-        <CardAction>
-          <div className="h-6 w-6 bg-slate-200 dark:bg-slate-800 rounded-md"></div>
-        </CardAction>
-      </CardHeader>
-      <CardFooter className="h-full flex-col items-start gap-2 text-sm mt-4">
-        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
-        <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-4/5"></div>
-      </CardFooter>
-    </Card>
-  )
+interface SectionCardsProps {
+  products: ProductHistory[]
+  reachedTargets: number
+  potentialSavings: number
+  biggestDrop: DropData
 }
 
-export function SectionCards() {
-  const [products, setProducts] = useState<ProductHistory[]>([])
-  const [reachedTargets, setReachedTargets] = useState<number>(0)
-  const [savings, setSavings] = useState<number>(0)
-  const [biggestDrop, setBiggestDrop] = useState<DropData>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const user = await getUser();
-
-        if (!user) {
-          setIsLoading(false);
-          return;
-        }
-
-        const [productsData, targetsData, savingsData, dropData] = await Promise.all([
-          getProducts(),
-          getReachedTargetsCount(user.id),
-          getPotentialSavings(user.id),
-          getBiggestDrop(user.id)
-        ])
-        
-        if (productsData) setProducts(productsData)
-        if (targetsData !== undefined) setReachedTargets(targetsData)
-        if (savingsData !== undefined) setSavings(savingsData)
-        if (dropData) setBiggestDrop(dropData)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [])
-
+export function SectionCards({ products, reachedTargets, potentialSavings, biggestDrop }: SectionCardsProps) {
   return (
     <div className="grid md:grid-cols-4 gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card mb-12">
-      
-      {isLoading ? (
-        <>
-          <SectionCardSkeleton />
-          <SectionCardSkeleton />
-          <SectionCardSkeleton />
-          <SectionCardSkeleton />
-        </>
-      ) : (
-        <>
-          <Card className="@container/card h-full">
-            <CardHeader>
-              <CardDescription>Produtos Monitorados</CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                {products.length}
-              </CardTitle>
-              <CardAction>
-                  <PackageSearch className="" />
-              </CardAction>
-            </CardHeader>
-            <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
-              <div className="line-clamp-1 flex gap-2 font-medium">
-                Total de produtos já cadastrados
-              </div>
-              <div className="text-muted-foreground">
-                Contando com os produtos inativados.
-              </div>
-            </CardFooter>
-          </Card>
+      <Card className="@container/card h-full">
+        <CardHeader>
+          <CardDescription>Produtos Monitorados</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            {products.length}
+          </CardTitle>
+          <CardAction>
+            <PackageSearch />
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            Total de produtos já cadastrados
+          </div>
+          <div className="text-muted-foreground">
+            Contando com os produtos inativados.
+          </div>
+        </CardFooter>
+      </Card>
 
-          <Card className="@container/card h-full">
-            <CardHeader>
-              <CardDescription>Metas atingidas</CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                {reachedTargets}
-              </CardTitle>
-              <CardAction>
-                <Target className="" />
-              </CardAction>
-            </CardHeader>
-            <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
-              <div className="line-clamp-1 flex gap-2 font-medium">
-                Alertas enviados para seu e-mail
-              </div>
-              <div className="text-muted-foreground">
-                Acesse as configurações para desativar notificações.
-              </div>
-            </CardFooter>
-          </Card>
+      <Card className="@container/card h-full">
+        <CardHeader>
+          <CardDescription>Metas atingidas</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            {reachedTargets}
+          </CardTitle>
+          <CardAction>
+            <Target />
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            Alertas enviados para seu e-mail
+          </div>
+          <div className="text-muted-foreground">
+            Acesse as configurações para desativar notificações.
+          </div>
+        </CardFooter>
+      </Card>
 
-          <Card className="@container/card h-full">
-            <CardHeader>
-              <CardDescription>Economia potencial</CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(savings)}
-              </CardTitle>
-              <CardAction>
-                <PiggyBank className="" />
-              </CardAction>
-            </CardHeader>
-            <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
-              <div className="line-clamp-1 flex gap-2 font-medium">
-                Se comprar todos os itens em baixa hoje
-              </div>
-              <div className="text-muted-foreground ">
-                Importante verificar os alertas de preço para não perder oportunidades.
-              </div>
-            </CardFooter>
-          </Card>
+      <Card className="@container/card h-full">
+        <CardHeader>
+          <CardDescription>Economia potencial</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(potentialSavings)}
+          </CardTitle>
+          <CardAction>
+            <PiggyBank />
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            Se comprar todos os itens em baixa hoje
+          </div>
+          <div className="text-muted-foreground">
+            Importante verificar os alertas de preço para não perder oportunidades.
+          </div>
+        </CardFooter>
+      </Card>
 
-          <Card className="@container/card h-full">
-            <CardHeader>
-              <CardDescription>Maior variação de preço</CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                {biggestDrop ? `-${biggestDrop.drop}%` : "0%"}
-              </CardTitle>
-              <CardAction>
-                <ChartSpline className="" />
-              </CardAction>
-            </CardHeader>
-            <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
-              <div className="line-clamp-1 flex gap-2 font-medium">
-                {biggestDrop ? biggestDrop.name : "Nenhuma variação"}
-              </div>
-              <div className="text-muted-foreground">
-                {biggestDrop ? `De R$ ${biggestDrop.oldPrice.toFixed(2)} por R$ ${biggestDrop.currentPrice.toFixed(2)}` : "Aguardando"}
-              </div>
-            </CardFooter>
-          </Card>
-        </>
-      )}
+      <Card className="@container/card h-full">
+        <CardHeader>
+          <CardDescription>Maior variação de preço</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            {biggestDrop ? `-${biggestDrop.drop}%` : "0%"}
+          </CardTitle>
+          <CardAction>
+            <ChartSpline />
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="h-full flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {biggestDrop ? biggestDrop.name : "Nenhuma variação"}
+          </div>
+          <div className="text-muted-foreground">
+            {biggestDrop
+              ? `De R$ ${biggestDrop.oldPrice.toFixed(2)} por R$ ${biggestDrop.currentPrice.toFixed(2)}`
+              : "Aguardando"}
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   )
 }

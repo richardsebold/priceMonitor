@@ -38,7 +38,7 @@ export function TrackUrlForm() {
           required
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="cole a URL do produto: amazon, mercado livre, magalu…"
+          placeholder="Cole a URL do produto. Ex: https://www.kabum.com.br/produto/..."
           className="w-full flex-1 bg-transparent px-2 py-3 font-mono text-[15px] text-foreground outline-none placeholder:text-muted-foreground/70"
         />
 
@@ -51,7 +51,7 @@ export function TrackUrlForm() {
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <>
-              <span className="hidden sm:inline">monitorar</span>
+              <span className="hidden sm:inline">Monitorar</span>
               <span className="inline sm:hidden">ir</span>
               <ArrowRight className="size-4" />
             </>

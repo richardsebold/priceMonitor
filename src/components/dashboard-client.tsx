@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getProducts } from "@/actions/get-products-from-db";
+import { useState } from "react";
+import { getDashboardStats } from "@/actions/get-dashboard-stats";
 import type { ProductHistory } from "../../generated/prisma/client";
 import Image from "next/image";
 import { Input } from "./ui/input";
@@ -32,84 +32,108 @@ import { Badge } from "./ui/badge";
 import EditTask from "./EditURL";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 
+type DropData = {
+  name: string | null;
+  drop: string;
+  oldPrice: number;
+  currentPrice: number;
+} | null;
+
+interface InitialStats {
+  reachedTargets: number;
+  potentialSavings: number;
+  biggestDrop: DropData;
+}
 
 interface DashboardClientProps {
   planLimit: number;
-  hideSectionCards?: boolean; 
+  initialProducts: ProductHistory[];
+  initialStats: InitialStats;
+  hideSectionCards?: boolean;
   defaultExpandFirstItem?: boolean;
 }
 
-export function DashboardClient({ 
-  planLimit, 
+function ProductSkeleton() {
+  return (
+    <div className="rounded-xl border border-slate-800/80 p-5 flex items-start gap-5 animate-pulse bg-card">
+      <div className="shrink-0">
+        <div className="w-20 h-20 rounded-lg bg-slate-800/50" />
+      </div>
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className="h-5 bg-slate-800/50 rounded-md w-3/4 mb-3" />
+        <div className="flex gap-2 mb-4">
+          <div className="h-5 bg-slate-800/50 rounded-full w-16" />
+          <div className="h-5 bg-slate-800/50 rounded-full w-20" />
+        </div>
+        <div className="h-7 bg-slate-800/50 rounded-md w-32 mb-2" />
+        <div className="h-4 bg-slate-800/50 rounded-md w-24" />
+      </div>
+      <div className="w-5 h-5 bg-slate-800/50 rounded-md shrink-0" />
+    </div>
+  );
+}
+
+export function DashboardClient({
+  planLimit,
+  initialProducts,
+  initialStats,
   hideSectionCards = false,
-  defaultExpandFirstItem = true
+  defaultExpandFirstItem = true,
 }: DashboardClientProps) {
-  
-  const [productList, setProductList] = useState<ProductHistory[]>([]);
-  const [url, setUrl] = useState<string>("");
-  const [priceTarget, setPriceTarget] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
-  const [isFetching, setIsFetching] = useState<boolean>(true);
+  const [productList, setProductList] = useState<ProductHistory[]>(initialProducts);
+  const [stats, setStats] = useState<InitialStats>(initialStats);
+  const [url, setUrl] = useState("");
+  const [priceTarget, setPriceTarget] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(
+    defaultExpandFirstItem && initialProducts.length > 0 ? initialProducts[0].id : null
+  );
+
   const isLimitReached = productList.length >= planLimit;
 
-  async function handleGetProduct() {
+  async function refreshDashboard() {
+    setIsRefreshing(true);
     try {
-      setIsFetching(true); 
-      const products = await getProducts();
-      if (products && products.length > 0) {
-        setProductList(products);
-        if (defaultExpandFirstItem) {
-          setExpandedItemId(products[0].id);
-        } else {
-          setExpandedItemId(null);
-        }
-      } else {
-        setProductList([]);
-        setExpandedItemId(null);
+      const data = await getDashboardStats();
+      if (!data) return;
+      setProductList(data.products);
+      setStats({
+        reachedTargets: data.reachedTargets,
+        potentialSavings: data.potentialSavings,
+        biggestDrop: data.biggestDrop,
+      });
+      if (defaultExpandFirstItem && data.products.length > 0) {
+        setExpandedItemId(data.products[0].id);
       }
     } catch (error) {
-      console.error("Erro ao buscar:", error);
-    }
-    finally {
-      setIsFetching(false);
+      console.error("Erro ao atualizar:", error);
+    } finally {
+      setIsRefreshing(false);
     }
   }
 
-  useEffect(() => {
-    handleGetProduct();
-  }, []);
-
   const handleAddProduct = async () => {
     setLoading(true);
-
     try {
       if (!url.trim()) {
         toast.error("Insira um URL");
         return;
       }
-
       if (productList.some((item) => item.url === url)) {
         toast.warning("Produto já cadastrado!");
         return;
       }
-
       const parsedPriceTarget = Number(priceTarget);
-
-      if (parsedPriceTarget !== undefined && Number.isNaN(parsedPriceTarget)) {
+      if (priceTarget && Number.isNaN(parsedPriceTarget)) {
         toast.error("Valor inválido");
         return;
       }
-
       const myNewProduct = await NewProduct(url, parsedPriceTarget);
-
       if (!myNewProduct) return;
-
       setUrl("");
       setPriceTarget("");
-
-      await handleGetProduct();
-
+      await refreshDashboard();
       toast.success("Produto adicionado com sucesso!");
     } catch (error) {
       console.error("Erro ao adicionar:", error);
@@ -123,8 +147,7 @@ export function DashboardClient({
     try {
       const deletedProduct = await deleteProduct(id);
       if (!deletedProduct) return;
-
-      await handleGetProduct();
+      await refreshDashboard();
       toast.warning("Produto deletado com sucesso!");
     } catch (error) {
       console.error("Erro ao deletar:", error);
@@ -135,42 +158,19 @@ export function DashboardClient({
     setExpandedItemId((prev) => (prev === id ? null : id));
   }
 
-  // Adicione isso no final do seu arquivo ou fora da função DashboardClient
-function ProductSkeleton() {
   return (
-    <div className="rounded-xl border border-slate-800/80 p-5 flex items-start gap-5 animate-pulse bg-card">
-
-      <div className="shrink-0">
-        <div className="w-20 h-20 rounded-lg bg-slate-800/50"></div>
-      </div>
-
-      <div className="flex flex-col flex-1 min-w-0">
-        <div className="h-5 bg-slate-800/50 rounded-md w-3/4 mb-3"></div>
-        
-        <div className="flex gap-2 mb-4">
-          <div className="h-5 bg-slate-800/50 rounded-full w-16"></div>
-          <div className="h-5 bg-slate-800/50 rounded-full w-20"></div>
-        </div>
-
-        <div className="h-7 bg-slate-800/50 rounded-md w-32 mb-2"></div>
-        <div className="h-4 bg-slate-800/50 rounded-md w-24"></div>
-      </div>
-
-      <div className="w-5 h-5 bg-slate-800/50 rounded-md shrink-0"></div>
-    </div>
-  );
-}
-
-return (
     <div className="container mx-auto">
       <div className="mx-4 md:mx-0 mt-12">
-        
-        {/* Renderiza os cards apenas se a prop não mandar esconder */}
-        {!hideSectionCards && <SectionCards />}
-        
+        {!hideSectionCards && (
+          <SectionCards
+            products={productList}
+            reachedTargets={stats.reachedTargets}
+            potentialSavings={stats.potentialSavings}
+            biggestDrop={stats.biggestDrop}
+          />
+        )}
+
         <div className="rounded-2xl w-full mt-8 shadow-xl">
-          
-          {/* NOVO CABEÇALHO: Título e Botão na mesma linha */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-xl font-bold">Últimas Atualizações</h2>
 
@@ -188,7 +188,6 @@ return (
                 </Badge>
               )}
 
-              {/* MODAL DE CADASTRAR PRODUTO (Agora fica aqui no canto direito) */}
               <Dialog>
                 <DialogTrigger asChild>
                   <Button className="cursor-pointer w-full sm:w-auto" disabled={isLimitReached}>
@@ -201,7 +200,6 @@ return (
                   <DialogHeader>
                     <DialogTitle>Cadastrar Produto</DialogTitle>
                   </DialogHeader>
-
                   <div className="flex flex-col gap-4 mt-4">
                     <Input
                       placeholder="Insira a URL do produto"
@@ -217,7 +215,6 @@ return (
                       value={priceTarget}
                       onChange={(e) => setPriceTarget(e.target.value)}
                     />
-
                     <DialogClose asChild>
                       <Button
                         onClick={handleAddProduct}
@@ -240,13 +237,11 @@ return (
                   </div>
                 </DialogContent>
               </Dialog>
-              {/* FIM DO MODAL */}
             </div>
           </div>
 
-          {/* LISTA DE PRODUTOS */}
           <Card className="grid gap-4 px-4 py-4">
-            {isFetching ? (
+            {isRefreshing ? (
               <>
                 <ProductSkeleton />
                 <ProductSkeleton />
@@ -261,9 +256,7 @@ return (
                 const price = item.price || 0;
                 const target = item.priceTarget || 0;
                 const percentDiff =
-                  target > 0
-                    ? (((price - target) / target) * 100).toFixed(1)
-                    : 0;
+                  target > 0 ? (((price - target) / target) * 100).toFixed(1) : 0;
                 const isAboveTarget = price > target;
                 const isExpanded = expandedItemId === item.id;
 
@@ -336,36 +329,27 @@ return (
                               <MoreVertical size={20} />
                             </button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="w-48 text-slate-300"
-                          >
+                          <DropdownMenuContent align="end" className="w-48 text-slate-300">
                             <DropdownMenuItem
                               className="cursor-pointer"
                               onClick={() => toggleHistory(item.id)}
                             >
-                              <Eye className="mr-2 h-4 w-4" />{" "}
-                              {isExpanded
-                                ? "Ocultar histórico"
-                                : "Ver histórico"}
+                              <Eye className="mr-2 h-4 w-4" />
+                              {isExpanded ? "Ocultar histórico" : "Ver histórico"}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
                               className="cursor-pointer"
                               onSelect={(e) => e.preventDefault()}
                             >
-                              <EditTask
-                                product={item}
-                                handleGetProduct={handleGetProduct}
-                              />
+                              <EditTask product={item} handleGetProduct={refreshDashboard} />
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
                               className="cursor-pointer"
                               onClick={() => window.open(item.url, "_blank")}
                             >
-                              <ExternalLink className="mr-2 h-4 w-4" /> Abrir
-                              loja
+                              <ExternalLink className="mr-2 h-4 w-4" /> Abrir loja
                             </DropdownMenuItem>
 
                             <DropdownMenuItem

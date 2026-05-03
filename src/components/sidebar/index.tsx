@@ -20,9 +20,6 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { UserMenu } from "../user-menu";
-import { ModeToggle } from "../theme-toogle";
-
-
 
 export default function Sidebar() {
   return (
@@ -32,7 +29,7 @@ export default function Sidebar() {
           <TooltipProvider>
             <div>
               <Link
-                href="/dashboard"
+                href="/"
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
                 prefetch={false}
               >

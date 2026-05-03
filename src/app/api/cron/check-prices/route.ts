@@ -9,9 +9,10 @@ export async function GET(request: Request) {
     return new Response("Não autorizado", { status: 401 });
   }
   try {
-    runPriceCheckJob();
-    return new Response("Job iniciado com sucesso!", { status: 200 });
+    await runPriceCheckJob();
+    return new Response("Cron job concluído com sucesso!", { status: 200 });
   } catch (error) {
+    console.error("Erro no cron job:", error);
     return new Response("Erro interno", { status: 500 });
   }
   

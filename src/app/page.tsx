@@ -124,12 +124,6 @@ const navLinks = [
   { href: "#faq", label: "FAQ" },
 ]
 
-const stats = [
-  { value: "2.4M+", label: "economizados pelos usuários" },
-  { value: "180k", label: "preços coletados por dia" },
-  { value: "12s", label: "do paste ao primeiro registro" },
-]
-
 export default function LandingPage() {
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-background text-foreground antialiased">
@@ -206,20 +200,6 @@ export default function LandingPage() {
             {/* URL form */}
             <div className="mt-10 w-full">
               <TrackUrlForm />
-            </div>
-
-            {/* Stats row */}
-            <div className="mt-12 grid w-full max-w-2xl grid-cols-3 divide-x divide-border/60 rounded-2xl border border-border/60 bg-card/40 backdrop-blur">
-              {stats.map((s) => (
-                <div key={s.label} className="px-3 py-4 text-center">
-                  <p className="font-mono text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                    {s.value}
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
-                    {s.label}
-                  </p>
-                </div>
-              ))}
             </div>
           </div>
 
@@ -302,7 +282,7 @@ export default function LandingPage() {
             </span>
             <h2 className="mt-3 text-balance text-4xl font-bold tracking-tight sm:text-5xl">
               Tudo que falta nas{" "}
-              <span className="text-gradient-primary">"promoções"</span> de fim de ano.
+              <span className="text-gradient-primary">Promoções</span> de fim de ano.
             </h2>
           </div>
 
@@ -337,7 +317,7 @@ export default function LandingPage() {
                     Veja o gráfico antes de comprar.
                   </h3>
                   <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-                    O preço subiu 30% na semana passada pra "cair 20%" hoje?
+                    O preço subiu 30% na semana passada pra cair 20% hoje?
                     A gente expõe o truque. Sua decisão fica baseada em dados,
                     não em manchete.
                   </p>
@@ -580,8 +560,8 @@ export default function LandingPage() {
               <div className="mt-5 flex gap-2">
                 {[
                   { Icon: Send, href: "https://t.me/", label: "Telegram" },
-                  { Icon: Instagram, href: "https://instagram.com/", label: "Instagram" },
-                  { Icon: Github, href: "https://github.com/", label: "GitHub" },
+                  { Icon: Instagram, href: "https://instagram.com/sebold.dll", label: "Instagram" },
+                  { Icon: Github, href: "https://github.com/richardsebold", label: "GitHub" },
                 ].map(({ Icon, href, label }) => (
                   <a
                     key={label}

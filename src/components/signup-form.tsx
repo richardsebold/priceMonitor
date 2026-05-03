@@ -227,7 +227,7 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
                    )}
                 </Button>
                 <FieldDescription className="px-6 text-center">
-                  Já tem uma conta? <a href="#">Entrar</a>
+                  Já tem uma conta? <a href="/login">Entrar</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>

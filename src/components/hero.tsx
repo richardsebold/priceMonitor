@@ -1,12 +1,11 @@
-import { getUser } from "@/actions/get-user";
+interface HeroProps {
+  name: string;
+}
 
-export default async function Hero() {
-
-      const user = await getUser();
-
- return (
-   <div className="container mx-auto mt-8">
-        <h1 className="font-bold text-2xl">Olá, {user?.name}.</h1>
-   </div>
- );
+export default function Hero({ name }: HeroProps) {
+  return (
+    <div className="container mx-auto mt-8">
+      <h1 className="font-bold text-2xl">Olá, {name}.</h1>
+    </div>
+  );
 }

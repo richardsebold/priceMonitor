@@ -1,54 +1,38 @@
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { DashboardClient } from "../../components/dashboard-client"; 
+import { DashboardClient } from "../../components/dashboard-client";
 import Sidebar from "@/components/sidebar";
-import { getUser } from "@/actions/get-user";
 import Hero from "@/components/hero";
 import ClientAlerts from "@/components/alert-items";
-import { getLatestAlerts } from "@/actions/get-latest-alerts";
-import { HeroSkeleton } from "@/components/hero-skeleton";
-import { Suspense } from "react";
 import { CpfWarning } from "@/components/cpf-warning";
-
-// import { TelegramButton } from "../../components/telegram-button"; 
+import { getDashboardStats } from "@/actions/get-dashboard-stats";
 
 const PLAN_LIMITS: Record<string, number> = {
-  "plano_noob_mensal": 3,   // 1 projeto
-  "plano_pro_mensal": 10, // Ilimitado (um número bem alto)
-  "plano_hacker_mensal": 30, // Ilimitado
+  "plano_noob_mensal": 3,
+  "plano_pro_mensal": 10,
+  "plano_hacker_mensal": 30,
 };
 
-
-
 export default async function Dashboard() {
-  const user = await getUser();
-  const alerts = await getLatestAlerts()
-  const currentPlan = user?.planId || "plano_free";
-  const userLimit = PLAN_LIMITS[currentPlan] || 0;
+  const data = await getDashboardStats();
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
+  if (!data) {
     redirect("/");
   }
 
+  const { user, products, reachedTargets, potentialSavings, biggestDrop, alerts } = data;
+
+  const userLimit = PLAN_LIMITS[user.planId ?? ""] ?? 0;
+
   return (
-    
     <div className="min-h-screen pb-10 sm:ml-14">
-
-      <Sidebar  />
-
-      <CpfWarning cpf={user?.cpf} />
-
-      <Suspense fallback={<HeroSkeleton />}>
-        <Hero />
-      </Suspense>
-      
-      <DashboardClient planLimit={userLimit} />
-
+      <Sidebar />
+      <CpfWarning cpf={user.cpf} />
+      <Hero name={user.name} />
+      <DashboardClient
+        planLimit={userLimit}
+        initialProducts={products}
+        initialStats={{ reachedTargets, potentialSavings, biggestDrop }}
+      />
       <ClientAlerts alerts={alerts} />
     </div>
   );

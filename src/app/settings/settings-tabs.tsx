@@ -78,7 +78,9 @@ export function SettingsTabs({ userInfos }: SettingsTabsProps) {
             <div className="rounded-lg border p-4 bg-muted/50">
               <p className="font-medium">Plano Atual: {userInfos?.plan?.name || "Gratuito"}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Você está no plano gratuito. Limite de 1 produto.
+                Para saber mais detalhes do seu plano acesse a página de planos. <Link href="/planos" className="underline">
+                  Planos
+                </Link>
               </p>
             </div>
           </CardContent>

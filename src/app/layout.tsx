@@ -33,7 +33,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning={true}>
-      <body
+      <body suppressHydrationWarning={true}
         className={cn(
           "min-h-screen antialiased font-sans",
           fustat.variable,
