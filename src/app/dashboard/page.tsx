@@ -3,7 +3,6 @@ import { DashboardClient } from "../../components/dashboard-client";
 import Sidebar from "@/components/sidebar";
 import Hero from "@/components/hero";
 import ClientAlerts from "@/components/alert-items";
-import { CpfWarning } from "@/components/cpf-warning";
 import { getDashboardStats } from "@/actions/get-dashboard-stats";
 
 const PLAN_LIMITS: Record<string, number> = {
@@ -26,7 +25,6 @@ export default async function Dashboard() {
   return (
     <div className="min-h-screen pb-10 sm:ml-14">
       <Sidebar />
-      <CpfWarning cpf={user.cpf} />
       <Hero name={user.name} />
       <DashboardClient
         planLimit={userLimit}
