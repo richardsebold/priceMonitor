@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { UserMenu } from "../user-menu";
+import TooltipAddProduct from "../btn-cadastro-produto";
 
 export default function Sidebar() {
   return (
@@ -37,6 +38,8 @@ export default function Sidebar() {
                 <span className="sr-only">Logo Price Tracker</span>
               </Link>
             </div>
+
+            <TooltipAddProduct />
 
             <Tooltip>
               <TooltipTrigger asChild>
