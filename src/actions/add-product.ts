@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { Prisma } from "../../generated/prisma/client";
 import { scrapeProduct } from "../actions/scrape-product";
 import { getUser } from "./get-user";
 
@@ -48,12 +49,25 @@ export async function NewProduct(url: string, priceTarget: number) {
     };
   }
 
-  try {
-    if (!url) return;
+  const existing = await prisma.productHistory.findUnique({
+    where: { userId_url: { userId: user.id, url } },
+  });
+  if (existing) {
+    return {
+      success: false,
+      error: "Você já está monitorando este produto.",
+    };
+  }
 
+  try {
     const newProduct = await scrapeProduct(url);
 
-    if (!newProduct) return;
+    if (!newProduct) {
+      return {
+        success: false,
+        error: "Não foi possível ler os dados deste produto.",
+      };
+    }
 
     const produto = await prisma.productHistory.create({
       data: {
@@ -69,18 +83,25 @@ export async function NewProduct(url: string, priceTarget: number) {
       },
     });
 
-    if (!produto) return;
-
     await prisma.priceHistory.create({
       data: {
         price: newProduct.price,
         productId: produto.id,
       },
-    }); 
+    });
 
     return produto;
-
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        success: false,
+        error: "Este produto já está sendo monitorado.",
+      };
+    }
     console.error("Erro ao buscar:", error);
+    return { success: false, error: "Erro ao cadastrar o produto." };
   }
 }

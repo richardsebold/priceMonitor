@@ -107,7 +107,7 @@ model Verification {
 
 model ProductHistory {
   id        String      @id @default(cuid())
-  url       String      @unique
+  url       String
   name      String?
   price     Float
   priceTarget Float
@@ -117,13 +117,14 @@ model ProductHistory {
   method    String?
   scrapedAt DateTime @default(now())
   store       String?
-  
+
 
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   history     PriceHistory[]
 
+  @@unique([userId, url])
   @@map("produtos_historico")
 }
 
