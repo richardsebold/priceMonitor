@@ -1,4 +1,4 @@
-const DEFAULT_SERVER = "http://localhost:3000";
+const DEFAULT_SERVER = "https://price-monitor-smoky.vercel.app";
 const COOKIE_NAMES = [
   "better-auth.session_token",
   "__Secure-better-auth.session_token",

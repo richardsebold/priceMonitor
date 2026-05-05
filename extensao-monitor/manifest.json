@@ -5,8 +5,8 @@
   "description": "Adiciona o produto da aba atual ao seu painel do Price Monitor (plano Hacker).",
   "permissions": ["activeTab", "cookies", "storage", "notifications"],
   "host_permissions": [
-    "http://localhost:3000/*",
-    "https://*/*"
+    "https://price-monitor-smoky.vercel.app/*",
+    "http://localhost:3000/*"
   ],
   "background": {
     "service_worker": "background.js"
