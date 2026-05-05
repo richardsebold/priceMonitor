@@ -10,7 +10,7 @@ interface CpfWarningProps {
 export function CpfWarning({ cpf }: CpfWarningProps) {
   const [showWarning, setShowWarning] = useState(true);
 
-  // Se o usuário JÁ TEM o CPF cadastrado ou se ele clicou em fechar, escondemos a div
+
   if (cpf || !showWarning) return null;
 
   return (

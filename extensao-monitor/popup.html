@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <title>Price Monitor</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <img src="icon.png" alt="" width="28" height="28" />
+      <h1>Price Monitor</h1>
+    </header>
+
+    <main>
+      <div class="field">
+        <label for="url">URL do produto</label>
+        <input id="url" type="text" readonly />
+      </div>
+
+      <div class="field">
+        <label for="priceTarget">Preço alvo (opcional)</label>
+        <input
+          id="priceTarget"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.01"
+          placeholder="Ex: 99.90"
+        />
+      </div>
+
+      <button id="addBtn" type="button">Adicionar ao painel</button>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <details class="settings">
+        <summary>Configurações</summary>
+        <div class="field">
+          <label for="serverUrl">URL do servidor</label>
+          <input
+            id="serverUrl"
+            type="url"
+            placeholder="http://localhost:3000"
+          />
+        </div>
+        <button id="saveServerBtn" type="button" class="secondary">
+          Salvar
+        </button>
+      </details>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
