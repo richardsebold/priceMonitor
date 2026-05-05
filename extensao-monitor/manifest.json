@@ -1,12 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Price Monitor - Add URL",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Adiciona o produto da aba atual ao seu painel do Price Monitor (plano Hacker).",
-  "permissions": ["activeTab", "cookies", "storage", "notifications"],
+  "permissions": ["activeTab", "cookies"],
   "host_permissions": [
-    "https://price-monitor-smoky.vercel.app/*",
-    "http://localhost:3000/*"
+    "https://price-monitor-smoky.vercel.app/*"
   ],
   "background": {
     "service_worker": "background.js"

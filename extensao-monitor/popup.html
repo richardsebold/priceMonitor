@@ -2,51 +2,79 @@
 <html lang="pt-br">
   <head>
     <meta charset="utf-8" />
-    <title>Price Monitor</title>
+    <title>Cadastrar Produto</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <header>
-      <img src="icon.png" alt="" width="28" height="28" />
-      <h1>Price Monitor</h1>
+    <header class="header">
+      <div class="title-row">
+        <span class="title-icon" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.25"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+        </span>
+        <h1 class="title">Cadastrar Produto</h1>
+      </div>
+      <p class="subtitle">Adicione o produto da aba atual ao seu painel.</p>
     </header>
 
-    <main>
+    <main class="content">
       <div class="field">
-        <label for="url">URL do produto</label>
-        <input id="url" type="text" readonly />
+        <label class="label" for="url">URL do produto</label>
+        <input
+          id="url"
+          class="input input-mono"
+          type="text"
+          readonly
+          aria-readonly="true"
+        />
       </div>
 
       <div class="field">
-        <label for="priceTarget">Preço alvo (opcional)</label>
+        <label class="label" for="priceTarget">
+          Valor desejado
+          <span class="label-required" aria-hidden="true">*</span>
+        </label>
         <input
           id="priceTarget"
+          class="input"
           type="number"
           inputmode="decimal"
           min="0"
           step="0.01"
-          placeholder="Ex: 99.90"
+          placeholder="Insira o valor desejado"
+          required
         />
       </div>
 
-      <button id="addBtn" type="button">Adicionar ao painel</button>
+      <button class="btn-primary" id="addBtn" type="button">
+        <span class="btn-icon" id="btnIcon" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+        </span>
+        <span class="btn-text" id="btnText">Cadastrar</span>
+      </button>
 
-      <p id="status" class="status" role="status" aria-live="polite"></p>
-
-      <details class="settings">
-        <summary>Configurações</summary>
-        <div class="field">
-          <label for="serverUrl">URL do servidor</label>
-          <input
-            id="serverUrl"
-            type="url"
-            placeholder="http://localhost:3000"
-          />
-        </div>
-        <button id="saveServerBtn" type="button" class="secondary">
-          Salvar
-        </button>
-      </details>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
     </main>
 
     <script src="popup.js"></script>

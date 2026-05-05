@@ -1,24 +1,37 @@
-const DEFAULT_SERVER = "https://price-monitor-smoky.vercel.app";
+const SERVER_URL = "https://price-monitor-smoky.vercel.app";
 const COOKIE_NAMES = [
   "better-auth.session_token",
   "__Secure-better-auth.session_token",
 ];
 
+const ICON_PLUS = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>`;
+
+const ICON_LOADER = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+
 const urlInput = document.getElementById("url");
 const priceInput = document.getElementById("priceTarget");
 const addBtn = document.getElementById("addBtn");
+const btnIcon = document.getElementById("btnIcon");
+const btnText = document.getElementById("btnText");
 const statusEl = document.getElementById("status");
-const serverInput = document.getElementById("serverUrl");
-const saveServerBtn = document.getElementById("saveServerBtn");
 
 function setStatus(message, kind = "info") {
   statusEl.textContent = message;
   statusEl.className = `status ${kind}`;
 }
 
-async function getServerUrl() {
-  const { serverUrl } = await chrome.storage.local.get("serverUrl");
-  return serverUrl || DEFAULT_SERVER;
+function setLoading(loading) {
+  if (loading) {
+    addBtn.disabled = true;
+    btnIcon.classList.add("spinning");
+    btnIcon.innerHTML = ICON_LOADER;
+    btnText.textContent = "Cadastrando...";
+  } else {
+    addBtn.disabled = false;
+    btnIcon.classList.remove("spinning");
+    btnIcon.innerHTML = ICON_PLUS;
+    btnText.textContent = "Cadastrar";
+  }
 }
 
 async function getActiveTabUrl() {
@@ -26,52 +39,46 @@ async function getActiveTabUrl() {
   return tab?.url || "";
 }
 
-async function getSessionToken(serverUrl) {
+async function getSessionToken() {
   for (const name of COOKIE_NAMES) {
-    const cookie = await chrome.cookies.get({ url: serverUrl, name });
+    const cookie = await chrome.cookies.get({ url: SERVER_URL, name });
     if (cookie?.value) return cookie.value;
   }
   return null;
 }
 
 async function init() {
-  const serverUrl = await getServerUrl();
-  serverInput.value = serverUrl;
-
   const tabUrl = await getActiveTabUrl();
-  urlInput.value = tabUrl;
 
   if (!tabUrl || !/^https?:\/\//.test(tabUrl)) {
-    setStatus("Esta página não pode ser monitorada.", "error");
+    urlInput.value = "Página inválida";
     addBtn.disabled = true;
+    setStatus("Esta aba não pode ser monitorada.", "error");
     return;
   }
 
-  setStatus("Pronto para adicionar.", "info");
+  urlInput.value = tabUrl;
+  priceInput.focus();
 }
-
-saveServerBtn.addEventListener("click", async () => {
-  const value = serverInput.value.trim().replace(/\/+$/, "");
-  if (!value) {
-    setStatus("URL do servidor inválida.", "error");
-    return;
-  }
-  await chrome.storage.local.set({ serverUrl: value });
-  setStatus("Servidor salvo.", "success");
-});
 
 addBtn.addEventListener("click", async () => {
   const url = urlInput.value;
   const rawTarget = priceInput.value.trim();
-  const priceTarget = rawTarget === "" ? 0 : Number(rawTarget);
 
-  if (rawTarget !== "" && (Number.isNaN(priceTarget) || priceTarget < 0)) {
-    setStatus("Preço alvo inválido.", "error");
+  if (!rawTarget) {
+    setStatus("Insira o valor desejado.", "error");
+    priceInput.focus();
     return;
   }
 
-  const serverUrl = await getServerUrl();
-  const token = await getSessionToken(serverUrl);
+  const priceTarget = Number(rawTarget);
+  if (Number.isNaN(priceTarget) || priceTarget <= 0) {
+    setStatus("Valor inválido.", "error");
+    priceInput.focus();
+    return;
+  }
+
+  const token = await getSessionToken();
 
   if (!token) {
     setStatus(
@@ -81,11 +88,11 @@ addBtn.addEventListener("click", async () => {
     return;
   }
 
-  addBtn.disabled = true;
-  setStatus("Enviando...", "info");
+  setLoading(true);
+  setStatus("", "info");
 
   try {
-    const response = await fetch(`${serverUrl}/api/add-product`, {
+    const response = await fetch(`${SERVER_URL}/api/add-product`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -98,34 +105,40 @@ addBtn.addEventListener("click", async () => {
     try {
       data = await response.json();
     } catch {
-      // ignore parse error, fall back to status code
+      // ignore
     }
 
     if (response.ok && data?.success) {
-      setStatus("Produto adicionado ao painel!", "success");
+      setStatus("Produto adicionado!", "success");
       priceInput.value = "";
       return;
     }
 
     const fallbackByStatus = {
-      400: "Dados inválidos.",
-      401: "Sessão expirada. Faça login no painel novamente.",
+      400: "Não foi possível cadastrar.",
+      401: "Sessão expirada. Faça login novamente.",
       403: "A extensão é exclusiva do plano Hacker.",
-      502: "Não foi possível ler este produto. Verifique se a loja é suportada.",
+      502: "Não foi possível ler este produto.",
     };
 
     setStatus(
-      data?.error || fallbackByStatus[response.status] || "Erro ao adicionar.",
+      data?.error ||
+        fallbackByStatus[response.status] ||
+        "Erro ao adicionar produto.",
       "error",
     );
   } catch (err) {
     console.error(err);
-    setStatus(
-      "Erro de conexão. Verifique se o painel está rodando.",
-      "error",
-    );
+    setStatus("Erro de conexão. Verifique sua rede.", "error");
   } finally {
-    addBtn.disabled = false;
+    setLoading(false);
+  }
+});
+
+priceInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addBtn.click();
   }
 });
 
