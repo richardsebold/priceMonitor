@@ -3,5 +3,4 @@
 // usado futuramente para tarefas em background (ex.: badge, notificações).
 
 self.addEventListener("install", () => {
-  // no-op
 });

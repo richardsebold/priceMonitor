@@ -14,6 +14,13 @@ const addBtn = document.getElementById("addBtn");
 const btnIcon = document.getElementById("btnIcon");
 const btnText = document.getElementById("btnText");
 const statusEl = document.getElementById("status");
+const userMenu = document.getElementById("userMenu");
+const avatarBtn = document.getElementById("avatarBtn");
+const avatarFallback = document.getElementById("avatarFallback");
+const dropdown = document.getElementById("dropdown");
+const userNameEl = document.getElementById("userName");
+const userEmailEl = document.getElementById("userEmail");
+const logoutBtn = document.getElementById("logoutBtn");
 
 function setStatus(message, kind = "info") {
   statusEl.textContent = message;
@@ -47,6 +54,96 @@ async function getSessionToken() {
   return null;
 }
 
+async function fetchUser(token) {
+  try {
+    const res = await fetch(`${SERVER_URL}/api/auth/get-session`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.user || null;
+  } catch {
+    return null;
+  }
+}
+
+function getInitial(user) {
+  const source = (user?.name || user?.email || "?").trim();
+  return source.charAt(0).toUpperCase() || "?";
+}
+
+function renderUser(user) {
+  if (!user) {
+    userMenu.hidden = true;
+    return;
+  }
+  userMenu.hidden = false;
+  avatarFallback.textContent = getInitial(user);
+
+  if (user.name) {
+    userNameEl.textContent = user.name;
+    userNameEl.hidden = false;
+  } else {
+    userNameEl.hidden = true;
+  }
+  userEmailEl.textContent = user.email || "";
+}
+
+function openDropdown() {
+  dropdown.hidden = false;
+  avatarBtn.setAttribute("aria-expanded", "true");
+}
+
+function closeDropdown() {
+  dropdown.hidden = true;
+  avatarBtn.setAttribute("aria-expanded", "false");
+}
+
+avatarBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (dropdown.hidden) openDropdown();
+  else closeDropdown();
+});
+
+document.addEventListener("click", (e) => {
+  if (!dropdown.hidden && !userMenu.contains(e.target)) closeDropdown();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeDropdown();
+});
+
+async function clearSessionCookies() {
+  for (const name of COOKIE_NAMES) {
+    try {
+      await chrome.cookies.remove({ url: SERVER_URL, name });
+    } catch {
+      // ignore
+    }
+  }
+}
+
+logoutBtn.addEventListener("click", async () => {
+  logoutBtn.disabled = true;
+  const token = await getSessionToken();
+
+  if (token) {
+    try {
+      await fetch(`${SERVER_URL}/api/auth/sign-out`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {
+      // ignore — client cookies will be cleared anyway
+    }
+  }
+
+  await clearSessionCookies();
+  chrome.tabs.create({ url: `${SERVER_URL}/login` });
+  window.close();
+});
+
 async function init() {
   const tabUrl = await getActiveTabUrl();
 
@@ -54,11 +151,16 @@ async function init() {
     urlInput.value = "Página inválida";
     addBtn.disabled = true;
     setStatus("Esta aba não pode ser monitorada.", "error");
-    return;
+  } else {
+    urlInput.value = tabUrl;
+    priceInput.focus();
   }
 
-  urlInput.value = tabUrl;
-  priceInput.focus();
+  const token = await getSessionToken();
+  if (token) {
+    const user = await fetchUser(token);
+    renderUser(user);
+  }
 }
 
 addBtn.addEventListener("click", async () => {

@@ -23,6 +23,47 @@
           </svg>
         </span>
         <h1 class="title">Cadastrar Produto</h1>
+
+        <div class="user-menu" id="userMenu" hidden>
+          <button
+            class="avatar-btn"
+            id="avatarBtn"
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-label="Conta"
+          >
+            <span class="avatar-fallback" id="avatarFallback">?</span>
+          </button>
+          <div class="dropdown" id="dropdown" role="menu" hidden>
+            <div class="dropdown-header">
+              <p class="dropdown-name" id="userName">Usuário</p>
+              <p class="dropdown-email" id="userEmail">email@exemplo.com</p>
+            </div>
+            <div class="dropdown-separator"></div>
+            <button
+              class="dropdown-item"
+              id="logoutBtn"
+              type="button"
+              role="menuitem"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>Sair</span>
+            </button>
+          </div>
+        </div>
       </div>
       <p class="subtitle">Adicione o produto da aba atual ao seu painel.</p>
     </header>
