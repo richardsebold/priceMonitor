@@ -239,4 +239,30 @@
   .animate-float {
     animation: float-up 4s ease-in-out infinite;
   }
+
+  @keyframes text-flash {
+    0%, 12%   { background-position: 0% 0; }
+    48%, 100% { background-position: 100% 0; }
+  }
+
+  .text-gradient-flash {
+    background-image: linear-gradient(
+      100deg,
+      #4fa800 0%,
+      #6dd400 35%,
+      #d9ffa0 45%,
+      #ffffff 49%,
+      #ffffff 51%,
+      #d9ffa0 55%,
+      #6dd400 65%,
+      #4fa800 100%
+    );
+    background-size: 250% 100%;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: text-flash 3.6s linear infinite;
+  }
 }

@@ -175,46 +175,68 @@ export default function LandingPage() {
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-grid-faint" />
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px] glow-primary" />
+        <div className="pointer-events-none absolute -top-24 left-1/3 -z-10 size-[520px] rounded-full bg-primary/15 blur-3xl" />
 
-        <div className="mx-auto max-w-7xl px-4 pt-28 pb-16 sm:px-6 sm:pt-32 lg:px-8 lg:pt-36">
-          <div className="flex flex-col items-center text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-foreground/90">
-              <Sparkles className="size-3 text-primary" />
-              <span>Mais que rastreador, um copiloto pra suas compras.</span>
+        <div className="mx-auto w-full max-w-[1480px] px-6 pt-28 pb-20 sm:px-8 sm:pt-32 lg:px-10 lg:pt-36 lg:pb-28 xl:px-14">
+          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-20">
+            {/* Left column — copy + form */}
+            <div className="flex flex-col items-start text-left">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-foreground/90">
+                <Sparkles className="size-3 text-primary" />
+                <span>Mais que rastreador, um copiloto pra suas compras.</span>
+              </div>
+
+              {/* Headline */}
+              <h1 className="mt-6 text-balance text-5xl font-semibold leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:text-[68px] xl:text-[76px]">
+                Compre na hora certa.{" "}
+                <span className="text-gradient-flash">Pague o melhor preço.</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
+                Cole a URL do produto, defina sua meta e relaxe.
+                A gente coleta o preço todo dia, monta o histórico e te avisa
+                no momento exato em que vale a pena fechar.
+              </p>
+
+              {/* URL form */}
+              <div className="mt-10 w-full max-w-xl">
+                <TrackUrlForm />
+              </div>
+
+              {/* Trust strip */}
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Check className="size-3.5 text-primary" />
+                  Sem cartão
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Check className="size-3.5 text-primary" />
+                  Setup em 12s
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Check className="size-3.5 text-primary" />
+                  Cancele quando quiser
+                </span>
+              </div>
             </div>
 
-            {/* Headline */}
-            <h1 className="mt-6 max-w-4xl text-balance text-5xl font-extrabold leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
-              Compre na hora certa.{" "}
-              <span className="text-gradient-primary">Pague o melhor preço.</span>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="mt-6 max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
-              Cole a URL do produto, defina sua meta e relaxe.
-              A gente coleta o preço todo dia, monta o histórico e te avisa
-              no momento exato em que vale a pena fechar.
-            </p>
-
-            {/* URL form */}
-            <div className="mt-10 w-full">
-              <TrackUrlForm />
+            {/* Right column — chart preview */}
+            <div className="relative">
+              <div className="pointer-events-none absolute -left-10 top-10 hidden size-24 rounded-full bg-primary/10 blur-3xl lg:block" />
+              <div className="pointer-events-none absolute -right-10 bottom-10 hidden size-32 rounded-full bg-primary/15 blur-3xl lg:block" />
+              <div className="relative lg:rotate-[0.5deg] lg:transition-transform lg:hover:rotate-0">
+                <PriceHistoryDemo />
+              </div>
             </div>
-          </div>
-
-          {/* Demo dashboard preview */}
-          <div className="relative mx-auto mt-20 max-w-5xl">
-            <div className="absolute -left-10 top-10 hidden size-24 rounded-full bg-primary/10 blur-3xl lg:block" />
-            <div className="absolute -right-10 bottom-10 hidden size-32 rounded-full bg-primary/15 blur-3xl lg:block" />
-            <PriceHistoryDemo />
           </div>
         </div>
       </section>
 
       {/* ============================== COMO FUNCIONA ============================== */}
       <section id="como-funciona" className="relative py-24 lg:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1480px] px-6 sm:px-8 lg:px-10 xl:px-14">
           <div className="mx-auto max-w-2xl text-center">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               Como funciona
@@ -275,7 +297,7 @@ export default function LandingPage() {
 
       {/* ============================== FEATURES GRID ============================== */}
       <section className="relative border-t border-border/60 bg-secondary/15 py-24 lg:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1480px] px-6 sm:px-8 lg:px-10 xl:px-14">
           <div className="mx-auto max-w-2xl text-center">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               Funcionalidades
@@ -345,7 +367,7 @@ export default function LandingPage() {
 
       {/* ============================== LOJAS SUPORTADAS ============================== */}
       <section id="lojas" className="relative py-24 lg:py-28">
-        <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-8 lg:px-10 xl:px-14">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             Compatibilidade
           </span>
@@ -377,7 +399,7 @@ export default function LandingPage() {
 
       {/* ============================== TESTIMONIALS ============================== */}
       <section className="relative border-y border-border/60 bg-secondary/20 py-24 lg:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1480px] px-6 sm:px-8 lg:px-10 xl:px-14">
           <div className="mx-auto max-w-2xl text-center">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               Quem já economiza
@@ -398,7 +420,7 @@ export default function LandingPage() {
 
       {/* ============================== PRICING ============================== */}
       <section id="planos" className="relative py-24 lg:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1480px] px-6 sm:px-8 lg:px-10 xl:px-14">
           <div className="mx-auto max-w-2xl text-center">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               Planos
@@ -477,7 +499,7 @@ export default function LandingPage() {
 
       {/* ============================== FAQ ============================== */}
       <section id="faq" className="relative border-t border-border/60 py-24 lg:py-28">
-        <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_2fr] lg:px-8">
+        <div className="mx-auto grid w-full max-w-[1280px] gap-12 px-6 sm:px-8 lg:grid-cols-[1fr_2fr] lg:px-10 xl:px-14">
           <div className="lg:sticky lg:top-28 lg:self-start">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               FAQ
@@ -544,7 +566,7 @@ export default function LandingPage() {
 
       {/* ============================== FOOTER ============================== */}
       <footer className="border-t border-border bg-background">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1480px] px-6 py-16 sm:px-8 lg:px-10 xl:px-14">
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2">
               <Link href="/" className="flex items-center gap-2">
