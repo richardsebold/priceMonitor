@@ -27,9 +27,6 @@ const BRAND_DARK = '#3d8500';
 const BRAND_LIGHT = '#b6f24a';
 const BRAND_DEEP = '#2c5f00';
 
-const WAVE_DOWN_SVG = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 40' preserveAspectRatio='none'><path d='M0,0 C150,40 300,0 450,20 C525,30 600,10 600,0 L600,40 L0,40 Z' fill='%23ffffff'/></svg>`;
-const WAVE_UP_SVG = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 40' preserveAspectRatio='none'><path d='M0,40 C150,0 300,40 450,20 C525,10 600,30 600,40 L600,0 L0,0 Z' fill='%234fa800'/></svg>`;
-
 export function EmailTemplate({ product, userName }: EmailTemplateProps) {
   const dataFormatada =
     product.scrapedAt instanceof Date
@@ -63,9 +60,8 @@ export function EmailTemplate({ product, userName }: EmailTemplateProps) {
         >
           <Container
             className="mx-auto my-0 w-full"
-            style={{ maxWidth: '600px', width: '100%' }}
+            style={{ maxWidth: '600px', width: '100%', backgroundColor: BRAND }}
           >
-            {/* ============= HEADER (verde) ============= */}
             <Section
               style={{
                 backgroundColor: BRAND,
@@ -157,25 +153,17 @@ export function EmailTemplate({ product, userName }: EmailTemplateProps) {
               </Text>
             </Section>
 
-            {/* ============= WAVE: verde -> branco ============= */}
-            <Section style={{ backgroundColor: BRAND, lineHeight: 0, fontSize: 0 }}>
-              <Img
-                src={WAVE_DOWN_SVG}
-                alt=""
-                width="600"
-                height="40"
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  height: '40px',
-                  border: 0,
-                  outline: 'none',
-                }}
-              />
-            </Section>
-
             {/* ============= PRODUTO (branco) ============= */}
-            <Section style={{ backgroundColor: '#ffffff', padding: '8px 28px 28px 28px' }}>
+            <Section
+              style={{
+                backgroundColor: '#ffffff',
+                padding: '32px 28px 32px 28px',
+                borderTopLeftRadius: '32px',
+                borderTopRightRadius: '32px',
+                borderBottomLeftRadius: '32px',
+                borderBottomRightRadius: '32px',
+              }}
+            >
               {product.image && (
                 <Section
                   style={{
@@ -303,23 +291,6 @@ export function EmailTemplate({ product, userName }: EmailTemplateProps) {
                   Comprar agora
                 </Button>
               </Section>
-            </Section>
-
-            {/* ============= WAVE: branco -> verde ============= */}
-            <Section style={{ backgroundColor: '#ffffff', lineHeight: 0, fontSize: 0 }}>
-              <Img
-                src={WAVE_UP_SVG}
-                alt=""
-                width="600"
-                height="40"
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  height: '40px',
-                  border: 0,
-                  outline: 'none',
-                }}
-              />
             </Section>
 
             {/* ============= FOOTER (verde) ============= */}

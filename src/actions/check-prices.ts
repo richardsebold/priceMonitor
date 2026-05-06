@@ -33,36 +33,60 @@ export async function runPriceCheckJob() {
         continue;
       }
 
-      if (product.price !== newSearch.price) {
+      const isBelowTarget = newSearch.price <= product.priceTarget;
+      const dropped10Percent = newSearch.price <= (product.price * 0.9);
+      const priceChanged = product.price !== newSearch.price;
+
+      if (priceChanged) {
         await prisma.productHistory.update({
           where: { id: product.id },
           data: { price: newSearch.price },
         });
+
+        await prisma.priceHistory.create({
+          data: {
+            price: newSearch.price,
+            productId: product.id,
+          },
+        });
       }
 
-      await prisma.priceHistory.create({
-        data: {
-          price: newSearch.price,
-          productId: product.id,
-        },
-      });
+      const updatedProduct = { ...product, price: newSearch.price };
 
-      const isBelowTarget = newSearch.price <= product.priceTarget;
-      const dropped10Percent = newSearch.price <= (product.price * 0.9);
+      const alertsEnabled = product.user.priceAlertsEnabled;
 
-      if ((isBelowTarget || dropped10Percent) && !product.targetReached) {
+      if (isBelowTarget && !product.targetReached) {
         console.log(
           `[ALERTA] Meta atingida para o produto ${product.name} (Usuário: ${product.user.email})`,
         );
-        
+
         await prisma.productHistory.update({
           where: { id: product.id },
           data: { targetReached: true },
         });
 
-        await sendPriceAlert(product, product.user.email, product.user.name);
-        
-      } else if (newSearch.price > product.priceTarget && product.targetReached) {
+        if (alertsEnabled) {
+          await sendPriceAlert(updatedProduct, product.user.email, product.user.name);
+        } else {
+          console.log(
+            `[SKIP] Alertas desativados para o usuário ${product.user.email}`,
+          );
+        }
+      } else if (dropped10Percent) {
+        console.log(
+          `[ALERTA] Queda de 10% para o produto ${product.name} (Usuário: ${product.user.email})`,
+        );
+
+        if (alertsEnabled) {
+          await sendPriceAlert(updatedProduct, product.user.email, product.user.name);
+        } else {
+          console.log(
+            `[SKIP] Alertas desativados para o usuário ${product.user.email}`,
+          );
+        }
+      }
+
+      if (!isBelowTarget && product.targetReached) {
         await prisma.productHistory.update({
           where: { id: product.id },
           data: { targetReached: false },

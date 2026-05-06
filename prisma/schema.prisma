@@ -33,21 +33,26 @@ model User {
   sessions Session[]
   accounts Account[]
 
-  planId             String?   
-  plan               Plan?     @relation(fields: [planId], references: [id])
-  subscriptionStatus String    @default("FREE") 
-  subscriptionEnd    DateTime? 
+  planId                   String?
+  plan                     Plan?     @relation(fields: [planId], references: [id])
+  subscriptionStatus       String    @default("FREE")
+  subscriptionEnd          DateTime?
+  abacatepaySubscriptionId String?   @unique
+
+  priceAlertsEnabled       Boolean   @default(true)
 
   @@map("user")
 }
 
 model Plan {
-  id          String   @id @default(cuid())
-  name        String  
-  description String?  
-  price       Int     
-  
-  users       User[]   
+  id                  String   @id @default(cuid())
+  name                String
+  description         String?
+  price               Int
+  cycle               String   @default("MONTHLY")
+  abacatepayProductId String?  @unique
+
+  users               User[]
 }
 
 
