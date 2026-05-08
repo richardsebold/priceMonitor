@@ -3,32 +3,42 @@
 import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium-min";
 
-export async function scrapeProduct(url) {
+export type ScrapeMethod = 'json-ld' | 'meta-tags' | 'visual';
+
+export interface ScrapedProduct {
+  name: string;
+  price: number;
+  currency: string;
+  image: string;
+  store: string;
+  method: ScrapeMethod;
+}
+
+export async function scrapeProduct(url: string): Promise<ScrapedProduct> {
   const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(
-        "https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar"
-      ),
-      headless: chromium.headless,
-      ignoreHTTPSErrors: true,
-    });
+    args: chromium.args,
+    executablePath: await chromium.executablePath(
+      "https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar"
+    ),
+    headless: true,
+    acceptInsecureCerts: true,
+  });
 
   const page = await browser.newPage();
 
   try {
     await page.goto(url, {
       waitUntil: 'domcontentloaded',
-      timeout: 60000
+      timeout: 60000,
     });
 
-    const productData = await page.evaluate(() => {
+    const productData = await page.evaluate((): ScrapedProduct => {
       /* ================== HELPERS ================== */
 
-      const toStr = (v) =>
+      const toStr = (v: unknown): string =>
         v !== null && v !== undefined ? String(v).trim() : '';
 
-      const toNumberPrice = (value) => {
+      const toNumberPrice = (value: unknown): number => {
         if (!value) return 0;
 
         let text = String(value).replace(/[^\d.,]/g, '');
@@ -43,7 +53,7 @@ export async function scrapeProduct(url) {
         return Number.isFinite(num) ? num : 0;
       };
 
-      const detectCurrency = (text) => {
+      const detectCurrency = (text: string): string => {
         if (!text) return '';
         if (text.includes('R$')) return 'BRL';
         if (text.includes('€')) return 'EUR';
@@ -53,13 +63,24 @@ export async function scrapeProduct(url) {
         return '';
       };
 
-      const isProduct = (node) => {
+      type JsonLdNode = Record<string, unknown> & { '@type'?: string | string[] };
+
+      const isProduct = (node: JsonLdNode | null | undefined): boolean => {
         const type = node?.['@type'];
         if (Array.isArray(type)) return type.includes('Product');
         return type === 'Product';
       };
 
-      const extractOffer = (offers) => {
+      interface OfferLike {
+        price?: unknown;
+        lowPrice?: unknown;
+        highPrice?: unknown;
+        priceCurrency?: unknown;
+      }
+
+      const extractOffer = (
+        offers: OfferLike | OfferLike[] | undefined | null
+      ): { price: number; currency: string } => {
         if (!offers) return { price: 0, currency: '' };
         if (Array.isArray(offers)) return extractOffer(offers[0]);
 
@@ -71,24 +92,26 @@ export async function scrapeProduct(url) {
 
         return {
           price: toNumberPrice(rawPrice),
-          currency: toStr(offers.priceCurrency)
+          currency: toStr(offers.priceCurrency),
         };
       };
 
-      const deepFindProduct = (node) => {
+      const deepFindProduct = (node: unknown): JsonLdNode | null => {
         if (!node || typeof node !== 'object') return null;
-        if (isProduct(node)) return node;
+        const obj = node as JsonLdNode;
+        if (isProduct(obj)) return obj;
 
-        for (const key in node) {
-          const found = deepFindProduct(node[key]);
+        for (const key in obj) {
+          const found = deepFindProduct(obj[key]);
           if (found) return found;
         }
         return null;
       };
 
-      // ✅ NOVO: Helper para extrair o nome da loja
-      const getStoreName = () => {
-        const ogSiteName = document.querySelector('meta[property="og:site_name"]');
+      const getStoreName = (): string => {
+        const ogSiteName = document.querySelector<HTMLMetaElement>(
+          'meta[property="og:site_name"]'
+        );
         if (ogSiteName && ogSiteName.content) {
           return toStr(ogSiteName.content);
         }
@@ -97,12 +120,12 @@ export async function scrapeProduct(url) {
 
       /* ================== JSON-LD ================== */
 
-      const scripts = document.querySelectorAll(
+      const scripts = document.querySelectorAll<HTMLScriptElement>(
         'script[type="application/ld+json"]'
       );
 
-      for (const script of scripts) {
-        let json;
+      for (const script of Array.from(scripts)) {
+        let json: unknown;
         try {
           json = JSON.parse(script.innerText.trim());
         } catch {
@@ -115,45 +138,56 @@ export async function scrapeProduct(url) {
           const product = deepFindProduct(root);
           if (!product) continue;
 
-          const offer = extractOffer(product.offers);
+          const offer = extractOffer(product.offers as OfferLike | OfferLike[] | undefined);
+          const rawImage = product.image as
+            | string
+            | string[]
+            | { url?: string }
+            | undefined;
+
+          const image = Array.isArray(rawImage)
+            ? rawImage[0]
+            : typeof rawImage === 'object' && rawImage !== null
+              ? rawImage.url ?? ''
+              : rawImage;
 
           return {
             name: toStr(product.name),
-            price: offer.price,        // ✅ NUMBER
+            price: offer.price,
             currency: offer.currency,
-            image: toStr(
-              Array.isArray(product.image)
-                ? product.image[0]
-                : product.image?.url || product.image
-            ),
-            store: getStoreName(),     // ✅ Adicionado aqui
-            method: 'json-ld'
+            image: toStr(image),
+            store: getStoreName(),
+            method: 'json-ld',
           };
         }
       }
 
       /* ================== FALLBACKS ================== */
 
-      const ogTitle = document.querySelector('meta[property="og:title"]');
-      const ogPrice = document.querySelector(
+      const ogTitle = document.querySelector<HTMLMetaElement>(
+        'meta[property="og:title"]'
+      );
+      const ogPrice = document.querySelector<HTMLMetaElement>(
         'meta[property="product:price:amount"]'
       );
-      const ogImage = document.querySelector('meta[property="og:image"]');
+      const ogImage = document.querySelector<HTMLMetaElement>(
+        'meta[property="og:image"]'
+      );
 
       if (ogTitle) {
         const priceText = toStr(ogPrice?.content);
 
         return {
           name: toStr(ogTitle.content),
-          price: toNumberPrice(priceText), // ✅ NUMBER
+          price: toNumberPrice(priceText),
           currency: detectCurrency(priceText),
           image: toStr(ogImage?.content),
-          store: getStoreName(),           // ✅ Adicionado aqui
-          method: 'meta-tags'
+          store: getStoreName(),
+          method: 'meta-tags',
         };
       }
 
-      const h1 = document.querySelector('h1');
+      const h1 = document.querySelector<HTMLHeadingElement>('h1');
       const bodyText = document.body.innerText;
       const match = bodyText.match(
         /(?:R\$|\$|€|£|¥)\s?\d{1,3}(?:\.\d{3})*(?:,\d{2})?/
@@ -163,11 +197,11 @@ export async function scrapeProduct(url) {
 
       return {
         name: toStr(h1?.innerText || document.title),
-        price: toNumberPrice(priceText), // ✅ NUMBER
+        price: toNumberPrice(priceText),
         currency: detectCurrency(priceText),
-        image: toStr(document.querySelector('img')?.src),
-        store: getStoreName(),           // ✅ Adicionado aqui
-        method: 'visual'
+        image: toStr(document.querySelector<HTMLImageElement>('img')?.src),
+        store: getStoreName(),
+        method: 'visual',
       };
     });
 
