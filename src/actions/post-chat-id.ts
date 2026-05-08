@@ -30,7 +30,7 @@ export async function setChatIdUser(chatId: string) {
         return updatedUser;
 
     } catch (error) {
-        console.error("Erro ao salvar Chat ID:", error);
+        console.error("Erro ao salvar Chat ID: ", error);
         return null; 
     }
 }
