@@ -26,7 +26,7 @@ export async function runPriceCheckJob() {
 
       const newSearch = await scrapeProduct(product.url);
 
-      if (!newSearch) {
+      if (!newSearch || newSearch.price <= 0) {
         console.error(
           `[SCRAPE] Falha ao obter preço — produto "${product.name}" (id: ${product.id}, usuário: ${product.user.email}, url: ${product.url})`,
         );

@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "abacatepay:setup": "tsx prisma/setup-abacatepay-products.ts"
+    "abacatepay:setup": "tsx prisma/setup-abacatepay-products.ts",
+    "test:fetch": "tsx scripts/test-raw-fetch.ts"
   },
   "dependencies": {
     "@hookform/error-message": "^2.0.1",

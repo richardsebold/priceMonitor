@@ -2,211 +2,74 @@
 
 import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium-min";
+import { parseHtml, type ParsedProduct } from "./scrape/parse-html";
 
-export type ScrapeMethod = 'json-ld' | 'meta-tags' | 'visual';
+export type { ScrapeMethod, ParsedProduct } from "./scrape/parse-html";
+export type ScrapedProduct = ParsedProduct;
 
-export interface ScrapedProduct {
-  name: string;
-  price: number;
-  currency: string;
-  image: string;
-  store: string;
-  method: ScrapeMethod;
+const FETCH_TIMEOUT_MS = 20000;
+const BROWSER_TIMEOUT_MS = 60000;
+
+const USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+
+async function fetchTier(url: string): Promise<ParsedProduct | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+        "Cache-Control": "no-cache",
+      },
+      signal: controller.signal,
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const parsed = parseHtml(html, { url, allowRegex: false });
+    return parsed.price > 0 ? parsed : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-export async function scrapeProduct(url: string): Promise<ScrapedProduct> {
+async function browserTier(url: string): Promise<ParsedProduct> {
   const browser = await puppeteer.launch({
     args: chromium.args,
     executablePath: await chromium.executablePath(
-      "https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar"
+      "https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar",
     ),
     headless: true,
     acceptInsecureCerts: true,
   });
 
-  const page = await browser.newPage();
-
   try {
+    const page = await browser.newPage();
     await page.goto(url, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60000,
+      waitUntil: "domcontentloaded",
+      timeout: BROWSER_TIMEOUT_MS,
     });
-
-    const productData = await page.evaluate((): ScrapedProduct => {
-      /* ================== HELPERS ================== */
-
-      const toStr = (v: unknown): string =>
-        v !== null && v !== undefined ? String(v).trim() : '';
-
-      const toNumberPrice = (value: unknown): number => {
-        if (!value) return 0;
-
-        let text = String(value).replace(/[^\d.,]/g, '');
-
-        if (text.includes(',') && text.lastIndexOf(',') > text.lastIndexOf('.')) {
-          text = text.replace(/\./g, '').replace(',', '.');
-        } else {
-          text = text.replace(/,/g, '');
-        }
-
-        const num = Number(text);
-        return Number.isFinite(num) ? num : 0;
-      };
-
-      const detectCurrency = (text: string): string => {
-        if (!text) return '';
-        if (text.includes('R$')) return 'BRL';
-        if (text.includes('€')) return 'EUR';
-        if (text.includes('£')) return 'GBP';
-        if (text.includes('¥')) return 'JPY';
-        if (text.includes('$')) return 'USD';
-        return '';
-      };
-
-      type JsonLdNode = Record<string, unknown> & { '@type'?: string | string[] };
-
-      const isProduct = (node: JsonLdNode | null | undefined): boolean => {
-        const type = node?.['@type'];
-        if (Array.isArray(type)) return type.includes('Product');
-        return type === 'Product';
-      };
-
-      interface OfferLike {
-        price?: unknown;
-        lowPrice?: unknown;
-        highPrice?: unknown;
-        priceCurrency?: unknown;
-      }
-
-      const extractOffer = (
-        offers: OfferLike | OfferLike[] | undefined | null
-      ): { price: number; currency: string } => {
-        if (!offers) return { price: 0, currency: '' };
-        if (Array.isArray(offers)) return extractOffer(offers[0]);
-
-        const rawPrice =
-          offers.price ??
-          offers.lowPrice ??
-          offers.highPrice ??
-          '';
-
-        return {
-          price: toNumberPrice(rawPrice),
-          currency: toStr(offers.priceCurrency),
-        };
-      };
-
-      const deepFindProduct = (node: unknown): JsonLdNode | null => {
-        if (!node || typeof node !== 'object') return null;
-        const obj = node as JsonLdNode;
-        if (isProduct(obj)) return obj;
-
-        for (const key in obj) {
-          const found = deepFindProduct(obj[key]);
-          if (found) return found;
-        }
-        return null;
-      };
-
-      const getStoreName = (): string => {
-        const ogSiteName = document.querySelector<HTMLMetaElement>(
-          'meta[property="og:site_name"]'
-        );
-        if (ogSiteName && ogSiteName.content) {
-          return toStr(ogSiteName.content);
-        }
-        return window.location.hostname.replace(/^www\./, '');
-      };
-
-      /* ================== JSON-LD ================== */
-
-      const scripts = document.querySelectorAll<HTMLScriptElement>(
-        'script[type="application/ld+json"]'
-      );
-
-      for (const script of Array.from(scripts)) {
-        let json: unknown;
-        try {
-          json = JSON.parse(script.innerText.trim());
-        } catch {
-          continue;
-        }
-
-        const roots = Array.isArray(json) ? json : [json];
-
-        for (const root of roots) {
-          const product = deepFindProduct(root);
-          if (!product) continue;
-
-          const offer = extractOffer(product.offers as OfferLike | OfferLike[] | undefined);
-          const rawImage = product.image as
-            | string
-            | string[]
-            | { url?: string }
-            | undefined;
-
-          const image = Array.isArray(rawImage)
-            ? rawImage[0]
-            : typeof rawImage === 'object' && rawImage !== null
-              ? rawImage.url ?? ''
-              : rawImage;
-
-          return {
-            name: toStr(product.name),
-            price: offer.price,
-            currency: offer.currency,
-            image: toStr(image),
-            store: getStoreName(),
-            method: 'json-ld',
-          };
-        }
-      }
-
-      /* ================== FALLBACKS ================== */
-
-      const ogTitle = document.querySelector<HTMLMetaElement>(
-        'meta[property="og:title"]'
-      );
-      const ogPrice = document.querySelector<HTMLMetaElement>(
-        'meta[property="product:price:amount"]'
-      );
-      const ogImage = document.querySelector<HTMLMetaElement>(
-        'meta[property="og:image"]'
-      );
-
-      if (ogTitle) {
-        const priceText = toStr(ogPrice?.content);
-
-        return {
-          name: toStr(ogTitle.content),
-          price: toNumberPrice(priceText),
-          currency: detectCurrency(priceText),
-          image: toStr(ogImage?.content),
-          store: getStoreName(),
-          method: 'meta-tags',
-        };
-      }
-
-      const h1 = document.querySelector<HTMLHeadingElement>('h1');
-      const bodyText = document.body.innerText;
-      const match = bodyText.match(
-        /(?:R\$|\$|€|£|¥)\s?\d{1,3}(?:\.\d{3})*(?:,\d{2})?/
-      );
-
-      const priceText = toStr(match?.[0]);
-
-      return {
-        name: toStr(h1?.innerText || document.title),
-        price: toNumberPrice(priceText),
-        currency: detectCurrency(priceText),
-        image: toStr(document.querySelector<HTMLImageElement>('img')?.src),
-        store: getStoreName(),
-        method: 'visual',
-      };
-    });
-
-    return productData;
+    const html = await page.content();
+    return parseHtml(html, { url, allowRegex: true });
   } finally {
     await browser.close();
   }
+}
+
+export async function scrapeProduct(url: string): Promise<ParsedProduct> {
+  const tier1 = await fetchTier(url);
+  if (tier1) {
+    console.log(`[SCRAPE] tier1 (${tier1.method}) → ${url}`);
+    return tier1;
+  }
+  console.log(`[SCRAPE] tier1 falhou, caindo no browser → ${url}`);
+  const tier2 = await browserTier(url);
+  console.log(`[SCRAPE] tier2 (${tier2.method}) → ${url}`);
+  return tier2;
 }
