@@ -62,7 +62,7 @@ export async function NewProduct(url: string, priceTarget: number) {
   try {
     const newProduct = await scrapeProduct(url);
 
-    if (!newProduct) {
+    if (!newProduct || newProduct.price <= 0 || !newProduct.name) {
       return {
         success: false,
         error: "Não foi possível ler os dados deste produto.",
