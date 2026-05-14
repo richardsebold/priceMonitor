@@ -36,8 +36,12 @@ model User {
   planId                   String?
   plan                     Plan?     @relation(fields: [planId], references: [id])
   subscriptionStatus       String    @default("FREE")
+  subscriptionStart        DateTime?
   subscriptionEnd          DateTime?
   abacatepaySubscriptionId String?   @unique
+  cancellationReason       String?
+  cancellationComment      String?
+  refundRequested          Boolean   @default(false)
 
   priceAlertsEnabled       Boolean   @default(true)
 

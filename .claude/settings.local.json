@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:raw.githubusercontent.com)",
-      "mcp__context7__query-docs"
+      "mcp__context7__query-docs",
+      "Bash(sed -n '186,210p' src/components/ui/select.tsx)",
+      "Bash(sed -n '154,170p' src/components/ui/dialog.tsx)"
     ]
   },
   "enableAllProjectMcpServers": true,

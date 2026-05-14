@@ -50,11 +50,19 @@ export async function POST(request: Request) {
           ? await prisma.plan.findUnique({ where: { id: planId } })
           : null;
 
+        const existing = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { subscriptionStart: true },
+        });
+
         await prisma.user.update({
           where: { id: userId },
           data: {
             ...(planId ? { planId } : {}),
             subscriptionStatus: "ACTIVE",
+            ...(existing?.subscriptionStart
+              ? {}
+              : { subscriptionStart: new Date() }),
             subscriptionEnd: computeSubscriptionEnd(plan?.cycle),
             ...(subscriptionId
               ? { abacatepaySubscriptionId: subscriptionId }
