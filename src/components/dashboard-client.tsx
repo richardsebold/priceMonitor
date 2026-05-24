@@ -55,20 +55,20 @@ interface DashboardClientProps {
 
 function ProductSkeleton() {
   return (
-    <div className="rounded-xl border border-slate-800/80 p-5 flex items-start gap-5 animate-pulse bg-card">
+    <div className="rounded-xl border border-border p-5 flex items-start gap-5 animate-pulse bg-card">
       <div className="shrink-0">
-        <div className="w-20 h-20 rounded-lg bg-slate-800/50" />
+        <div className="w-20 h-20 rounded-lg bg-muted" />
       </div>
       <div className="flex flex-col flex-1 min-w-0">
-        <div className="h-5 bg-slate-800/50 rounded-md w-3/4 mb-3" />
+        <div className="h-5 bg-muted rounded-md w-3/4 mb-3" />
         <div className="flex gap-2 mb-4">
-          <div className="h-5 bg-slate-800/50 rounded-full w-16" />
-          <div className="h-5 bg-slate-800/50 rounded-full w-20" />
+          <div className="h-5 bg-muted rounded-full w-16" />
+          <div className="h-5 bg-muted rounded-full w-20" />
         </div>
-        <div className="h-7 bg-slate-800/50 rounded-md w-32 mb-2" />
-        <div className="h-4 bg-slate-800/50 rounded-md w-24" />
+        <div className="h-7 bg-muted rounded-md w-32 mb-2" />
+        <div className="h-4 bg-muted rounded-md w-24" />
       </div>
-      <div className="w-5 h-5 bg-slate-800/50 rounded-md shrink-0" />
+      <div className="w-5 h-5 bg-muted rounded-md shrink-0" />
     </div>
   );
 }
@@ -248,7 +248,7 @@ export function DashboardClient({
                 <ProductSkeleton />
               </>
             ) : productList.length === 0 ? (
-              <div className="text-center py-10 text-slate-500 rounded-xl border border-slate-800">
+              <div className="text-center py-10 text-muted-foreground rounded-xl border border-border">
                 Nenhum dado carregado.
               </div>
             ) : (
@@ -263,7 +263,7 @@ export function DashboardClient({
                 return (
                   <div
                     key={item.id}
-                    className="rounded-xl border border-slate-800/80 hover:border-slate-700 transition-colors group flex flex-col overflow-hidden"
+                    className="rounded-xl border border-border hover:border-muted-foreground/40 transition-colors group flex flex-col overflow-hidden"
                   >
                     <div className="p-5 flex items-start gap-5">
                       <div className="shrink-0">
@@ -284,7 +284,7 @@ export function DashboardClient({
                         </h3>
 
                         <div className="flex gap-2 items-center mt-1.5">
-                          <span className="text-blue-500 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-slate-500/20 underline">
+                          <span className="text-[#5a9600] text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-[#345400]/20 underline">
                             <a href={item.url} target="_blank" rel="noreferrer">
                               {item.store || "Sem loja"}
                             </a>

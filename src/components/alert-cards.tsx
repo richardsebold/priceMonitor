@@ -1,4 +1,4 @@
-import { ProductHistory } from "../../generated/prisma/client";
+import { Alert } from "../../generated/prisma/client";
 import {
   Card,
   CardDescription,
@@ -7,7 +7,7 @@ import {
 } from "./ui/card";
 
 interface AlertsProps {
-  alerts: ProductHistory[]
+  alerts: Alert[]
 }
 
 export default function AlertCards({ alerts }: AlertsProps) {
@@ -42,7 +42,7 @@ export default function AlertCards({ alerts }: AlertsProps) {
               <CardDescription>Último Alerta</CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {new Date(
-                  Math.max(...alerts.map((a) => new Date(a.scrapedAt).getTime()))
+                  Math.max(...alerts.map((a) => new Date(a.createdAt).getTime()))
                 ).toLocaleDateString("pt-BR")}
               </CardTitle>
             </CardHeader>

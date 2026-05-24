@@ -21,8 +21,8 @@ export async function getDashboardStats() {
         where: { userId },
         orderBy: { scrapedAt: "desc" },
       }),
-      prisma.productHistory.count({
-        where: { userId, targetReached: true },
+      prisma.alert.count({
+        where: { userId, type: "TARGET_REACHED" },
       }),
       prisma.productHistory.findMany({
         where: { userId, targetReached: true },
@@ -32,9 +32,9 @@ export async function getDashboardStats() {
         where: { userId },
         include: { history: true },
       }),
-      prisma.productHistory.findMany({
-        where: { userId, targetReached: true },
-        orderBy: { scrapedAt: "desc" },
+      prisma.alert.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
         take: 10,
       }),
     ])

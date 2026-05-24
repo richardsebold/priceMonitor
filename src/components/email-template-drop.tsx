@@ -1,0 +1,397 @@
+import * as React from 'react';
+import { ProductHistory } from '../../generated/prisma/client';
+import {
+  Html,
+  Body,
+  Head,
+  Container,
+  Tailwind,
+  Text,
+  Button,
+  Img,
+  Section,
+  Row,
+  Column,
+  Preview,
+  Link,
+  Hr,
+} from '@react-email/components';
+
+interface EmailTemplateDropProps {
+  product: ProductHistory;
+  userName: string;
+  previousPrice: number;
+}
+
+const BRAND = '#4fa800';
+const BRAND_DARK = '#3d8500';
+const BRAND_LIGHT = '#b6f24a';
+const BRAND_DEEP = '#2c5f00';
+
+export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTemplateDropProps) {
+  const dataFormatada =
+    product.scrapedAt instanceof Date
+      ? product.scrapedAt.toLocaleDateString('pt-BR')
+      : String(product.scrapedAt);
+
+  const currencyPrefix = product.currency === 'BRL' ? 'R$ ' : '';
+  const priceNumber = Number(product.price);
+  const prevNumber = Number(previousPrice);
+  const dropPct =
+    prevNumber > 0 && priceNumber < prevNumber
+      ? Math.max(1, Math.round(((prevNumber - priceNumber) / prevNumber) * 100))
+      : null;
+
+  return (
+    <Tailwind>
+      <Html lang="pt-BR">
+        <Head>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="x-apple-disable-message-reformatting" />
+          <meta name="color-scheme" content="light" />
+          <meta name="supported-color-schemes" content="light" />
+        </Head>
+        <Preview>
+          {`O preço caiu! ${product.name} agora por ${currencyPrefix}${product.price}`}
+        </Preview>
+
+        <Body
+          className="m-0 p-0 font-sans"
+          style={{ backgroundColor: '#f4f4f5', margin: 0, padding: 0 }}
+        >
+          <Container
+            className="mx-auto my-0 w-full"
+            style={{ maxWidth: '600px', width: '100%', backgroundColor: BRAND }}
+          >
+            <Section
+              style={{
+                backgroundColor: BRAND,
+                padding: '24px 28px 12px 28px',
+              }}
+            >
+              <Row>
+                <Column align="left">
+                  <Text
+                    className="m-0"
+                    style={{
+                      color: '#ffffff',
+                      fontSize: '20px',
+                      fontWeight: 800,
+                      letterSpacing: '-0.02em',
+                      margin: 0,
+                    }}
+                  >
+                    Price Tracker
+                  </Text>
+                </Column>
+                <Column align="right">
+                  <Link
+                    href="#"
+                    style={{
+                      color: 'rgba(255,255,255,0.85)',
+                      fontSize: '12px',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Cancelar inscrição
+                  </Link>
+                </Column>
+              </Row>
+            </Section>
+
+            {/* ============= HERO ============= */}
+            <Section
+              style={{
+                backgroundColor: BRAND,
+                padding: '20px 28px 36px 28px',
+                textAlign: 'center',
+              }}
+            >
+              {dropPct !== null && (
+                <Text
+                  className="m-0"
+                  style={{
+                    display: 'inline-block',
+                    backgroundColor: BRAND_LIGHT,
+                    color: BRAND_DEEP,
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    padding: '6px 12px',
+                    borderRadius: '999px',
+                    margin: '0 0 18px 0',
+                  }}
+                >
+                  {`Caiu ${dropPct}% desde a última verificação`}
+                </Text>
+              )}
+              <Text
+                className="m-0"
+                style={{
+                  color: '#ffffff',
+                  fontSize: '36px',
+                  lineHeight: '1.05',
+                  fontWeight: 900,
+                  letterSpacing: '-0.025em',
+                  margin: '0 0 12px 0',
+                }}
+              >
+                Olha só, {userName}!
+                <br />O preço caiu.
+              </Text>
+              <Text
+                className="m-0"
+                style={{
+                  color: 'rgba(255,255,255,0.9)',
+                  fontSize: '15px',
+                  lineHeight: '1.5',
+                  margin: 0,
+                }}
+              >
+                O produto que você monitora ficou mais barato. Ainda não chegou
+                na sua meta, mas pode ser uma boa hora para ficar de olho.
+              </Text>
+            </Section>
+
+            {/* ============= PRODUTO (branco) ============= */}
+            <Section
+              style={{
+                backgroundColor: '#ffffff',
+                padding: '32px 28px 32px 28px',
+                borderTopLeftRadius: '32px',
+                borderTopRightRadius: '32px',
+                borderBottomLeftRadius: '32px',
+                borderBottomRightRadius: '32px',
+              }}
+            >
+              {product.image && (
+                <Section
+                  style={{
+                    backgroundColor: '#fafafa',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Img
+                    src={product.image as string}
+                    alt={(product.name as string) || 'Produto'}
+                    style={{
+                      display: 'block',
+                      maxWidth: '100%',
+                      width: 'auto',
+                      maxHeight: '240px',
+                      margin: '0 auto',
+                      borderRadius: '8px',
+                    }}
+                  />
+                </Section>
+              )}
+
+              <Text
+                className="m-0"
+                style={{
+                  color: '#18181b',
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  lineHeight: '1.3',
+                  letterSpacing: '-0.01em',
+                  textAlign: 'center',
+                  margin: '24px 0 18px 0',
+                }}
+              >
+                {product.name}
+              </Text>
+
+              {/* Card preços */}
+              <Section
+                style={{
+                  border: `1px solid #e4e4e7`,
+                  borderRadius: '14px',
+                  padding: '16px',
+                  backgroundColor: '#ffffff',
+                }}
+              >
+                <Row>
+                  <Column align="center" style={{ width: '50%', padding: '4px 8px' }}>
+                    <Text
+                      className="m-0"
+                      style={{
+                        color: '#a1a1aa',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        margin: '0 0 6px 0',
+                      }}
+                    >
+                      Preço anterior
+                    </Text>
+                    <Text
+                      className="m-0"
+                      style={{
+                        color: '#71717a',
+                        fontSize: '17px',
+                        fontWeight: 600,
+                        textDecoration: 'line-through',
+                        margin: 0,
+                      }}
+                    >
+                      {currencyPrefix}
+                      {previousPrice}
+                    </Text>
+                  </Column>
+                  <Column align="center" style={{ width: '50%', padding: '4px 8px' }}>
+                    <Text
+                      className="m-0"
+                      style={{
+                        color: BRAND_DARK,
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        margin: '0 0 6px 0',
+                      }}
+                    >
+                      Preço atual
+                    </Text>
+                    <Text
+                      className="m-0"
+                      style={{
+                        color: BRAND_DARK,
+                        fontSize: '26px',
+                        fontWeight: 900,
+                        letterSpacing: '-0.02em',
+                        margin: 0,
+                      }}
+                    >
+                      {currencyPrefix}
+                      {product.price}
+                    </Text>
+                  </Column>
+                </Row>
+              </Section>
+
+              {/* Lembrete da meta */}
+              <Text
+                className="m-0"
+                style={{
+                  color: '#71717a',
+                  fontSize: '13px',
+                  textAlign: 'center',
+                  margin: '16px 0 0 0',
+                }}
+              >
+                Sua meta é {currencyPrefix}
+                {product.priceTarget}. Avisamos assim que chegar lá.
+              </Text>
+
+              {/* CTA primário */}
+              <Section style={{ textAlign: 'center', padding: '24px 0 4px 0' }}>
+                <Button
+                  href={product.url}
+                  style={{
+                    backgroundColor: BRAND,
+                    color: '#ffffff',
+                    fontSize: '16px',
+                    fontWeight: 800,
+                    letterSpacing: '-0.01em',
+                    padding: '14px 36px',
+                    borderRadius: '999px',
+                    textDecoration: 'none',
+                    display: 'inline-block',
+                  }}
+                >
+                  Ver produto
+                </Button>
+              </Section>
+            </Section>
+
+            {/* ============= FOOTER (verde) ============= */}
+            <Section
+              style={{
+                backgroundColor: BRAND,
+                padding: '28px 28px 36px 28px',
+                textAlign: 'center',
+              }}
+            >
+              <Text
+                className="m-0"
+                style={{
+                  color: '#ffffff',
+                  fontSize: '22px',
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  lineHeight: '1.3',
+                  margin: '0 0 8px 0',
+                }}
+              >
+                O preço está caindo.
+              </Text>
+              <Text
+                className="m-0"
+                style={{
+                  color: 'rgba(255,255,255,0.9)',
+                  fontSize: '14px',
+                  lineHeight: '1.5',
+                  margin: '0 0 22px 0',
+                }}
+              >
+                Continuamos monitorando para te avisar quando bater a sua meta.
+              </Text>
+              <Button
+                href={product.url}
+                style={{
+                  backgroundColor: '#ffffff',
+                  color: BRAND_DARK,
+                  fontSize: '15px',
+                  fontWeight: 800,
+                  letterSpacing: '-0.01em',
+                  padding: '12px 32px',
+                  borderRadius: '999px',
+                  textDecoration: 'none',
+                  display: 'inline-block',
+                }}
+              >
+                Abrir produto
+              </Button>
+
+              <Hr
+                style={{
+                  borderColor: 'rgba(255,255,255,0.18)',
+                  borderTopWidth: '1px',
+                  borderTopStyle: 'solid',
+                  margin: '28px 0 16px 0',
+                }}
+              />
+              <Text
+                className="m-0"
+                style={{
+                  color: 'rgba(255,255,255,0.85)',
+                  fontSize: '11px',
+                  lineHeight: '1.6',
+                  margin: '0 0 6px 0',
+                }}
+              >
+                Última verificação: {dataFormatada} • Método: {product.method}
+              </Text>
+              <Text
+                className="m-0"
+                style={{
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '11px',
+                  lineHeight: '1.6',
+                  margin: 0,
+                }}
+              >
+                Você recebeu este alerta porque configurou um monitoramento na
+                Price Tracker.
+              </Text>
+            </Section>
+          </Container>
+        </Body>
+      </Html>
+    </Tailwind>
+  );
+}

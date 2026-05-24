@@ -29,6 +29,7 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   products      ProductHistory[]
+  alerts        Alert[]
 
   sessions Session[]
   accounts Account[]
@@ -132,9 +133,29 @@ model ProductHistory {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   history     PriceHistory[]
+  alerts      Alert[]
 
   @@unique([userId, url])
   @@map("produtos_historico")
+}
+
+model Alert {
+  id          String   @id @default(cuid())
+  type        String
+  name        String?
+  url         String
+  price       Float
+  priceTarget Float
+  createdAt   DateTime @default(now())
+
+  userId    String
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   ProductHistory @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("alert")
 }
 
 model PriceHistory {

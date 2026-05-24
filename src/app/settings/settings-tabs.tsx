@@ -35,6 +35,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { SignupReform } from "@/components/signup-reform"
+import { DeleteAccount } from "@/components/delete-account"
 import { cancelAbacatePaySubscription } from "@/actions/abacate-pay"
 import { setPriceAlertsEnabled } from "@/actions/update-notification-prefs"
 import {
@@ -142,8 +143,9 @@ export function SettingsTabs({ userInfos }: SettingsTabsProps) {
         <TabsTrigger value="billing">Assinatura</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="profile">
+      <TabsContent value="profile" className="space-y-6">
         <SignupReform />
+        <DeleteAccount />
       </TabsContent>
 
       <TabsContent value="notifications">

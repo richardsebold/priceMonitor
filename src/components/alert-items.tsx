@@ -1,11 +1,11 @@
-import { BellRing, ExternalLink, TrendingDown } from "lucide-react";
-import { ProductHistory } from "../../generated/prisma/client";
+import { BellRing, ExternalLink, Target, TrendingDown } from "lucide-react";
+import { Alert } from "../../generated/prisma/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import Link from "next/link";
 
 interface AlertsProps {
-  alerts: ProductHistory[]
+  alerts: Alert[]
 }
 
 export default function ClientAlerts( { alerts }: AlertsProps ) {
@@ -28,35 +28,43 @@ export default function ClientAlerts( { alerts }: AlertsProps ) {
             </div>
           ) : (
             <div className="space-y-4">
-              {alerts.map((alert) => (
+              {alerts.map((alert) => {
+                const isTarget = alert.type === "TARGET_REACHED";
+                return (
                 <div key={alert.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg gap-4 bg-muted/20">
                   <div className="flex-1">
                     <h3 className="font-medium line-clamp-1" >
                       {alert.name}
                     </h3>
                     <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
+                        {isTarget ? <Target className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+                        {isTarget ? "Meta atingida" : "Queda de preço"}
+                      </span>
+                      <span>•</span>
                       <span>Meta: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(alert.priceTarget)}</span>
                       <span>•</span>
-                      <span>Atualizado em: {new Date(alert.scrapedAt).toLocaleDateString('pt-BR')}</span>
+                      <span>{new Date(alert.createdAt).toLocaleDateString('pt-BR')}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     <Badge variant="outline" className="border-[#345400] text-[#5a9600] flex gap-1.5 py-1 px-3">
                       <TrendingDown className="size-4" />
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(alert.price)}
                     </Badge>
-                    
-                    <Link 
-                      href={alert.url} 
-                      target="_blank" 
+
+                    <Link
+                      href={alert.url}
+                      target="_blank"
                       className="p-2 text-muted-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
                     >
                       <ExternalLink className="size-5" />
                     </Link>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

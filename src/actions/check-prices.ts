@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { scrapeProduct } from "./scrape-product";
-import { sendPriceAlert } from "../actions/enviar-email";
+import { sendPriceAlert, sendPriceDropAlert } from "../actions/enviar-email";
 
 export async function runPriceCheckJob() {
   console.log("Iniciando rotina de verificação de preços...");
@@ -67,6 +67,17 @@ export async function runPriceCheckJob() {
 
         if (alertsEnabled) {
           await sendPriceAlert(updatedProduct, product.user.email, product.user.name);
+          await prisma.alert.create({
+            data: {
+              type: "TARGET_REACHED",
+              name: updatedProduct.name,
+              url: updatedProduct.url,
+              price: updatedProduct.price,
+              priceTarget: updatedProduct.priceTarget,
+              userId: product.userId,
+              productId: product.id,
+            },
+          });
         } else {
           console.log(
             `[SKIP] Alertas desativados para o usuário ${product.user.email}`,
@@ -78,7 +89,18 @@ export async function runPriceCheckJob() {
         );
 
         if (alertsEnabled) {
-          await sendPriceAlert(updatedProduct, product.user.email, product.user.name);
+          await sendPriceDropAlert(updatedProduct, product.user.email, product.user.name, product.price);
+          await prisma.alert.create({
+            data: {
+              type: "PRICE_DROP",
+              name: updatedProduct.name,
+              url: updatedProduct.url,
+              price: updatedProduct.price,
+              priceTarget: updatedProduct.priceTarget,
+              userId: product.userId,
+              productId: product.id,
+            },
+          });
         } else {
           console.log(
             `[SKIP] Alertas desativados para o usuário ${product.user.email}`,

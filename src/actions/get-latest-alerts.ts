@@ -5,16 +5,15 @@ import { getUser } from "@/actions/get-user"
 
 export async function getLatestAlerts() {
   const user = await getUser()
-  
+
   if (!user) return []
 
-  const alerts = await prisma.productHistory.findMany({
+  const alerts = await prisma.alert.findMany({
     where: {
       userId: user.id,
-      targetReached: true
     },
     orderBy: {
-      scrapedAt: 'desc'
+      createdAt: 'desc'
     },
     take: 10
   })
