@@ -156,18 +156,41 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
 
   try {
     if (url.includes('amazon.')) {
-      const priceMatch = html.match(/<span class="a-price-whole">([\d.,]+)<\/span>/i);
+      const priceMatch = html.match(/<span class="a-price-whole">([\d.,]+)/i);
       const fractionMatch = html.match(/<span class="a-price-fraction">(\d+)<\/span>/i);
       if (priceMatch) {
         specificPrice = toNumberPrice(priceMatch[1] + (fractionMatch ? ',' + fractionMatch[1] : ''));
       }
-      const nameMatch = html.match(/<span id="productTitle"[^>]*>([\s\S]*?)<\/span>/i);
-      if (nameMatch) specificName = decodeEntities(nameMatch[1].trim());
+      const nameMatch = html.match(/<title>([^<]+)<\/title>/i);
+      if (nameMatch) {
+          specificName = decodeEntities(nameMatch[1].replace(/\s*:?\s*Amazon\.com\.br.*/i, '').trim());
+      }
       
-      const imgMatch = html.match(/<img[^>]*id="landingImage"[^>]*src="([^"]+)"/i) || 
+      const imgMatch = html.match(/<img[^>]*id="landingImage"[^>]*data-a-dynamic-image="([^"]+)"/i) ||
+                       html.match(/<img[^>]*id="landingImage"[^>]*data-old-hires="([^"]+)"/i) ||
+                       html.match(/<img[^>]*id="landingImage"[^>]*src="([^"]+)"/i) || 
+                       html.match(/<img[^>]*class="[^"]*a-dynamic-image[^"]*"[^>]*data-a-dynamic-image="([^"]+)"/i) ||
+                       html.match(/<img[^>]*class="[^"]*a-dynamic-image[^"]*"[^>]*data-old-hires="([^"]+)"/i) ||
+                       html.match(/<img[^>]*class="[^"]*a-dynamic-image[^"]*"[^>]*src="([^"]+)"/i) ||
                        html.match(/<img[^>]*id="imgBlkFront"[^>]*src="([^"]+)"/i) ||
                        html.match(/"large":"([^"]+)"/i);
-      if (imgMatch) specificImage = imgMatch[1];
+      if (imgMatch) {
+        specificImage = imgMatch[1];
+        if (specificImage.startsWith('{&quot;') || specificImage.startsWith('{"')) {
+            try {
+                const dynamicData = JSON.parse(decodeEntities(specificImage));
+                specificImage = Object.keys(dynamicData)[0] || specificImage;
+            } catch (e) {}
+        } else if (specificImage.startsWith('data:image')) {
+            const dynamicImgMatch = html.match(/<img[^>]*id="landingImage"[^>]*data-a-dynamic-image="([^"]+)"/i);
+            if (dynamicImgMatch) {
+                try {
+                    const dynamicData = JSON.parse(decodeEntities(dynamicImgMatch[1]));
+                    specificImage = Object.keys(dynamicData)[0] || specificImage;
+                } catch (e) {}
+            }
+        }
+      }
 
     } else if (url.includes('mercadolivre.com')) {
       const priceMatch = html.match(/<span class="andes-money-amount__fraction">([\d.,]+)<\/span>/i);
@@ -199,10 +222,56 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
       if (priceMatch) specificPrice = toNumberPrice(priceMatch[1]);
       
       const nameMatch = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-      if (nameMatch) specificName = decodeEntities(nameMatch[1].trim());
+      if (nameMatch) specificName = decodeEntities(nameMatch[1].replace(/<[^>]+>/g, '').trim());
 
       const imgMatch = html.match(/<img[^>]*alt="Foto de[^"]*"[^>]*src="([^"]+)"/i);
       if (imgMatch) specificImage = imgMatch[1];
+
+    } else if (url.includes('magazineluiza.com') || url.includes('magalu.com')) {
+      // Magalu uses data-testid attributes (stable selectors)
+      // Price: data-testid="price-value" or data-testid="price-original"
+      const priceMatch = html.match(/data-testid="price-value"[^>]*>([^<]+)</i) ||
+                         html.match(/data-testid="price-value"[^>]*>[^R]*R\$\s*([\d.,]+)/i);
+      if (priceMatch) {
+        specificPrice = toNumberPrice(priceMatch[1]);
+      }
+      if (specificPrice <= 0) {
+        // Fallback: search for price in __NEXT_DATA__
+        const nextData = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i);
+        if (nextData) {
+          try {
+            const data = JSON.parse(nextData[1]);
+            const str = JSON.stringify(data);
+            const pMatch = str.match(/"bestPrice":([\d.]+)/) || str.match(/"price":([\d.]+)/);
+            if (pMatch) specificPrice = Number(pMatch[1]);
+          } catch {}
+        }
+      }
+
+      // Title: data-testid="heading-product-title"
+      const titleMatch = html.match(/data-testid="heading-product-title"[^>]*>([\s\S]*?)<\/h[12]>/i) ||
+                          html.match(/data-testid="product-title"[^>]*>([\s\S]*?)<\/[^>]+>/i);
+      if (titleMatch) {
+        specificName = decodeEntities(titleMatch[1].replace(/<[^>]+>/g, '').trim());
+      }
+      if (!specificName) {
+        const nextData = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i);
+        if (nextData) {
+          try {
+            const str = nextData[1];
+            const nMatch = str.match(/"title":"([^"]{5,200})"/);
+            if (nMatch) specificName = decodeEntities(nMatch[1]);
+          } catch {}
+        }
+      }
+
+      // Image: data-testid="image-selected-thumbnail" or product gallery img
+      const imgTagMatch = html.match(/data-testid="image-selected-thumbnail"[^>]*src="([^"]+)"/i) ||
+                          html.match(/data-testid="product-image"[^>]*src="([^"]+)"/i) ||
+                          html.match(/<img[^>]*src="(https:\/\/a-static\.mlcdn\.com\.br[^"]+)"/i);
+      if (imgTagMatch) {
+        specificImage = imgTagMatch[1];
+      }
     }
   } catch (e) {
     // Ignore error and fallback
