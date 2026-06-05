@@ -217,16 +217,6 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
       const imgMatch = html.match(/"image":"([^"]+)"/i) || html.match(/background-image:\s*url\((?:&quot;|")([^"&]+)(?:&quot;|")\)/i);
       if (imgMatch) specificImage = imgMatch[1];
 
-    } else if (url.includes('pichau.com')) {
-      const priceMatch = html.match(/R\$\s*&nbsp;\s*([\d.,]+)/i) || html.match(/R\$\s*([\d.,]+)/i);
-      if (priceMatch) specificPrice = toNumberPrice(priceMatch[1]);
-      
-      const nameMatch = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-      if (nameMatch) specificName = decodeEntities(nameMatch[1].replace(/<[^>]+>/g, '').trim());
-
-      const imgMatch = html.match(/<img[^>]*alt="Foto de[^"]*"[^>]*src="([^"]+)"/i);
-      if (imgMatch) specificImage = imgMatch[1];
-
     } else if (url.includes('magazineluiza.com') || url.includes('magalu.com')) {
       // Magalu uses data-testid attributes (stable selectors)
       // Price: data-testid="price-value" or data-testid="price-original"
