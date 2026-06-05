@@ -147,6 +147,80 @@ const normalizeImage = (
 
 export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct {
   const store = getStore(html, opts.url);
+  const url = opts.url || '';
+
+  // Store-specific extraction for high accuracy
+  let specificPrice = 0;
+  let specificName = '';
+  let specificImage = '';
+
+  try {
+    if (url.includes('amazon.')) {
+      const priceMatch = html.match(/<span class="a-price-whole">([\d.,]+)<\/span>/i);
+      const fractionMatch = html.match(/<span class="a-price-fraction">(\d+)<\/span>/i);
+      if (priceMatch) {
+        specificPrice = toNumberPrice(priceMatch[1] + (fractionMatch ? ',' + fractionMatch[1] : ''));
+      }
+      const nameMatch = html.match(/<span id="productTitle"[^>]*>([\s\S]*?)<\/span>/i);
+      if (nameMatch) specificName = decodeEntities(nameMatch[1].trim());
+      
+      const imgMatch = html.match(/<img[^>]*id="landingImage"[^>]*src="([^"]+)"/i) || 
+                       html.match(/<img[^>]*id="imgBlkFront"[^>]*src="([^"]+)"/i) ||
+                       html.match(/"large":"([^"]+)"/i);
+      if (imgMatch) specificImage = imgMatch[1];
+
+    } else if (url.includes('mercadolivre.com')) {
+      const priceMatch = html.match(/<span class="andes-money-amount__fraction">([\d.,]+)<\/span>/i);
+      if (priceMatch) specificPrice = toNumberPrice(priceMatch[1]);
+      
+      const nameMatch = html.match(/<h1 class="ui-pdp-title">([\s\S]*?)<\/h1>/i);
+      if (nameMatch) specificName = decodeEntities(nameMatch[1].trim());
+
+      const imgMatch = html.match(/<img[^>]*class="ui-pdp-image ui-pdp-gallery__figure__image"[^>]*src="([^"]+)"/i) ||
+                       html.match(/data-zoom="([^"]+)"/i);
+      if (imgMatch) specificImage = imgMatch[1];
+
+    } else if (url.includes('shopee.com')) {
+      const priceMatch = html.match(/"price":(\d+00000)/i);
+      if (priceMatch) specificPrice = parseInt(priceMatch[1]) / 100000;
+      else {
+        const textMatch = html.match(/>R\$ ?([\d.,]+)</i);
+        if (textMatch) specificPrice = toNumberPrice(textMatch[1]);
+      }
+      
+      const titleMatch = html.match(/<title>([^|]+)\|/i) || html.match(/"name":"([^"]+)"/i);
+      if (titleMatch) specificName = decodeEntities(titleMatch[1].trim());
+
+      const imgMatch = html.match(/"image":"([^"]+)"/i) || html.match(/background-image:\s*url\((?:&quot;|")([^"&]+)(?:&quot;|")\)/i);
+      if (imgMatch) specificImage = imgMatch[1];
+
+    } else if (url.includes('pichau.com')) {
+      const priceMatch = html.match(/R\$\s*&nbsp;\s*([\d.,]+)/i) || html.match(/R\$\s*([\d.,]+)/i);
+      if (priceMatch) specificPrice = toNumberPrice(priceMatch[1]);
+      
+      const nameMatch = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+      if (nameMatch) specificName = decodeEntities(nameMatch[1].trim());
+
+      const imgMatch = html.match(/<img[^>]*alt="Foto de[^"]*"[^>]*src="([^"]+)"/i);
+      if (imgMatch) specificImage = imgMatch[1];
+    }
+  } catch (e) {
+    // Ignore error and fallback
+  }
+
+  const ogTitle = extractMeta(html, 'og:title');
+  const ogImage = extractMeta(html, 'og:image');
+  
+  if (specificPrice > 0) {
+    return {
+      name: specificName || ogTitle || extractH1(html) || extractTitle(html),
+      price: specificPrice,
+      currency: 'BRL',
+      image: specificImage || ogImage || extractFirstImg(html),
+      store,
+      method: 'regex',
+    };
+  }
 
   for (const raw of extractJsonLdBlocks(html)) {
     let json: unknown;
@@ -176,10 +250,8 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
     }
   }
 
-  const ogTitle = extractMeta(html, 'og:title');
   const ogPrice = extractMeta(html, 'product:price:amount');
   const ogCurrency = extractMeta(html, 'product:price:currency');
-  const ogImage = extractMeta(html, 'og:image');
   if (ogTitle && toNumberPrice(ogPrice) > 0) {
     return {
       name: ogTitle,
