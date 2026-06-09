@@ -30,7 +30,14 @@ import {
 } from "./ui/dropdown-menu";
 import { Badge } from "./ui/badge";
 import EditTask from "./EditURL";
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 
 type DropData = {
   name: string | null;
@@ -80,14 +87,17 @@ export function DashboardClient({
   hideSectionCards = false,
   defaultExpandFirstItem = true,
 }: DashboardClientProps) {
-  const [productList, setProductList] = useState<ProductHistory[]>(initialProducts);
+  const [productList, setProductList] =
+    useState<ProductHistory[]>(initialProducts);
   const [stats, setStats] = useState<InitialStats>(initialStats);
   const [url, setUrl] = useState("");
   const [priceTarget, setPriceTarget] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [expandedItemId, setExpandedItemId] = useState<string | null>(
-    defaultExpandFirstItem && initialProducts.length > 0 ? initialProducts[0].id : null
+    defaultExpandFirstItem && initialProducts.length > 0
+      ? initialProducts[0].id
+      : null,
   );
 
   const isLimitReached = productList.length >= planLimit;
@@ -114,30 +124,41 @@ export function DashboardClient({
   }
 
   const handleAddProduct = async () => {
+    if (!url.trim()) {
+      toast.error("Insira um URL");
+      return;
+    }
+    if (productList.some((item) => item.url === url)) {
+      toast.warning("Produto já cadastrado!");
+      return;
+    }
+    const parsedPriceTarget = Number(priceTarget);
+    if (priceTarget && Number.isNaN(parsedPriceTarget)) {
+      toast.error("Valor inválido");
+      return;
+    }
+
     setLoading(true);
+
+    const toastId = toast.loading("Rastreando produto. Por favor, aguarde...");
+
     try {
-      if (!url.trim()) {
-        toast.error("Insira um URL");
-        return;
-      }
-      if (productList.some((item) => item.url === url)) {
-        toast.warning("Produto já cadastrado!");
-        return;
-      }
-      const parsedPriceTarget = Number(priceTarget);
-      if (priceTarget && Number.isNaN(parsedPriceTarget)) {
-        toast.error("Valor inválido");
-        return;
-      }
       const myNewProduct = await NewProduct(url, parsedPriceTarget);
-      if (!myNewProduct) return;
+
+      if (!myNewProduct) {
+        toast.dismiss(toastId);
+        return;
+      }
+
       setUrl("");
       setPriceTarget("");
       await refreshDashboard();
-      toast.success("Produto adicionado com sucesso!");
+
+      toast.success("Produto adicionado com sucesso!", { id: toastId });
     } catch (error) {
       console.error("Erro ao adicionar:", error);
-      toast.error("Erro ao adicionar produto!");
+
+      toast.error("Erro ao adicionar produto!", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -190,7 +211,10 @@ export function DashboardClient({
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="cursor-pointer w-full sm:w-auto" disabled={isLimitReached}>
+                  <Button
+                    className="cursor-pointer w-full sm:w-auto"
+                    disabled={isLimitReached}
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     CADASTRAR PRODUTO
                   </Button>
@@ -256,7 +280,9 @@ export function DashboardClient({
                 const price = item.price || 0;
                 const target = item.priceTarget || 0;
                 const percentDiff =
-                  target > 0 ? (((price - target) / target) * 100).toFixed(1) : 0;
+                  target > 0
+                    ? (((price - target) / target) * 100).toFixed(1)
+                    : 0;
                 const isAboveTarget = price > target;
                 const isExpanded = expandedItemId === item.id;
 
@@ -329,27 +355,36 @@ export function DashboardClient({
                               <MoreVertical size={20} />
                             </button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 text-slate-300">
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-48 text-slate-300"
+                          >
                             <DropdownMenuItem
                               className="cursor-pointer"
                               onClick={() => toggleHistory(item.id)}
                             >
                               <Eye className="mr-2 h-4 w-4" />
-                              {isExpanded ? "Ocultar histórico" : "Ver histórico"}
+                              {isExpanded
+                                ? "Ocultar histórico"
+                                : "Ver histórico"}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
                               className="cursor-pointer"
                               onSelect={(e) => e.preventDefault()}
                             >
-                              <EditTask product={item} handleGetProduct={refreshDashboard} />
+                              <EditTask
+                                product={item}
+                                handleGetProduct={refreshDashboard}
+                              />
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
                               className="cursor-pointer"
                               onClick={() => window.open(item.url, "_blank")}
                             >
-                              <ExternalLink className="mr-2 h-4 w-4" /> Abrir loja
+                              <ExternalLink className="mr-2 h-4 w-4" /> Abrir
+                              loja
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
