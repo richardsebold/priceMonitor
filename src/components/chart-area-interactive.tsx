@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import { getProductHistory } from "@/actions/get-product-history"
+import * as React from "react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { getProductHistory } from "@/actions/get-product-history";
 
 import {
   Card,
@@ -10,69 +10,69 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 const chartConfig = {
   price: {
     label: "Preço",
-    color: "#6CA651", 
+    color: "#6CA651",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 interface ChartData {
-  date: string
-  price: number
+  date: string;
+  price: number;
 }
 
 interface ChartAreaInteractiveProps {
-  productId?: string
+  productId?: string;
 }
 
 export function ChartAreaInteractive({ productId }: ChartAreaInteractiveProps) {
-  const [timeRange, setTimeRange] = React.useState("90d")
-  const [chartData, setChartData] = React.useState<ChartData[]>([])
-  const [loading, setLoading] = React.useState(true)
+  const [timeRange, setTimeRange] = React.useState("90d");
+  const [chartData, setChartData] = React.useState<ChartData[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     async function fetchData() {
-      if (!productId) return
-      setLoading(true)
-      const data = await getProductHistory(productId)
-      setChartData(data)
-      setLoading(false)
+      if (!productId) return;
+      setLoading(true);
+      const data = await getProductHistory(productId);
+      setChartData(data);
+      setLoading(false);
     }
 
-    fetchData()
-  }, [productId])
+    fetchData();
+  }, [productId]);
 
   const filteredData = chartData.filter((item) => {
-    const date = new Date(item.date)
-    const referenceDate = new Date()
-    let daysToSubtract = 90
-    
+    const date = new Date(item.date);
+    const referenceDate = new Date();
+    let daysToSubtract = 90;
+
     if (timeRange === "30d") {
-      daysToSubtract = 30
+      daysToSubtract = 30;
     } else if (timeRange === "7d") {
-      daysToSubtract = 7
+      daysToSubtract = 7;
     }
-    
-    const startDate = new Date(referenceDate)
-    startDate.setDate(startDate.getDate() - daysToSubtract)
-    return date >= startDate
-  })
+
+    const startDate = new Date(referenceDate);
+    startDate.setDate(startDate.getDate() - daysToSubtract);
+    return date >= startDate;
+  });
 
   return (
     <Card className="pt-0 border-none shadow-none bg-transparent">
@@ -109,7 +109,7 @@ export function ChartAreaInteractive({ productId }: ChartAreaInteractiveProps) {
             Carregando histórico...
           </div>
         ) : chartData.length === 0 ? (
-           <div className="flex h-62.5 items-center justify-center text-slate-500">
+          <div className="flex h-62.5 items-center justify-center text-slate-500">
             Nenhum histórico disponível para este produto.
           </div>
         ) : (
@@ -132,7 +132,11 @@ export function ChartAreaInteractive({ productId }: ChartAreaInteractiveProps) {
                   />
                 </linearGradient>
               </defs>
-              <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.2} />
+              <CartesianGrid
+                vertical={false}
+                strokeDasharray="3 3"
+                opacity={0.2}
+              />
               <XAxis
                 dataKey="date"
                 tickLine={false}
@@ -140,20 +144,20 @@ export function ChartAreaInteractive({ productId }: ChartAreaInteractiveProps) {
                 tickMargin={8}
                 minTickGap={32}
                 tickFormatter={(value) => {
-                  const date = new Date(value)
-                  date.setMinutes(date.getMinutes() + date.getTimezoneOffset())
+                  const date = new Date(value);
+                  date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
                   return date.toLocaleDateString("pt-BR", {
                     month: "short",
                     day: "numeric",
-                  })
+                  });
                 }}
               />
-              <YAxis 
+              <YAxis
                 dataKey="price"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                domain={['auto', 'auto']}
+                domain={["auto", "auto"]}
                 tickFormatter={(value) => `R$ ${value.toLocaleString("pt-BR")}`}
               />
               <ChartTooltip
@@ -161,16 +165,20 @@ export function ChartAreaInteractive({ productId }: ChartAreaInteractiveProps) {
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) => {
-                      const date = new Date(value)
-                      date.setMinutes(date.getMinutes() + date.getTimezoneOffset())
-                      return date.toLocaleDateString("pt-BR", {
+                      const date = new Date(value);
+                      return date.toLocaleString("pt-BR", {
                         month: "long",
                         day: "numeric",
-                      })
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
                     }}
                     formatter={(value: unknown) => (
                       <span className="font-semibold">
-                        R$ {Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        R${" "}
+                        {Number(value).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                        })}
                       </span>
                     )}
                     indicator="dot"
@@ -189,5 +197,5 @@ export function ChartAreaInteractive({ productId }: ChartAreaInteractiveProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
