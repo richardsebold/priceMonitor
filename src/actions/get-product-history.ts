@@ -14,7 +14,7 @@ export async function getProductHistory(productId: string) {
     })
 
     return history.map((item) => ({
-      date: item.createdAt.toISOString().split("T")[0],
+      date: item.createdAt.toISOString(),
       price: item.price,
     }))
   } catch (error) {
