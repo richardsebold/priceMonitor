@@ -112,7 +112,7 @@ export function EmailTemplate({ product, userName }: EmailTemplateProps) {
                   style={{
                     display: 'inline-block',
                     backgroundColor: BRAND_LIGHT,
-                    color: BRAND_DEEP,
+                    color: BRAND_DARK,
                     fontSize: '12px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
@@ -273,7 +273,7 @@ export function EmailTemplate({ product, userName }: EmailTemplateProps) {
               </Section>
 
               {/* CTA primário */}
-              <Section style={{ textAlign: 'center', padding: '24px 0 4px 0' }}>
+              {/* <Section style={{ textAlign: 'center', padding: '24px 0 4px 0' }}>
                 <Button
                   href={product.url}
                   style={{
@@ -290,7 +290,7 @@ export function EmailTemplate({ product, userName }: EmailTemplateProps) {
                 >
                   Comprar agora
                 </Button>
-              </Section>
+              </Section> */}
             </Section>
 
             {/* ============= FOOTER (verde) ============= */}
@@ -329,7 +329,7 @@ export function EmailTemplate({ product, userName }: EmailTemplateProps) {
                 href={product.url}
                 style={{
                   backgroundColor: '#ffffff',
-                  color: BRAND_DARK,
+                  color: BRAND_LIGHT,
                   fontSize: '15px',
                   fontWeight: 800,
                   letterSpacing: '-0.01em',
