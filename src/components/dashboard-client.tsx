@@ -144,9 +144,19 @@ export function DashboardClient({
 
     try {
       const myNewProduct = await NewProduct(url, parsedPriceTarget);
+      const isErrorResponse =
+        typeof myNewProduct === "object" &&
+        myNewProduct !== null &&
+        "success" in myNewProduct &&
+        myNewProduct.success === false;
 
-      if (!myNewProduct) {
-        toast.dismiss(toastId);
+      if (!myNewProduct || isErrorResponse) {
+        toast.error(
+          isErrorResponse && "error" in myNewProduct
+            ? myNewProduct.error
+            : "Não foi possível rastrear este produto.",
+          { id: toastId },
+        );
         return;
       }
 

@@ -389,8 +389,18 @@ export function ProductsList({
     setLoading(true);
     try {
       const created = await NewProduct(url, parsed);
-      if (!created) {
-        toast.error("Não foi possível cadastrar.");
+      const isErrorResponse =
+        typeof created === "object" &&
+        created !== null &&
+        "success" in created &&
+        created.success === false;
+
+      if (!created || isErrorResponse) {
+        toast.error(
+          isErrorResponse && "error" in created
+            ? created.error
+            : "Não foi possível rastrear este produto.",
+        );
         return;
       }
       setUrl("");
