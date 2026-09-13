@@ -10,7 +10,7 @@ import {
   isWithinRefundWindow,
   type CancellationReason,
 } from "@/lib/refund";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 
 const VALID_REASONS = new Set(CANCELLATION_REASONS.map((r) => r.value));
 
@@ -31,9 +31,7 @@ async function notifyRefundRequest(params: {
     return;
   }
   try {
-    const resend = new Resend(apiKey);
-    await resend.emails.send({
-      from: `Monitorador de Preços <${process.env.EMAIL_ADDRESS}>`,
+    await sendEmail({
       to,
       subject: "Solicitação de reembolso (cancelamento em até 7 dias)",
       text: [

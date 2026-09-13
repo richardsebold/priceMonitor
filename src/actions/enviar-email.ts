@@ -1,18 +1,14 @@
 'use server'
 
 
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { EmailTemplate } from "../components/email-template";
 import { EmailTemplateDrop } from "../components/email-template-drop";
 import { ProductHistory } from "../../generated/prisma/client";
 
 export async function sendPriceAlert(product: ProductHistory, userEmail: string, userName: string) {
-
-  const resend = new Resend(process.env.RESEND_API_KEY as string);
-
  try {
-     const { data, error } = await resend.emails.send({
-       from: `Monitorador de Preços <${process.env.EMAIL_ADDRESS}>`,
+     const { data, error } = await sendEmail({
        to: userEmail,
        subject: 'Alerta de Preço Baixo!',
        react: EmailTemplate({ product, userName }),
@@ -33,12 +29,8 @@ export async function sendPriceAlert(product: ProductHistory, userEmail: string,
 }
 
 export async function sendPriceDropAlert(product: ProductHistory, userEmail: string, userName: string, previousPrice: number) {
-
-  const resend = new Resend(process.env.RESEND_API_KEY as string);
-
  try {
-     const { data, error } = await resend.emails.send({
-       from: `Monitorador de Preços <${process.env.EMAIL_ADDRESS}>`,
+     const { data, error } = await sendEmail({
        to: userEmail,
        subject: 'O preço caiu!',
        react: EmailTemplateDrop({ product, userName, previousPrice }),
