@@ -1,4 +1,5 @@
 import { runPriceCheckJob } from "@/modules/price-tracking/application/run-price-check-job";
+import { handlePriceEvent } from "@/modules/alerting/application/handle-price-event";
 
 // Só permite requisições GET
 export async function GET(request: Request) {
@@ -9,7 +10,7 @@ export async function GET(request: Request) {
     return new Response("Não autorizado", { status: 401 });
   }
   try {
-    await runPriceCheckJob();
+    await runPriceCheckJob({ onPriceEvent: handlePriceEvent });
     return new Response("Cron job concluído com sucesso!", { status: 200 });
   } catch (error) {
     console.error("Erro no cron job:", error);

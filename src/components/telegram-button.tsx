@@ -1,7 +1,7 @@
 'use client' // <--- Isso torna o componente interativo
 
 import { Button } from "@/components/ui/button";
-import { checkAndLinkTelegram } from "@/actions/telegram-actions";
+import { checkAndLinkTelegram } from "@/modules/alerting/actions/telegram-actions";
 import { useState } from "react";
 import { toast } from "sonner"; // Ou use alert, ou seu sistema de toast preferido
 

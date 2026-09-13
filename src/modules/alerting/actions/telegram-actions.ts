@@ -1,6 +1,6 @@
 'use server'
 
-import { setChatIdUser } from "@/actions/post-chat-id"; 
+import { setChatIdUser } from "./post-chat-id";
 
 export async function checkAndLinkTelegram(systemUserId: string) {
     const BOT_TOKEN = process.env.BOT_TOKEN;

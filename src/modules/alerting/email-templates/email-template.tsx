@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ProductHistory } from '../../generated/prisma/client';
+import { ProductHistory } from '../../../../generated/prisma/client';
 import {
   Html,
   Body,
@@ -17,10 +17,9 @@ import {
   Hr,
 } from '@react-email/components';
 
-interface EmailTemplateDropProps {
+interface EmailTemplateProps {
   product: ProductHistory;
   userName: string;
-  previousPrice: number;
 }
 
 const BRAND = '#4fa800';
@@ -28,7 +27,7 @@ const BRAND_DARK = '#3d8500';
 const BRAND_LIGHT = '#b6f24a';
 const BRAND_DEEP = '#2c5f00';
 
-export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTemplateDropProps) {
+export function EmailTemplate({ product, userName }: EmailTemplateProps) {
   const dataFormatada =
     product.scrapedAt instanceof Date
       ? product.scrapedAt.toLocaleDateString('pt-BR')
@@ -36,10 +35,10 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
 
   const currencyPrefix = product.currency === 'BRL' ? 'R$ ' : '';
   const priceNumber = Number(product.price);
-  const prevNumber = Number(previousPrice);
-  const dropPct =
-    prevNumber > 0 && priceNumber < prevNumber
-      ? Math.max(1, Math.round(((prevNumber - priceNumber) / prevNumber) * 100))
+  const targetNumber = Number(product.priceTarget);
+  const discountPct =
+    targetNumber > 0 && priceNumber < targetNumber
+      ? Math.max(1, Math.round(((targetNumber - priceNumber) / targetNumber) * 100))
       : null;
 
   return (
@@ -52,7 +51,7 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
           <meta name="supported-color-schemes" content="light" />
         </Head>
         <Preview>
-          {`O preço caiu! ${product.name} agora por ${currencyPrefix}${product.price}`}
+          {`Preço caiu! ${product.name} agora por ${currencyPrefix}${product.price}`}
         </Preview>
 
         <Body
@@ -107,13 +106,13 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                 textAlign: 'center',
               }}
             >
-              {dropPct !== null && (
+              {discountPct !== null && (
                 <Text
                   className="m-0"
                   style={{
                     display: 'inline-block',
                     backgroundColor: BRAND_LIGHT,
-                    color: BRAND_DEEP,
+                    color: BRAND_DARK,
                     fontSize: '12px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
@@ -123,7 +122,7 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                     margin: '0 0 18px 0',
                   }}
                 >
-                  {`Caiu ${dropPct}% desde a última verificação`}
+                  {`${discountPct}% abaixo da sua meta`}
                 </Text>
               )}
               <Text
@@ -137,7 +136,7 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                   margin: '0 0 12px 0',
                 }}
               >
-                Olha só, {userName}!
+                Bingo, {userName}!
                 <br />O preço caiu.
               </Text>
               <Text
@@ -149,8 +148,8 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                   margin: 0,
                 }}
               >
-                O produto que você monitora ficou mais barato. Ainda não chegou
-                na sua meta, mas pode ser uma boa hora para ficar de olho.
+                O produto que você estava monitorando atingiu (ou ficou abaixo
+                da) sua meta. Hora certa de fechar.
               </Text>
             </Section>
 
@@ -226,7 +225,7 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                         margin: '0 0 6px 0',
                       }}
                     >
-                      Preço anterior
+                      Sua meta
                     </Text>
                     <Text
                       className="m-0"
@@ -239,7 +238,7 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                       }}
                     >
                       {currencyPrefix}
-                      {previousPrice}
+                      {product.priceTarget}
                     </Text>
                   </Column>
                   <Column align="center" style={{ width: '50%', padding: '4px 8px' }}>
@@ -273,22 +272,8 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                 </Row>
               </Section>
 
-              {/* Lembrete da meta */}
-              <Text
-                className="m-0"
-                style={{
-                  color: '#71717a',
-                  fontSize: '13px',
-                  textAlign: 'center',
-                  margin: '16px 0 0 0',
-                }}
-              >
-                Sua meta é {currencyPrefix}
-                {product.priceTarget}. Avisamos assim que chegar lá.
-              </Text>
-
               {/* CTA primário */}
-              <Section style={{ textAlign: 'center', padding: '24px 0 4px 0' }}>
+              {/* <Section style={{ textAlign: 'center', padding: '24px 0 4px 0' }}>
                 <Button
                   href={product.url}
                   style={{
@@ -303,9 +288,9 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                     display: 'inline-block',
                   }}
                 >
-                  Ver produto
+                  Comprar agora
                 </Button>
-              </Section>
+              </Section> */}
             </Section>
 
             {/* ============= FOOTER (verde) ============= */}
@@ -327,7 +312,7 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                   margin: '0 0 8px 0',
                 }}
               >
-                O preço está caindo.
+                Não perca o timing.
               </Text>
               <Text
                 className="m-0"
@@ -338,13 +323,13 @@ export function EmailTemplateDrop({ product, userName, previousPrice }: EmailTem
                   margin: '0 0 22px 0',
                 }}
               >
-                Continuamos monitorando para te avisar quando bater a sua meta.
+                Preço de e-commerce sobe e desce em horas. Vai lá antes que mude.
               </Text>
               <Button
                 href={product.url}
                 style={{
                   backgroundColor: '#ffffff',
-                  color: BRAND_DARK,
+                  color: BRAND_LIGHT,
                   fontSize: '15px',
                   fontWeight: 800,
                   letterSpacing: '-0.01em',

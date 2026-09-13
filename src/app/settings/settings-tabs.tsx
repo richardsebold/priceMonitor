@@ -37,7 +37,7 @@ import { toast } from "sonner"
 import { SignupReform } from "@/components/signup-reform"
 import { DeleteAccount } from "@/components/delete-account"
 import { cancelAbacatePaySubscription } from "@/modules/billing/actions/subscription"
-import { setPriceAlertsEnabled } from "@/actions/update-notification-prefs"
+import { setPriceAlertsEnabled } from "@/modules/alerting/actions/update-notification-prefs"
 import {
   CANCELLATION_REASONS,
   isWithinRefundWindow,

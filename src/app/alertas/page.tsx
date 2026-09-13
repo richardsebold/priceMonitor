@@ -1,4 +1,4 @@
-import { getLatestAlerts } from "@/actions/get-latest-alerts"
+import { getLatestAlerts } from "@/modules/alerting/actions/get-latest-alerts"
 import Sidebar from "@/components/sidebar"
 import AlertCards from "@/components/alert-cards"
 import ClientAlerts from "@/components/alert-items"
