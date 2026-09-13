@@ -94,10 +94,19 @@ describe("runPriceCheckJob", () => {
     await runPriceCheckJob({ onPriceEvent });
 
     expect(createMock).toHaveBeenCalledWith({ data: { price: 81, productId: "prod-1" } });
+    expect(updateMock).toHaveBeenCalledWith({
+      where: { id: "prod-1" },
+      data: { price: 81 },
+    });
+    expect(updateMock).toHaveBeenCalledWith({
+      where: { id: "prod-1" },
+      data: { targetReached: true },
+    });
     expect(onPriceEvent).toHaveBeenCalledTimes(1);
     expect(onPriceEvent.mock.calls[0][0]).toMatchObject({
       type: "TARGET_REACHED",
       previousPrice: 2699.9,
+      product: { targetReached: true },
     });
   });
 
@@ -137,6 +146,7 @@ describe("runPriceCheckJob", () => {
     await runPriceCheckJob({ onPriceEvent });
 
     expect(createMock).not.toHaveBeenCalled();
+    expect(updateMock).not.toHaveBeenCalled();
     expect(onPriceEvent).not.toHaveBeenCalled();
   });
 });
