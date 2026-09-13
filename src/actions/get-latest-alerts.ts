@@ -1,7 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma";
-import { getUser } from "@/actions/get-user"
+import { getUser } from "@/modules/identity/actions/get-user"
 
 export async function getLatestAlerts() {
   const user = await getUser()

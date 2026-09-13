@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { getUser } from "./get-user";
+import { getUser } from "@/modules/identity/actions/get-user";
 import { redirect } from "next/navigation";
 import {
   CANCELLATION_REASONS,

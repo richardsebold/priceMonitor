@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { NewProduct } from "@/actions/add-product";
-import { getUser } from "@/actions/get-user";
+import { getUser } from "@/modules/identity/actions/get-user";
 
 const HACKER_PLAN_ID = "plano_hacker_mensal";
 

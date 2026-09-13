@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteAccount } from "@/actions/delete-account";
+import { deleteAccount } from "@/modules/identity/actions/delete-account";
 import { authClient } from "@/lib/auth-client";
 
 export function DeleteAccount() {

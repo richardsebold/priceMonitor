@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getUser } from "@/actions/get-user"
+import { getUser } from "@/modules/identity/actions/get-user"
 import { useEffect, useState } from "react"
 
 interface Plan {

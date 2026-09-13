@@ -24,9 +24,9 @@ import { Checkbox } from "./ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { signupReformSchema, SignupReformValues } from "@/schema-reform";
-import { getUser } from "@/actions/get-user";
-import { updateUserData } from "@/actions/update-user";
+import { signupReformSchema, SignupReformValues } from "@/modules/identity/schemas/signup-reform";
+import { getUser } from "@/modules/identity/actions/get-user";
+import { updateUserData } from "@/modules/identity/actions/update-user";
 
 export function SignupReform({ ...props }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);

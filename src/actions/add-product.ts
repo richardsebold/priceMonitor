@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { Prisma } from "../../generated/prisma/client";
 import { scrapeProduct } from "../actions/scrape-product";
-import { getUser } from "./get-user";
+import { getUser } from "@/modules/identity/actions/get-user";
 
 const PLAN_LIMITS: Record<string, number> = {
   "plano_noob_mensal": 3,  

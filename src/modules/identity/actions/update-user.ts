@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { SignupReformValues } from "@/schema-reform";
+import { SignupReformValues } from "../schemas/signup-reform";
 
 export async function updateUserData(formData: SignupReformValues) {
   try {

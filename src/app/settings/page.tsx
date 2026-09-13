@@ -1,5 +1,5 @@
 import Sidebar from "@/components/sidebar"
-import { getUser } from "@/actions/get-user"
+import { getUser } from "@/modules/identity/actions/get-user"
 import { SettingsTabs } from "./settings-tabs"
 
 export default async function SettingsPage() {

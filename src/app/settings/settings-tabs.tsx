@@ -45,7 +45,7 @@ import {
   REFUND_WINDOW_DAYS,
   type CancellationReason,
 } from "@/lib/refund"
-import type { getUser } from "@/actions/get-user"
+import type { getUser } from "@/modules/identity/actions/get-user"
 
 type UserWithPlan = Awaited<ReturnType<typeof getUser>>
 

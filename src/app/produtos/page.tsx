@@ -1,4 +1,4 @@
-import { getUser } from "@/actions/get-user";
+import { getUser } from "@/modules/identity/actions/get-user";
 import { getProductsListWithHistory } from "@/actions/get-products-list";
 import { ProductsList } from "@/components/products-list";
 import Sidebar from "@/components/sidebar";
