@@ -1,6 +1,6 @@
 'use client'
 
-import { createAbacatePayCheckout } from "@/actions/abacate-pay"
+import { createAbacatePayCheckout } from "@/modules/billing/actions/subscription"
 import {
   Card,
   CardContent,

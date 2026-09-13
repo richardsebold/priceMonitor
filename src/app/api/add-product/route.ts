@@ -3,8 +3,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { NewProduct } from "@/actions/add-product";
 import { getUser } from "@/modules/identity/actions/get-user";
-
-const HACKER_PLAN_ID = "plano_hacker_mensal";
+import { canUseBrowserExtension } from "@/modules/billing/domain/plan-entitlements";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
       return json({ success: false, error: "Usuário não encontrado." }, 401);
     }
 
-    if (user.planId !== HACKER_PLAN_ID) {
+    if (!canUseBrowserExtension(user.planId)) {
       return json(
         {
           success: false,

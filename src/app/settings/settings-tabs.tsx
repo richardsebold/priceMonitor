@@ -36,7 +36,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { SignupReform } from "@/components/signup-reform"
 import { DeleteAccount } from "@/components/delete-account"
-import { cancelAbacatePaySubscription } from "@/actions/abacate-pay"
+import { cancelAbacatePaySubscription } from "@/modules/billing/actions/subscription"
 import { setPriceAlertsEnabled } from "@/actions/update-notification-prefs"
 import {
   CANCELLATION_REASONS,
@@ -44,7 +44,7 @@ import {
   refundDeadline,
   REFUND_WINDOW_DAYS,
   type CancellationReason,
-} from "@/lib/refund"
+} from "@/modules/billing/domain/refund"
 import type { getUser } from "@/modules/identity/actions/get-user"
 
 type UserWithPlan = Awaited<ReturnType<typeof getUser>>

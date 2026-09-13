@@ -4,12 +4,7 @@ import Sidebar from "@/components/sidebar";
 import Hero from "@/components/hero";
 import ClientAlerts from "@/components/alert-items";
 import { getDashboardStats } from "@/actions/get-dashboard-stats";
-
-const PLAN_LIMITS: Record<string, number> = {
-  "plano_noob_mensal": 3,
-  "plano_pro_mensal": 10,
-  "plano_hacker_mensal": 30,
-};
+import { maxTrackedProducts } from "@/modules/billing/domain/plan-entitlements";
 
 export default async function Dashboard() {
   const data = await getDashboardStats();
@@ -20,7 +15,7 @@ export default async function Dashboard() {
 
   const { user, products, reachedTargets, potentialSavings, biggestDrop, alerts } = data;
 
-  const userLimit = PLAN_LIMITS[user.planId ?? ""] ?? 0;
+  const userLimit = maxTrackedProducts(user.planId);
 
   return (
     <div className="min-h-screen pb-10 sm:ml-14">

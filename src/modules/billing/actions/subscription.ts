@@ -1,16 +1,16 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { prisma } from "@/lib/prisma";
-import { getUser } from "@/modules/identity/actions/get-user";
 import { redirect } from "next/navigation";
+import { sendEmail } from "@/lib/email";
+import { getUser } from "@/modules/identity/actions/get-user";
+import { getSessionUserId } from "@/modules/identity/session";
 import {
   CANCELLATION_REASONS,
   isWithinRefundWindow,
   type CancellationReason,
-} from "@/lib/refund";
-import { sendEmail } from "@/lib/email";
+} from "../domain/refund";
+import { cancelSubscription, createSubscriptionCheckout } from "../infra/abacatepay-client";
+import { findPlan, recordCancellation, resetForCheckout } from "../infra/subscription-repository";
 
 const VALID_REASONS = new Set(CANCELLATION_REASONS.map((r) => r.value));
 
@@ -48,20 +48,12 @@ async function notifyRefundRequest(params: {
   }
 }
 
-const ABACATEPAY_API = "https://api.abacatepay.com/v2";
-
 export async function createAbacatePayCheckout(planId: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session?.user) {
+  if (!(await getSessionUserId())) {
     throw new Error("Usuário não autenticado");
   }
 
-  const plan = await prisma.plan.findUnique({
-    where: { id: planId },
-  });
+  const plan = await findPlan(planId);
 
   if (!plan) {
     throw new Error("Plano não encontrado");
@@ -79,54 +71,13 @@ export async function createAbacatePayCheckout(planId: string) {
     throw new Error("Usuário não encontrado");
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_URL;
-
-  const response = await fetch(`${ABACATEPAY_API}/subscriptions/create`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      items: [
-        {
-          id: plan.abacatepayProductId,
-          quantity: 1,
-        },
-      ],
-      methods: ["CARD"],
-      returnUrl: `${appUrl}/cancelado`,
-      completionUrl: `${appUrl}/sucesso`,
-      metadata: {
-        userId: user.id,
-        planId: plan.id,
-      },
-    }),
+  const checkoutUrl = await createSubscriptionCheckout({
+    productId: plan.abacatepayProductId,
+    userId: user.id,
+    planId: plan.id,
   });
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    console.error("Erro na AbacatePay:", data);
-    throw new Error("Falha ao criar a assinatura.");
-  }
-
-  const checkoutUrl = data.data?.url || data.url;
-
-  if (!checkoutUrl) {
-    console.error("Resposta inesperada:", data);
-    throw new Error("A API não retornou o link de pagamento.");
-  }
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      subscriptionStart: null,
-      cancellationReason: null,
-      cancellationComment: null,
-      refundRequested: false,
-    },
-  });
+  await resetForCheckout(user.id);
 
   redirect(checkoutUrl);
 }
@@ -160,39 +111,18 @@ export async function cancelAbacatePaySubscription(input: {
   // cancelamos a cobrança recorrente, sem solicitação de estorno.
   const eligibleForRefund = isWithinRefundWindow(user.subscriptionStart);
 
-  // Cancela a cobrança recorrente na AbacatePay (quando há assinatura registrada).
   if (user.abacatepaySubscriptionId) {
-    const response = await fetch(`${ABACATEPAY_API}/subscriptions/cancel`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.ABACATEPAY_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id: user.abacatepaySubscriptionId }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("Erro ao cancelar assinatura:", data);
-      throw new Error("Falha ao cancelar a assinatura.");
-    }
+    await cancelSubscription(user.abacatepaySubscriptionId);
   } else {
     console.warn(
       `Cancelamento sem abacatepaySubscriptionId registrado para userId=${user.id}`,
     );
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      subscriptionStatus: "CANCELLED",
-      cancellationReason: input.reason,
-      cancellationComment: comment,
-      refundRequested: eligibleForRefund,
-      // Cancelamento dentro de 7 dias: reembolso integral, sem manter acesso.
-      ...(eligibleForRefund ? { subscriptionEnd: new Date() } : {}),
-    },
+  await recordCancellation(user.id, {
+    reason: input.reason,
+    comment,
+    refundRequested: eligibleForRefund,
   });
 
   if (eligibleForRefund) {

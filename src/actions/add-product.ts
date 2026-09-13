@@ -6,13 +6,7 @@ import { headers } from "next/headers";
 import { Prisma } from "../../generated/prisma/client";
 import { scrapeProduct } from "../actions/scrape-product";
 import { getUser } from "@/modules/identity/actions/get-user";
-
-const PLAN_LIMITS: Record<string, number> = {
-  "plano_noob_mensal": 3,  
-  "plano_pro_mensal": 10, 
-  "plano_hacker_mensal": 30, 
-};
-
+import { maxTrackedProducts } from "@/modules/billing/domain/plan-entitlements";
 
 export async function NewProduct(url: string, priceTarget: number) {
 
@@ -32,8 +26,7 @@ export async function NewProduct(url: string, priceTarget: number) {
     return { success: false, error: "Sessão não encontrada." };
   }
   
-  const currentPlan = user.planId || "plano_free";
-  const limitForThisPlan = PLAN_LIMITS[currentPlan] || 0;
+  const limitForThisPlan = maxTrackedProducts(user.planId);
 
 
   const currentUrlCount = await prisma.productHistory.count({
