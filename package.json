@@ -11,7 +11,9 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "abacatepay:setup": "tsx prisma/setup-abacatepay-products.ts",
-    "test:fetch": "tsx scripts/test-raw-fetch.ts"
+    "test:fetch": "tsx scripts/test-raw-fetch.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@hookform/error-message": "^2.0.1",
@@ -69,6 +71,7 @@
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
   }
 }
