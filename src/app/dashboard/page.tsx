@@ -3,7 +3,7 @@ import { DashboardClient } from "../../components/dashboard-client";
 import Sidebar from "@/components/sidebar";
 import Hero from "@/components/hero";
 import ClientAlerts from "@/components/alert-items";
-import { getDashboardStats } from "@/actions/get-dashboard-stats";
+import { getDashboardStats } from "@/modules/analytics/actions/get-dashboard-stats";
 import { maxTrackedProducts } from "@/modules/billing/domain/plan-entitlements";
 
 export default async function Dashboard() {

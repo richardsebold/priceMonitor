@@ -1,22 +1,15 @@
 'use server'
 
 import { prisma } from "@/lib/prisma";
+import { sumPotentialSavings } from "../domain/metrics";
 
 export async function getPotentialSavings(userId: string) {
   const products = await prisma.productHistory.findMany({
-    where: { 
+    where: {
       targetReached: true,
       userId: userId
     },
   })
 
-  let totalSavings = 0
-
-  products.forEach((product) => {
-    if (product.price < product.priceTarget) {
-      totalSavings += (product.priceTarget - product.price)
-    }
-  })
-
-  return totalSavings
+  return sumPotentialSavings(products)
 }

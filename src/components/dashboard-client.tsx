@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getDashboardStats } from "@/actions/get-dashboard-stats";
+import { getDashboardStats } from "@/modules/analytics/actions/get-dashboard-stats";
 import type { ProductHistory } from "../../generated/prisma/client";
 import Image from "next/image";
 import { Input } from "./ui/input";
