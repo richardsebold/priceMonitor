@@ -14,7 +14,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { NewProduct } from "@/actions/add-product";
+import { NewProduct } from "@/modules/price-tracking/actions/add-product";
 
 export default function TooltipAddProduct() {
   const router = useRouter();

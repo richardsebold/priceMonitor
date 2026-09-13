@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { NewProduct } from "@/actions/add-product";
+import { NewProduct } from "@/modules/price-tracking/actions/add-product";
 import { getUser } from "@/modules/identity/actions/get-user";
 import { canUseBrowserExtension } from "@/modules/billing/domain/plan-entitlements";
 

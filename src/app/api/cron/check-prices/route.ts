@@ -1,4 +1,4 @@
-import { runPriceCheckJob } from "@/actions/check-prices";
+import { runPriceCheckJob } from "@/modules/price-tracking/application/run-price-check-job";
 
 // Só permite requisições GET
 export async function GET(request: Request) {

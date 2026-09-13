@@ -6,7 +6,7 @@ import type { ProductHistory } from "../../generated/prisma/client";
 import Image from "next/image";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { NewProduct } from "@/actions/add-product";
+import { NewProduct } from "@/modules/price-tracking/actions/add-product";
 import {
   Bell,
   ExternalLink,
@@ -17,7 +17,7 @@ import {
   Sigma,
   Trash,
 } from "lucide-react";
-import { deleteProduct } from "@/actions/delete-product";
+import { deleteProduct } from "@/modules/price-tracking/actions/delete-product";
 import { toast } from "sonner";
 import { ChartAreaInteractive } from "./chart-area-interactive";
 import { Card } from "./ui/card";

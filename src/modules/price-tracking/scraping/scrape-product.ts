@@ -1,11 +1,9 @@
-'use server'
-
 import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium-min";
 import { existsSync } from "fs";
-import { parseHtml, type ParsedProduct } from "./scrape/parse-html";
+import { parseHtml, type ParsedProduct } from "./parse-html";
 
-export type { ScrapeMethod, ParsedProduct } from "./scrape/parse-html";
+export type { ScrapeMethod, ParsedProduct } from "./parse-html";
 export type ScrapedProduct = ParsedProduct;
 
 const FETCH_TIMEOUT_MS = 20000;

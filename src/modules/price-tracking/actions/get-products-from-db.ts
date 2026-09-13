@@ -1,22 +1,19 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSessionUserId } from "@/modules/identity/session";
 
 export async function getProducts() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const userId = await getSessionUserId();
 
-  if (!session || !session.user?.id) {
+  if (!userId) {
     return [];
   }
 
   try {
     const products = await prisma.productHistory.findMany({
       where: {
-        userId: session.user.id,
+        userId,
       },
       orderBy: {
         scrapedAt: "desc",

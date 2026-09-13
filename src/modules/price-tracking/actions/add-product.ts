@@ -1,10 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { Prisma } from "../../generated/prisma/client";
-import { scrapeProduct } from "../actions/scrape-product";
+import { Prisma } from "../../../../generated/prisma/client";
+import { scrapeProduct } from "../scraping/scrape-product";
 import { getUser } from "@/modules/identity/actions/get-user";
 import { maxTrackedProducts } from "@/modules/billing/domain/plan-entitlements";
 
@@ -16,16 +14,6 @@ export async function NewProduct(url: string, priceTarget: number) {
     return { success: false, error: "Usuário não autenticado." };
   }
 
-  
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session || !session.user?.id) {
-    return { success: false, error: "Sessão não encontrada." };
-  }
-  
   const limitForThisPlan = maxTrackedProducts(user.planId);
 
 
@@ -72,7 +60,7 @@ export async function NewProduct(url: string, priceTarget: number) {
         image: newProduct.image,
         method: newProduct.method,
         store: newProduct.store,
-        userId: session.user.id,
+        userId: user.id,
       },
     });
 

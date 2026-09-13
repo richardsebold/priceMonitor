@@ -12,7 +12,7 @@ import { Button } from "./ui/button";
 import { ProductHistory } from "../../generated/prisma/client";
 import { useState } from "react";
 import { toast } from "sonner";
-import { editProduct } from "@/actions/edit-product";
+import { editProduct } from "@/modules/price-tracking/actions/edit-product";
 
 type ProductProps = {
   product: ProductHistory;

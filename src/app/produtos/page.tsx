@@ -1,5 +1,5 @@
 import { getUser } from "@/modules/identity/actions/get-user";
-import { getProductsListWithHistory } from "@/actions/get-products-list";
+import { getProductsListWithHistory } from "@/modules/price-tracking/actions/get-products-list";
 import { ProductsList } from "@/components/products-list";
 import Sidebar from "@/components/sidebar";
 import { maxTrackedProducts } from "@/modules/billing/domain/plan-entitlements";

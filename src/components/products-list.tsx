@@ -39,9 +39,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { NewProduct } from "@/actions/add-product";
-import { deleteProduct } from "@/actions/delete-product";
-import { getProductsListWithHistory } from "@/actions/get-products-list";
+import { NewProduct } from "@/modules/price-tracking/actions/add-product";
+import { deleteProduct } from "@/modules/price-tracking/actions/delete-product";
+import { getProductsListWithHistory } from "@/modules/price-tracking/actions/get-products-list";
 import { ChartAreaInteractive } from "./chart-area-interactive";
 import EditTask from "./EditURL";
 

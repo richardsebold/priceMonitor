@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { getProductHistory } from "@/actions/get-product-history";
+import { getProductHistory } from "@/modules/price-tracking/actions/get-product-history";
 
 import {
   Card,

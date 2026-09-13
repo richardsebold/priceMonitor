@@ -1,18 +1,17 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getSessionUserId } from "@/modules/identity/session";
 
 export async function getProductsListWithHistory() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user?.id) return [];
+  const userId = await getSessionUserId();
+  if (!userId) return [];
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const products = await prisma.productHistory.findMany({
-    where: { userId: session.user.id },
+  return prisma.productHistory.findMany({
+    where: { userId },
     orderBy: { scrapedAt: "desc" },
     include: {
       history: {
@@ -22,6 +21,4 @@ export async function getProductsListWithHistory() {
       },
     },
   });
-
-  return products;
 }
