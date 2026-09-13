@@ -417,7 +417,10 @@ export function DashboardClient({
 
                     {isExpanded && (
                       <div className="px-5 pb-5 pt-2">
-                        <ChartAreaInteractive productId={item.id} />
+                        <ChartAreaInteractive
+                          productId={item.id}
+                          priceTarget={item.priceTarget}
+                        />
                       </div>
                     )}
                   </div>

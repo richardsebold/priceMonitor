@@ -327,7 +327,10 @@ function ProductItem({
 
       {expanded && (
         <div className="px-5 pb-5 pt-2">
-          <ChartAreaInteractive productId={product.id} />
+          <ChartAreaInteractive
+            productId={product.id}
+            priceTarget={product.priceTarget}
+          />
         </div>
       )}
     </div>
