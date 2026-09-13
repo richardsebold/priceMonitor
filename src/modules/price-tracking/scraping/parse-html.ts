@@ -39,6 +39,25 @@ const detectCurrency = (text: string): string => {
   return '';
 };
 
+const AMAZON_PRICE_CONTAINER_IDS = [
+  'corePriceDisplay_desktop_feature_div',
+  'corePrice_feature_div',
+  'apex_desktop',
+  'centerCol',
+];
+
+const AMAZON_PRICE_CONTAINER_WINDOW = 5000;
+
+const scopeToAmazonPriceContainer = (html: string): string | null => {
+  for (const id of AMAZON_PRICE_CONTAINER_IDS) {
+    const idx = html.indexOf(`id="${id}"`);
+    if (idx !== -1) {
+      return html.slice(idx, idx + AMAZON_PRICE_CONTAINER_WINDOW);
+    }
+  }
+  return null;
+};
+
 const decodeEntities = (text: string): string =>
   text
     .replace(/&amp;/g, '&')
@@ -156,8 +175,9 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
 
   try {
     if (url.includes('amazon.')) {
-      const priceMatch = html.match(/<span class="a-price-whole">([\d.,]+)/i);
-      const fractionMatch = html.match(/<span class="a-price-fraction">(\d+)<\/span>/i);
+      const priceHtml = scopeToAmazonPriceContainer(html) ?? html;
+      const priceMatch = priceHtml.match(/<span class="a-price-whole">([\d.,]+)/i);
+      const fractionMatch = priceHtml.match(/<span class="a-price-fraction">(\d+)<\/span>/i);
       if (priceMatch) {
         specificPrice = toNumberPrice(priceMatch[1] + (fractionMatch ? ',' + fractionMatch[1] : ''));
       }
