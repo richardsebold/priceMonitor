@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { scrapeProduct } from "../scraping/scrape-product";
 import { detectPriceEvent, isTargetReached, type PriceEvent } from "../domain/price-events";
+import { isImplausibleDrop } from "../domain/price-plausibility";
+
+const CONFIRMATION_TOLERANCE_RATIO = 0.02;
 
 type PriceCheckJobOptions = {
   onPriceEvent: (event: PriceEvent) => Promise<void>;
@@ -35,15 +38,43 @@ export async function runPriceCheckJob({ onPriceEvent }: PriceCheckJobOptions) {
         continue;
       }
 
-      if (product.price !== newSearch.price) {
+      let confirmedPrice = newSearch.price;
+
+      if (isImplausibleDrop(product.price, newSearch.price)) {
+        let confirmSearch: typeof newSearch | null = null;
+        try {
+          confirmSearch = await scrapeProduct(product.url);
+        } catch {
+          confirmSearch = null;
+        }
+
+        const confirmedByRescrape =
+          confirmSearch !== null &&
+          confirmSearch.price > 0 &&
+          Math.abs(confirmSearch.price - newSearch.price) <= newSearch.price * CONFIRMATION_TOLERANCE_RATIO;
+
+        if (!confirmedByRescrape || confirmSearch === null) {
+          console.warn(
+            `[SCRAPE] leitura implausível não confirmada — produto "${product.name}" (id: ${product.id}): anterior=${product.price}, leitura1=${newSearch.price}, leitura2=${confirmSearch?.price ?? "falhou"}`,
+          );
+          continue;
+        }
+
+        confirmedPrice = confirmSearch.price;
+        console.warn(
+          `[SCRAPE] leitura implausível confirmada — produto "${product.name}" (id: ${product.id}): anterior=${product.price}, leitura1=${newSearch.price}, leitura2=${confirmSearch.price}`,
+        );
+      }
+
+      if (product.price !== confirmedPrice) {
         await prisma.productHistory.update({
           where: { id: product.id },
-          data: { price: newSearch.price },
+          data: { price: confirmedPrice },
         });
 
         await prisma.priceHistory.create({
           data: {
-            price: newSearch.price,
+            price: confirmedPrice,
             productId: product.id,
           },
         });
@@ -51,12 +82,12 @@ export async function runPriceCheckJob({ onPriceEvent }: PriceCheckJobOptions) {
 
       const eventType = detectPriceEvent({
         previousPrice: product.price,
-        currentPrice: newSearch.price,
+        currentPrice: confirmedPrice,
         priceTarget: product.priceTarget,
         targetReached: product.targetReached,
       });
 
-      const targetReached = isTargetReached(newSearch.price, product.priceTarget);
+      const targetReached = isTargetReached(confirmedPrice, product.priceTarget);
       if (targetReached !== product.targetReached) {
         await prisma.productHistory.update({
           where: { id: product.id },
@@ -75,7 +106,7 @@ export async function runPriceCheckJob({ onPriceEvent }: PriceCheckJobOptions) {
       await onPriceEvent({
         type: eventType,
         userId: product.userId,
-        product: { ...product, price: newSearch.price, targetReached },
+        product: { ...product, price: confirmedPrice, targetReached },
         previousPrice: product.price,
       });
     } catch (error) {
