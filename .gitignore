@@ -43,3 +43,9 @@ next-env.d.ts
 /generated/prisma
 
 meubackup.sql
+
+# skills locais instaladas pelo gerenciador de skills
+/.agents/
+/.cursor/
+/.windsurf/
+/.claude/skills/domain-analysis/
