@@ -33,3 +33,43 @@ export function buildPriceSeries(
 
   return points;
 }
+
+export type PriceBucket = { time: number; min: number; max: number };
+
+/**
+ * Resume a série (saída de `buildPriceSeries`) em períodos, como dias: cada
+ * período guarda o menor e o maior preço que vigoraram nele, contando o preço
+ * herdado do período anterior. `boundaries` são os inícios dos períodos, em
+ * ordem; o último vai até o fim da série, que é repetido como ponto final.
+ */
+export function summarizePriceSeries(
+  series: PricePoint[],
+  boundaries: number[],
+): PriceBucket[] {
+  const buckets: PriceBucket[] = [];
+  let i = 0;
+  let current: number | undefined;
+
+  boundaries.forEach((start, b) => {
+    const end = boundaries[b + 1] ?? Infinity;
+    while (i < series.length && series[i].time <= start) {
+      current = series[i++].price;
+    }
+    const prices = current === undefined ? [] : [current];
+    while (i < series.length && series[i].time < end) {
+      current = series[i++].price;
+      prices.push(current);
+    }
+    if (prices.length > 0) {
+      buckets.push({ time: start, min: Math.min(...prices), max: Math.max(...prices) });
+    }
+  });
+
+  const last = buckets.at(-1);
+  const end = series.at(-1)?.time;
+  if (last && end !== undefined && last.time < end) {
+    buckets.push({ ...last, time: end });
+  }
+
+  return buckets;
+}

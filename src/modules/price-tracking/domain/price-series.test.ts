@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect } from "vitest";
-import { buildPriceSeries } from "./price-series";
+import { buildPriceSeries, summarizePriceSeries } from "./price-series";
 
 const range = { from: 100, to: 200 };
 
@@ -43,5 +43,38 @@ describe("buildPriceSeries", () => {
     expect(buildPriceSeries([{ time: 200, price: 5 }], range)).toEqual([
       { time: 200, price: 5, synthetic: false },
     ]);
+  });
+});
+
+describe("summarizePriceSeries", () => {
+  it("keeps the lowest and highest price of each period, extended to the end", () => {
+    const series = buildPriceSeries(
+      [
+        { time: 100, price: 10 },
+        { time: 110, price: 30 },
+        { time: 120, price: 10 },
+        { time: 160, price: 8 },
+      ],
+      range,
+    );
+    expect(summarizePriceSeries(series, [100, 150])).toEqual([
+      { time: 100, min: 10, max: 30 },
+      { time: 150, min: 8, max: 10 },
+      { time: 200, min: 8, max: 10 },
+    ]);
+  });
+
+  it("counts the price inherited from the previous period", () => {
+    const series = buildPriceSeries([{ time: 100, price: 10 }], range);
+    expect(summarizePriceSeries(series, [100, 130, 160])).toEqual([
+      { time: 100, min: 10, max: 10 },
+      { time: 130, min: 10, max: 10 },
+      { time: 160, min: 10, max: 10 },
+      { time: 200, min: 10, max: 10 },
+    ]);
+  });
+
+  it("returns nothing for an empty series", () => {
+    expect(summarizePriceSeries([], [100, 150])).toEqual([]);
   });
 });
