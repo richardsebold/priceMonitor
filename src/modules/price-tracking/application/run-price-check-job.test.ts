@@ -149,4 +149,67 @@ describe("runPriceCheckJob", () => {
     expect(updateMock).not.toHaveBeenCalled();
     expect(onPriceEvent).not.toHaveBeenCalled();
   });
+
+  it("logs the real error message when the confirmation scrape rejects", async () => {
+    findManyMock.mockResolvedValue([baseProduct]);
+    scrapeProductMock
+      .mockResolvedValueOnce(scraped(80.6))
+      .mockRejectedValueOnce(new Error("network error"));
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await runPriceCheckJob({ onPriceEvent: vi.fn() });
+
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("leitura2=erro: network error"));
+
+    warnSpy.mockRestore();
+  });
+
+  it("treats an implausible price increase the same as an implausible drop", async () => {
+    const risingProduct = { ...baseProduct, price: 100 };
+    findManyMock.mockResolvedValue([risingProduct]);
+    scrapeProductMock
+      .mockResolvedValueOnce(scraped(800))
+      .mockResolvedValueOnce(scraped(810));
+
+    const onPriceEvent = vi.fn();
+    await runPriceCheckJob({ onPriceEvent });
+
+    expect(scrapeProductMock).toHaveBeenCalledTimes(2);
+    expect(createMock).toHaveBeenCalledWith({ data: { price: 810, productId: "prod-1" } });
+  });
+
+  it("uses an absolute tolerance floor so ordinary variance on cheap products still confirms", async () => {
+    const cheapProduct = { ...baseProduct, price: 20 };
+    findManyMock.mockResolvedValue([cheapProduct]);
+    scrapeProductMock
+      .mockResolvedValueOnce(scraped(1))
+      .mockResolvedValueOnce(scraped(1.05));
+
+    const onPriceEvent = vi.fn();
+    await runPriceCheckJob({ onPriceEvent });
+
+    expect(createMock).toHaveBeenCalledWith({ data: { price: 1.05, productId: "prod-1" } });
+    expect(onPriceEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it("treats a confirmation scrape that never resolves as unconfirmed once the timeout elapses", async () => {
+    vi.useFakeTimers();
+    findManyMock.mockResolvedValue([baseProduct]);
+    scrapeProductMock.mockResolvedValueOnce(scraped(80.6)).mockReturnValueOnce(new Promise(() => {}));
+
+    const onPriceEvent = vi.fn();
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const runPromise = runPriceCheckJob({ onPriceEvent });
+    await vi.advanceTimersByTimeAsync(20000);
+    await runPromise;
+
+    expect(createMock).not.toHaveBeenCalled();
+    expect(onPriceEvent).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("leitura2=timeout após 20000ms"));
+
+    warnSpy.mockRestore();
+    vi.useRealTimers();
+  });
 });

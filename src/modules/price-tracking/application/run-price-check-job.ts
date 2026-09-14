@@ -1,13 +1,45 @@
 import { prisma } from "@/lib/prisma";
-import { scrapeProduct } from "../scraping/scrape-product";
+import { scrapeProduct, type ScrapedProduct } from "../scraping/scrape-product";
 import { detectPriceEvent, isTargetReached, type PriceEvent } from "../domain/price-events";
-import { isImplausibleDrop } from "../domain/price-plausibility";
+import { isImplausiblePriceChange } from "../domain/price-plausibility";
 
 const CONFIRMATION_TOLERANCE_RATIO = 0.02;
+const CONFIRMATION_TOLERANCE_FLOOR = 1;
+const CONFIRMATION_TIMEOUT_MS = 20000;
 
 type PriceCheckJobOptions = {
   onPriceEvent: (event: PriceEvent) => Promise<void>;
 };
+
+type ConfirmationAttempt = {
+  result: ScrapedProduct | null;
+  error: unknown;
+  timedOut: boolean;
+};
+
+async function scrapeWithTimeout(url: string, timeoutMs: number): Promise<ConfirmationAttempt> {
+  let timedOut = false;
+  const timeout = new Promise<null>((resolve) => {
+    setTimeout(() => {
+      timedOut = true;
+      resolve(null);
+    }, timeoutMs);
+  });
+
+  try {
+    const result = await Promise.race([scrapeProduct(url), timeout]);
+    return { result, error: null, timedOut };
+  } catch (error) {
+    return { result: null, error, timedOut: false };
+  }
+}
+
+function describeConfirmationFailure(attempt: ConfirmationAttempt): string {
+  if (attempt.timedOut) return `timeout após ${CONFIRMATION_TIMEOUT_MS}ms`;
+  if (attempt.error) return `erro: ${attempt.error instanceof Error ? attempt.error.message : String(attempt.error)}`;
+  if (attempt.result) return String(attempt.result.price);
+  return "falhou";
+}
 
 export async function runPriceCheckJob({ onPriceEvent }: PriceCheckJobOptions) {
   console.log("Iniciando rotina de verificação de preços...");
@@ -40,22 +72,19 @@ export async function runPriceCheckJob({ onPriceEvent }: PriceCheckJobOptions) {
 
       let confirmedPrice = newSearch.price;
 
-      if (isImplausibleDrop(product.price, newSearch.price)) {
-        let confirmSearch: typeof newSearch | null = null;
-        try {
-          confirmSearch = await scrapeProduct(product.url);
-        } catch {
-          confirmSearch = null;
-        }
+      if (isImplausiblePriceChange(product.price, newSearch.price)) {
+        const attempt = await scrapeWithTimeout(product.url, CONFIRMATION_TIMEOUT_MS);
+        const confirmSearch = attempt.result;
 
+        const tolerance = Math.max(newSearch.price * CONFIRMATION_TOLERANCE_RATIO, CONFIRMATION_TOLERANCE_FLOOR);
         const confirmedByRescrape =
           confirmSearch !== null &&
           confirmSearch.price > 0 &&
-          Math.abs(confirmSearch.price - newSearch.price) <= newSearch.price * CONFIRMATION_TOLERANCE_RATIO;
+          Math.abs(confirmSearch.price - newSearch.price) <= tolerance;
 
-        if (!confirmedByRescrape || confirmSearch === null) {
+        if (!confirmedByRescrape) {
           console.warn(
-            `[SCRAPE] leitura implausível não confirmada — produto "${product.name}" (id: ${product.id}): anterior=${product.price}, leitura1=${newSearch.price}, leitura2=${confirmSearch?.price ?? "falhou"}`,
+            `[SCRAPE] leitura implausível não confirmada — produto "${product.name}" (id: ${product.id}): anterior=${product.price}, leitura1=${newSearch.price}, leitura2=${describeConfirmationFailure(attempt)}`,
           );
           continue;
         }
