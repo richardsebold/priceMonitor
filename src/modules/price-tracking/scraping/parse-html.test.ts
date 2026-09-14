@@ -64,6 +64,73 @@ describe("parseHtml", () => {
     });
   });
 
+  it("scopes Amazon price extraction to the price container, ignoring a decoy price outside it", () => {
+    const html = `
+      <html><head><title>Produto Amazon Exemplo : Amazon.com.br</title></head>
+      <body>
+        <div id="decoy"><span class="a-price-whole">999</span><span class="a-price-fraction">99</span></div>
+        <div id="corePriceDisplay_desktop_feature_div">
+          <span class="a-price-whole">1.234</span><span class="a-price-fraction">56</span>
+        </div>
+        <img id="landingImage" src="https://amazon.img/x.jpg">
+      </body></html>
+    `;
+
+    const result = parseHtml(html, { url: "https://www.amazon.com.br/produto" });
+
+    expect(result).toMatchObject({
+      price: 1234.56,
+      method: "regex",
+    });
+  });
+
+  it("prefers a non-strikethrough price over a list price inside the same container", () => {
+    const html = `
+      <html><head><title>Produto Amazon Exemplo : Amazon.com.br</title></head>
+      <body>
+        <div id="corePriceDisplay_desktop_feature_div">
+          <span class="a-price a-text-price" data-a-strike="true">
+            <span class="a-price-whole">2.699</span><span class="a-price-fraction">90</span>
+          </span>
+          <span class="a-price">
+            <span class="a-price-whole">1.234</span><span class="a-price-fraction">56</span>
+          </span>
+        </div>
+        <img id="landingImage" src="https://amazon.img/x.jpg">
+      </body></html>
+    `;
+
+    const result = parseHtml(html, { url: "https://www.amazon.com.br/produto" });
+
+    expect(result).toMatchObject({
+      price: 1234.56,
+      method: "regex",
+    });
+  });
+
+  it("falls back to the whole document when the price container has no price within its window", () => {
+    // Padding pushes the real price past the container's fixed extraction window,
+    // so this only passes if the whole-document fallback actually runs.
+    const filler = "x".repeat(8200);
+    const html = `
+      <html><head><title>Produto Amazon Exemplo : Amazon.com.br</title></head>
+      <body>
+        <div id="corePriceDisplay_desktop_feature_div">
+          <p>Sem preço aqui dentro. ${filler}</p>
+        </div>
+        <span class="a-price-whole">1.234</span><span class="a-price-fraction">56</span>
+        <img id="landingImage" src="https://amazon.img/x.jpg">
+      </body></html>
+    `;
+
+    const result = parseHtml(html, { url: "https://www.amazon.com.br/produto" });
+
+    expect(result).toMatchObject({
+      price: 1234.56,
+      method: "regex",
+    });
+  });
+
   it("uses the Mercado Livre-specific extraction when the url is from Mercado Livre", () => {
     const html = `
       <html><body>
