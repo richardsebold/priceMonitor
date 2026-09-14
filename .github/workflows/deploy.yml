@@ -13,6 +13,11 @@ jobs:
   test:
     name: Lint and build
     runs-on: ubuntu-latest
+    env:
+      # prisma.config.ts resolves DATABASE_URL just to load the config, even for
+      # `prisma generate` (postinstall) which never opens a real connection. No
+      # real database is touched in this workflow, so a placeholder is enough.
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
 
     steps:
       - name: Checkout repository
