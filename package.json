@@ -8,7 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src",
     "postinstall": "prisma generate",
     "abacatepay:setup": "tsx prisma/setup-abacatepay-products.ts",
     "test:fetch": "tsx scripts/test-raw-fetch.ts",
