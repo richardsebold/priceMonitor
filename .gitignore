@@ -54,3 +54,8 @@ meubackup.sql
 /.claude/skills/tlc-plan/
 /.claude/skills/tlc-spec-driven/
 /.claude/skills/tlc-spec-lean/
+
+/.playwright-mcp/
+/.tasks/
+/.checks/
+/.design/
