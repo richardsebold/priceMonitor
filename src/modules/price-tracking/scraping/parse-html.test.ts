@@ -84,6 +84,50 @@ describe("parseHtml", () => {
     });
   });
 
+  it("prefers a non-strikethrough price over a list price inside the same container", () => {
+    const html = `
+      <html><head><title>Produto Amazon Exemplo : Amazon.com.br</title></head>
+      <body>
+        <div id="corePriceDisplay_desktop_feature_div">
+          <span class="a-price a-text-price" data-a-strike="true">
+            <span class="a-price-whole">2.699</span><span class="a-price-fraction">90</span>
+          </span>
+          <span class="a-price">
+            <span class="a-price-whole">1.234</span><span class="a-price-fraction">56</span>
+          </span>
+        </div>
+        <img id="landingImage" src="https://amazon.img/x.jpg">
+      </body></html>
+    `;
+
+    const result = parseHtml(html, { url: "https://www.amazon.com.br/produto" });
+
+    expect(result).toMatchObject({
+      price: 1234.56,
+      method: "regex",
+    });
+  });
+
+  it("falls back to the whole document when the price container has no price within its window", () => {
+    const html = `
+      <html><head><title>Produto Amazon Exemplo : Amazon.com.br</title></head>
+      <body>
+        <div id="corePriceDisplay_desktop_feature_div">
+          <p>Sem preço aqui dentro.</p>
+        </div>
+        <span class="a-price-whole">1.234</span><span class="a-price-fraction">56</span>
+        <img id="landingImage" src="https://amazon.img/x.jpg">
+      </body></html>
+    `;
+
+    const result = parseHtml(html, { url: "https://www.amazon.com.br/produto" });
+
+    expect(result).toMatchObject({
+      price: 1234.56,
+      method: "regex",
+    });
+  });
+
   it("uses the Mercado Livre-specific extraction when the url is from Mercado Livre", () => {
     const html = `
       <html><body>

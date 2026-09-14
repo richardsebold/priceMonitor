@@ -46,7 +46,9 @@ const AMAZON_PRICE_CONTAINER_IDS = [
   'centerCol',
 ];
 
-const AMAZON_PRICE_CONTAINER_WINDOW = 5000;
+const AMAZON_PRICE_CONTAINER_WINDOW = 8000;
+const AMAZON_STRIKETHROUGH_MARKER = 'a-text-price';
+const AMAZON_FRACTION_LOOKAHEAD = 200;
 
 const scopeToAmazonPriceContainer = (html: string): string | null => {
   for (const id of AMAZON_PRICE_CONTAINER_IDS) {
@@ -56,6 +58,40 @@ const scopeToAmazonPriceContainer = (html: string): string | null => {
     }
   }
   return null;
+};
+
+interface AmazonPriceMatch {
+  whole: string;
+  fraction: string | null;
+}
+
+// Amazon renders more than one a-price-whole on a PDP (e.g. a struck-through list
+// price beside the real one), so pick the first candidate that is not wrapped in the
+// "a-text-price" class Amazon uses for strikethrough/basis prices. The marker is looked
+// for only in the gap since the previous candidate (not a fixed-size window), so a
+// strikethrough wrapper around one price never "bleeds" onto the next sibling price.
+const extractAmazonPrice = (html: string): AmazonPriceMatch | null => {
+  const wholeRe = /<span class="a-price-whole">([\d.,]+)/gi;
+  const candidates: { index: number; end: number; whole: string }[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = wholeRe.exec(html)) !== null) {
+    candidates.push({ index: match.index, end: wholeRe.lastIndex, whole: match[1] });
+  }
+  if (candidates.length === 0) return null;
+
+  let searchFrom = 0;
+  const chosen =
+    candidates.find((c) => {
+      const isStrikethrough = html.slice(searchFrom, c.index).includes(AMAZON_STRIKETHROUGH_MARKER);
+      searchFrom = c.end;
+      return !isStrikethrough;
+    }) ?? candidates[0];
+
+  const fractionMatch = html
+    .slice(chosen.index, chosen.index + AMAZON_FRACTION_LOOKAHEAD)
+    .match(/<span class="a-price-fraction">(\d+)<\/span>/i);
+
+  return { whole: chosen.whole, fraction: fractionMatch ? fractionMatch[1] : null };
 };
 
 const decodeEntities = (text: string): string =>
@@ -175,11 +211,10 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
 
   try {
     if (url.includes('amazon.')) {
-      const priceHtml = scopeToAmazonPriceContainer(html) ?? html;
-      const priceMatch = priceHtml.match(/<span class="a-price-whole">([\d.,]+)/i);
-      const fractionMatch = priceHtml.match(/<span class="a-price-fraction">(\d+)<\/span>/i);
-      if (priceMatch) {
-        specificPrice = toNumberPrice(priceMatch[1] + (fractionMatch ? ',' + fractionMatch[1] : ''));
+      const containerSlice = scopeToAmazonPriceContainer(html);
+      const amazonPrice = (containerSlice && extractAmazonPrice(containerSlice)) || extractAmazonPrice(html);
+      if (amazonPrice) {
+        specificPrice = toNumberPrice(amazonPrice.whole + (amazonPrice.fraction ? ',' + amazonPrice.fraction : ''));
       }
       const nameMatch = html.match(/<title>([^<]+)<\/title>/i);
       if (nameMatch) {
