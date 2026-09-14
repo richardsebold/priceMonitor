@@ -45,6 +45,7 @@ model User {
   refundRequested          Boolean   @default(false)
 
   priceAlertsEnabled       Boolean   @default(true)
+  weeklySummaryEnabled     Boolean   @default(true)
 
   @@map("user")
 }

@@ -37,7 +37,10 @@ import { toast } from "sonner"
 import { SignupReform } from "@/components/signup-reform"
 import { DeleteAccount } from "@/components/delete-account"
 import { cancelAbacatePaySubscription } from "@/modules/billing/actions/subscription"
-import { setPriceAlertsEnabled } from "@/modules/alerting/actions/update-notification-prefs"
+import {
+  setPriceAlertsEnabled,
+  setWeeklySummaryEnabled,
+} from "@/modules/alerting/actions/update-notification-prefs"
 import {
   CANCELLATION_REASONS,
   isWithinRefundWindow,
@@ -102,6 +105,30 @@ export function SettingsTabs({ userInfos }: SettingsTabsProps) {
       toast.error(message)
     } finally {
       setIsUpdatingAlerts(false)
+    }
+  }
+
+  const [weeklySummary, setWeeklySummary] = useState(
+    userInfos?.weeklySummaryEnabled ?? true,
+  )
+  const [isUpdatingWeeklySummary, setIsUpdatingWeeklySummary] = useState(false)
+
+  async function handleToggleWeeklySummary(checked: boolean) {
+    const previous = weeklySummary
+    setWeeklySummary(checked)
+    setIsUpdatingWeeklySummary(true)
+    try {
+      await setWeeklySummaryEnabled(checked)
+      toast.success(
+        checked ? "Resumo semanal ativado." : "Resumo semanal desativado.",
+      )
+    } catch (err) {
+      setWeeklySummary(previous)
+      const message =
+        err instanceof Error ? err.message : "Falha ao salvar preferência."
+      toast.error(message)
+    } finally {
+      setIsUpdatingWeeklySummary(false)
     }
   }
 
@@ -177,7 +204,11 @@ export function SettingsTabs({ userInfos }: SettingsTabsProps) {
                   Um relatório com as variações dos seus produtos.
                 </p>
               </div>
-              <Switch />
+              <Switch
+                checked={weeklySummary}
+                disabled={isUpdatingWeeklySummary}
+                onCheckedChange={handleToggleWeeklySummary}
+              />
             </div>
           </CardContent>
         </Card>
