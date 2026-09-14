@@ -48,12 +48,26 @@ GitHub auto-retargets a dependent PR's base branch to the branch the base PR mer
 > "If you delete a head branch after its pull request has been merged, GitHub checks for any open pull requests in the same repository that specify the deleted branch as their base branch. GitHub automatically updates any such pull requests, changing their base branch to the merged pull request's base branch."
 > — [Merging a pull request](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/merging-a-pull-request)
 
-**Known gap, confirmed from `cli/cli` issue tracking:** merging via `gh pr merge --delete-branch` does not reliably trigger this retargeting in every case — some reports show the dependent PR gets closed instead of retargeted. Prefer merging the base PR through the GitHub web UI with "Delete branch" for the retarget to fire, or verify manually after merging via `gh`:
+**Known gap, confirmed from `cli/cli` issue tracking — and reproduced firsthand in this repo (PR #4 → #5, 2026-09-14):** merging via `gh pr merge --delete-branch` does not reliably trigger this retargeting. What actually happened: the dependent PR (#5) was **closed outright**, not retargeted. Reopening it then failed outright too —
+
+```
+API call failed: GraphQL: Could not open the pull request. (reopenPullRequest)
+```
+
+— because its base branch (`chore/gitignore-local-skills`) no longer existed once `--delete-branch` removed it. GitHub refuses to reopen a PR whose base branch is gone, so `gh pr edit <PR> --base main` is never reachable here: there is no open PR left to edit.
+
+**The actual recovery is a new PR, not a retarget:** the head branch and its commits are untouched by any of this (the merge only ever deletes the *base's* branch). Open a fresh PR for the same head branch, now pointed straight at `main`:
 
 ```bash
-gh pr view <dependent-PR> --json baseRefName
-# if it's still pointing at the deleted branch:
-gh pr edit <dependent-PR> --base main
+gh pr create --base main --head <same-head-branch> --title "..." --body "Supersedes #<closed-PR>, closed instead of retargeted when <base-PR> merged with --delete-branch."
+```
+
+Prefer merging the base PR through the GitHub web UI with "Delete branch" instead of `gh pr merge --delete-branch` — that flow is what the retargeting doc actually describes, and it may not share this gap. Either way, check immediately after merging the base PR:
+
+```bash
+gh pr view <dependent-PR> --json state,baseRefName
+# state: "CLOSED" and the old base branch is gone -> open a new PR (above), don't try to reopen
+# state: "OPEN" but baseRefName didn't change -> gh pr edit <dependent-PR> --base main
 ```
 
 ## CI on a stacked PR
@@ -73,6 +87,13 @@ gh pr create --base main                          --head chore/gitignore-local-s
 gh pr create --base chore/gitignore-local-skills   --head feat/weekly-summary          --title "feat: ..."  --body "Stacked on #4 ..."
 ```
 → [PR #4](https://github.com/richardsebold/priceMonitor/pull/4), [PR #5](https://github.com/richardsebold/priceMonitor/pull/5).
+
+**What actually happened on merge** confirms the gap above: `gh pr merge 4 --merge --delete-branch` closed #5 instead of retargeting it, and reopening it failed because its base branch was gone. Recovery was a fresh PR for the same head branch:
+
+```bash
+gh pr create --base main --head feat/weekly-summary --title "feat: ..." --body "Supersedes #5, closed instead of retargeted when #4 merged with --delete-branch."
+```
+→ [PR #7](https://github.com/richardsebold/priceMonitor/pull/7), merged once its CI (now running against `main`) went green.
 
 ## Sources
 
