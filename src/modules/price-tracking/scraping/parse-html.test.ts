@@ -109,11 +109,14 @@ describe("parseHtml", () => {
   });
 
   it("falls back to the whole document when the price container has no price within its window", () => {
+    // Padding pushes the real price past the container's fixed extraction window,
+    // so this only passes if the whole-document fallback actually runs.
+    const filler = "x".repeat(8200);
     const html = `
       <html><head><title>Produto Amazon Exemplo : Amazon.com.br</title></head>
       <body>
         <div id="corePriceDisplay_desktop_feature_div">
-          <p>Sem preço aqui dentro.</p>
+          <p>Sem preço aqui dentro. ${filler}</p>
         </div>
         <span class="a-price-whole">1.234</span><span class="a-price-fraction">56</span>
         <img id="landingImage" src="https://amazon.img/x.jpg">

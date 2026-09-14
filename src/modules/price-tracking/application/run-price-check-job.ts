@@ -5,7 +5,6 @@ import { isImplausiblePriceChange } from "../domain/price-plausibility";
 
 const CONFIRMATION_TOLERANCE_RATIO = 0.02;
 const CONFIRMATION_TOLERANCE_FLOOR = 1;
-const CONFIRMATION_TIMEOUT_MS = 20000;
 
 type PriceCheckJobOptions = {
   onPriceEvent: (event: PriceEvent) => Promise<void>;
@@ -14,28 +13,23 @@ type PriceCheckJobOptions = {
 type ConfirmationAttempt = {
   result: ScrapedProduct | null;
   error: unknown;
-  timedOut: boolean;
 };
 
-async function scrapeWithTimeout(url: string, timeoutMs: number): Promise<ConfirmationAttempt> {
-  let timedOut = false;
-  const timeout = new Promise<null>((resolve) => {
-    setTimeout(() => {
-      timedOut = true;
-      resolve(null);
-    }, timeoutMs);
-  });
-
+// No timeout race here on purpose: scrapeProduct has no cancellation (an
+// AbortController would need to thread through its own fetch/Puppeteer tiers), so
+// racing it against a shorter deadline only discards a slow-but-real confirmation and
+// leaves the losing browser process running anyway. This call shares the same
+// worst-case latency as the primary scrape above it in the loop.
+async function attemptConfirmationScrape(url: string): Promise<ConfirmationAttempt> {
   try {
-    const result = await Promise.race([scrapeProduct(url), timeout]);
-    return { result, error: null, timedOut };
+    const result = await scrapeProduct(url);
+    return { result, error: null };
   } catch (error) {
-    return { result: null, error, timedOut: false };
+    return { result: null, error };
   }
 }
 
 function describeConfirmationFailure(attempt: ConfirmationAttempt): string {
-  if (attempt.timedOut) return `timeout após ${CONFIRMATION_TIMEOUT_MS}ms`;
   if (attempt.error) return `erro: ${attempt.error instanceof Error ? attempt.error.message : String(attempt.error)}`;
   if (attempt.result) return String(attempt.result.price);
   return "falhou";
@@ -73,7 +67,7 @@ export async function runPriceCheckJob({ onPriceEvent }: PriceCheckJobOptions) {
       let confirmedPrice = newSearch.price;
 
       if (isImplausiblePriceChange(product.price, newSearch.price)) {
-        const attempt = await scrapeWithTimeout(product.url, CONFIRMATION_TIMEOUT_MS);
+        const attempt = await attemptConfirmationScrape(product.url);
         const confirmSearch = attempt.result;
 
         const tolerance = Math.max(newSearch.price * CONFIRMATION_TOLERANCE_RATIO, CONFIRMATION_TOLERANCE_FLOOR);

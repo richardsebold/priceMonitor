@@ -47,7 +47,11 @@ const AMAZON_PRICE_CONTAINER_IDS = [
 ];
 
 const AMAZON_PRICE_CONTAINER_WINDOW = 8000;
-const AMAZON_STRIKETHROUGH_MARKER = 'a-text-price';
+// Amazon's basis/strikethrough price wrapper combines both classes on the same
+// element ("a-price a-text-price"); matching the pair instead of the bare
+// "a-text-price" substring avoids misfiring on unrelated elements (badges, per-unit
+// annotations) that only carry one of the two classes.
+const AMAZON_STRIKETHROUGH_MARKER = 'a-price a-text-price';
 const AMAZON_FRACTION_LOOKAHEAD = 200;
 
 const scopeToAmazonPriceContainer = (html: string): string | null => {

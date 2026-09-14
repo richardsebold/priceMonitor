@@ -193,23 +193,4 @@ describe("runPriceCheckJob", () => {
     expect(onPriceEvent).toHaveBeenCalledTimes(1);
   });
 
-  it("treats a confirmation scrape that never resolves as unconfirmed once the timeout elapses", async () => {
-    vi.useFakeTimers();
-    findManyMock.mockResolvedValue([baseProduct]);
-    scrapeProductMock.mockResolvedValueOnce(scraped(80.6)).mockReturnValueOnce(new Promise(() => {}));
-
-    const onPriceEvent = vi.fn();
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const runPromise = runPriceCheckJob({ onPriceEvent });
-    await vi.advanceTimersByTimeAsync(20000);
-    await runPromise;
-
-    expect(createMock).not.toHaveBeenCalled();
-    expect(onPriceEvent).not.toHaveBeenCalled();
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("leitura2=timeout após 20000ms"));
-
-    warnSpy.mockRestore();
-    vi.useRealTimers();
-  });
 });
