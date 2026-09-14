@@ -15,6 +15,34 @@ export function setPriceAlertsEnabled(userId: string, enabled: boolean) {
   });
 }
 
+export function setWeeklySummaryEnabled(userId: string, enabled: boolean) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { weeklySummaryEnabled: enabled },
+  });
+}
+
+export function findWeeklySummaryRecipients() {
+  return prisma.user.findMany({
+    where: { weeklySummaryEnabled: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      products: {
+        select: {
+          name: true,
+          price: true,
+          priceTarget: true,
+          history: {
+            select: { price: true, createdAt: true },
+          },
+        },
+      },
+    },
+  });
+}
+
 export function setChatId(userId: string, chatId: string) {
   return prisma.user.update({
     where: { id: userId },
