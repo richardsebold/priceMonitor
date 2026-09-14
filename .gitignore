@@ -49,3 +49,8 @@ meubackup.sql
 /.cursor/
 /.windsurf/
 /.claude/skills/domain-analysis/
+/.claude/skills/tlc-discover/
+/.claude/skills/tlc-implement/
+/.claude/skills/tlc-plan/
+/.claude/skills/tlc-spec-driven/
+/.claude/skills/tlc-spec-lean/
