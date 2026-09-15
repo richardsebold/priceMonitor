@@ -108,6 +108,7 @@ export function LoginForm({
       });
     } catch (error) {
       setIsGoogleLoading(false);
+      console.log("Google login failed:", error);
       toast.error("Erro ao realizar login com Google.");
     }
   };
