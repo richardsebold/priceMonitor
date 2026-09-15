@@ -108,11 +108,11 @@ O login (`src/components/login-form.tsx:123-128`) já tem um link "Esqueceu sua 
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| PWDRESET-01 | P1: Pedir redefinição de senha | Execute | Pending |
-| PWDRESET-02 | P1: Pedir redefinição de senha | Execute | Pending |
-| PWDRESET-03 | P1: Pedir redefinição de senha | Execute | Pending |
-| PWDRESET-04 | P1: Pedir redefinição de senha | Execute | Pending |
-| PWDRESET-05 | P1: Pedir redefinição de senha | Execute | Pending |
+| PWDRESET-01 | P1: Pedir redefinição de senha | Execute | Implementing |
+| PWDRESET-02 | P1: Pedir redefinição de senha | Execute | Implementing |
+| PWDRESET-03 | P1: Pedir redefinição de senha | Execute | Implementing |
+| PWDRESET-04 | P1: Pedir redefinição de senha | Execute | Implementing |
+| PWDRESET-05 | P1: Pedir redefinição de senha | Execute | Implementing |
 | PWDRESET-06 | P1: Definir nova senha | Execute | Pending |
 | PWDRESET-07 | P1: Definir nova senha | Execute | Pending |
 | PWDRESET-08 | P1: Definir nova senha | Execute | Pending |
