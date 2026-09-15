@@ -82,3 +82,7 @@ Proof: `npx vitest run src/modules/identity/infra/backfill-legacy-verified-users
 Intended split, com a aritmética:
 
 - Todo o feature (config de `src/lib/auth.ts`, dois módulos pequenos e puros em `identity/domain` e `identity/infra`, um script de backfill, e edições em `signup-form.tsx` / `login-form.tsx` / `login/page.tsx`) soma ~10 arquivos e bem menos de 40 KB de diff total — ÷4 fica muito abaixo do budget de 150k. Builder único, sem handoff.
+
+- **Boundary:** C1-C9 fechados em `b79f8f7` (feature completa em 4 commits sobre `1a44490`/`e80062c`: `a145158`, `d34c596`, `c22a53d`, `b79f8f7`)
+- **Settled mid-build:** validação manual das telas (C4-C8) autorizada explicitamente contra o Neon remoto, incluindo criar uma conta de teste nova e alternar `emailVerified` só em contas de teste — nada disso rodou o backfill real nem tocou usuários reais; a conta nova foi apagada e a conta de teste principal (`claude.teste@botmonitorador.test`) devolvida ao estado não verificado ao final
+- **Abandoned:** nenhum
