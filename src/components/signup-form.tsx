@@ -28,6 +28,7 @@ import { BorderBeam } from "./ui/border-beam";
 
 export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
   const router = useRouter();
 
   const {
@@ -60,17 +61,22 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        callbackURL: "/",
+        callbackURL: "/login",
       },
       {
         onRequest: (ctx) => {
           console.log("User registering:", ctx);
         },
         onSuccess: (ctx) => {
-          toast.success("Conta criada com sucesso!");
-          reset();
           console.log("User registered:", ctx);
-          router.replace("/dashboard");
+          if (ctx.data?.token) {
+            toast.success("Conta criada com sucesso!");
+            reset();
+            router.replace("/dashboard");
+            return;
+          }
+          reset();
+          setConfirmationEmail(formData.email);
         },
 
         onError: (ctx) => {
@@ -78,6 +84,57 @@ export function SignupForm({ ...form }: React.ComponentProps<typeof Card>) {
           console.log("User registration failed:", ctx);
         },
       },
+    );
+  }
+
+  async function handleResendVerification() {
+    if (!confirmationEmail) return;
+    const { error } = await authClient.sendVerificationEmail({
+      email: confirmationEmail,
+      callbackURL: "/login",
+    });
+    if (error) {
+      toast.error("Erro ao reenviar o e-mail: " + error.message);
+    } else {
+      toast.success("E-mail de verificação reenviado.");
+    }
+  }
+
+  if (confirmationEmail) {
+    return (
+      <Card className="shadow-2xl relative overflow-hidden" {...form}>
+        <BorderBeam
+          duration={8}
+          size={300}
+          borderWidth={2}
+          reverse
+          className="from-transparent via-green-400 to-transparent"
+        />
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Confira seu e-mail</CardTitle>
+          <CardDescription>
+            Enviamos um link de confirmação para {confirmationEmail}. Clique nele para
+            ativar sua conta.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldGroup>
+            <Field>
+              <Button
+                type="button"
+                variant="outline"
+                className="cursor-pointer"
+                onClick={handleResendVerification}
+              >
+                Reenviar e-mail de verificação
+              </Button>
+              <FieldDescription className="px-6 text-center">
+                Já confirmou? <a href="/login">Entrar</a>
+              </FieldDescription>
+            </Field>
+          </FieldGroup>
+        </CardContent>
+      </Card>
     );
   }
 

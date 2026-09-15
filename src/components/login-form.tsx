@@ -18,14 +18,14 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { LoginFormValues } from "@/modules/identity/schemas/login-signup";
 import { loginSchema } from "@/modules/identity/schemas/login-signup";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BorderBeam } from "./ui/border-beam";
 
 export function LoginForm({
@@ -34,7 +34,19 @@ export function LoginForm({
 }: React.ComponentProps<typeof Card>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const verificationLinkError = searchParams.get("error");
+  const linkExpired =
+    verificationLinkError === "invalid_token" || verificationLinkError === "token_expired";
+  const { data: session, isPending: isSessionPending } = authClient.useSession();
+
+  useEffect(() => {
+    if (!isSessionPending && session) {
+      router.replace("/dashboard");
+    }
+  }, [isSessionPending, session, router]);
 
   const {
     register,
@@ -46,6 +58,7 @@ export function LoginForm({
   });
 
   async function onSubmit(data: LoginFormValues) {
+    setUnverifiedEmail(null);
     const {} = await authClient.signIn.email(
       {
         email: data.email,
@@ -61,11 +74,29 @@ export function LoginForm({
           router.replace("/dashboard");
         },
         onError: (ctx) => {
-          toast.error("Erro ao realizar login: " + ctx.error.message);
+          if (ctx.error.status === 403) {
+            setUnverifiedEmail(data.email);
+            toast.error("Confirme seu e-mail antes de entrar.");
+          } else {
+            toast.error("Erro ao realizar login: " + ctx.error.message);
+          }
           console.log("User login failed:", ctx);
         },
       },
     );
+  }
+
+  async function handleResendVerification() {
+    if (!unverifiedEmail) return;
+    const { error } = await authClient.sendVerificationEmail({
+      email: unverifiedEmail,
+      callbackURL: "/login",
+    });
+    if (error) {
+      toast.error("Erro ao reenviar o e-mail: " + error.message);
+    } else {
+      toast.success("E-mail de verificação reenviado.");
+    }
   }
 
   const handleLoginWithGoogle = async () => {
@@ -77,6 +108,7 @@ export function LoginForm({
       });
     } catch (error) {
       setIsGoogleLoading(false);
+      console.log("Google login failed:", error);
       toast.error("Erro ao realizar login com Google.");
     }
   };
@@ -161,6 +193,26 @@ export function LoginForm({
                   )}
                 </FieldDescription>
               </Field>
+              {linkExpired && (
+                <p className="text-red-500 text-sm text-center" role="alert">
+                  Esse link de verificação é inválido ou expirou. Entre novamente para
+                  receber um novo.
+                </p>
+              )}
+              {unverifiedEmail && (
+                <div className="text-sm text-center">
+                  <p className="text-red-500" role="alert">
+                    Confirme seu e-mail antes de entrar.
+                  </p>
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={handleResendVerification}
+                  >
+                    Reenviar e-mail de verificação
+                  </button>
+                </div>
+              )}
               <Field>
                 <Button
                   type="submit"
