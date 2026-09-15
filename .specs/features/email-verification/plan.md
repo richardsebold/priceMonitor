@@ -27,7 +27,7 @@ Quando isso for entregue, um cadastro só terá login liberado depois de confirm
 | Login automático após clicar no link de verificação | `autoSignInAfterVerification: true` | Padrão de mercado (o botão elimina uma etapa manual); nenhuma desvantagem quando o link é aberto no mesmo navegador do cadastro | n |
 | Onde oferecer reenvio do e-mail de verificação | Na tela de confirmação pós-cadastro e no erro 403 do login | São os dois pontos onde o usuário fica travado e precisa de uma saída | n |
 | Duração do token de verificação | Padrão do better-auth, 3600s (1h) | Nenhum requisito de produto pede um valor diferente | n |
-| `callbackURL` da verificação | `/login` | O GET de verificação redireciona para essa URL tanto no sucesso quanto na falha (`?error=invalid_token`); precisa ser uma rota pública e sempre alcançável, o que `/dashboard` não garante quando falha e não há sessão | n |
+| `callbackURL` da verificação | `/login` | O GET de verificação redireciona para essa URL tanto no sucesso quanto na falha (`?error=invalid_token` ou `?error=token_expired`, conforme o better-auth 1.4.18 instalado); precisa ser uma rota pública e sempre alcançável, o que `/dashboard` não garante quando falha e não há sessão | n |
 | Usuários que já existem no banco (Neon, produção) | Backfill único marcando `emailVerified = true` para quem já existia antes do corte; só cadastros novos passam a precisar verificar | Decisão do usuário: anistiar a base atual em vez de travar login de assinantes pagantes sem aviso | y |
 
 **Open questions:** none - all resolved or logged above.
@@ -60,9 +60,12 @@ Quando isso for entregue, um cadastro só terá login liberado depois de confirm
 **Acceptance Criteria**
 
 8. WHEN um usuário abre um link de verificação válido e não expirado THEN o sistema SHALL marcar `emailVerified` como `true`, SHALL criar uma sessão autenticada para esse usuário e SHALL redirecionar para `/login`.
-9. IF o token do link for inválido, já usado ou expirado THEN o sistema SHALL redirecionar para `/login?error=invalid_token` sem criar sessão.
-10. WHEN a página de login carrega e já existe uma sessão ativa THEN o sistema SHALL redirecionar imediatamente para `/dashboard`.
-11. WHEN a página de login carrega com `error=invalid_token` na URL THEN a UI SHALL exibir uma mensagem explicando que o link é inválido ou expirou e convidando a entrar novamente para receber um novo.
+9. IF o token do link for inválido ou adulterado THEN o sistema SHALL redirecionar para `/login?error=invalid_token` sem criar sessão.
+10. IF o token do link estiver expirado THEN o sistema SHALL redirecionar para `/login?error=token_expired` sem criar sessão.
+11. WHEN a página de login carrega e já existe uma sessão ativa THEN o sistema SHALL redirecionar imediatamente para `/dashboard`.
+12. WHEN a página de login carrega com `error=invalid_token` ou `error=token_expired` na URL THEN a UI SHALL exibir uma mensagem explicando que o link é inválido ou expirou e convidando a entrar novamente para receber um novo.
+
+**Corrigido na verificação (2026-09-15):** os critérios 9 e 10 eram um único critério que assumia um só código de erro (`invalid_token`) para token inválido, já usado ou expirado. O better-auth 1.4.18 instalado usa dois códigos distintos — `invalid_token` para token malformado/adulterado e `token_expired` para token expirado — então o critério foi dividido em dois e a UI (critério 12) passou a tratar ambos. Um link para um e-mail já verificado (reenvio do mesmo link) apenas redireciona ao `callbackURL` sem parâmetro de erro e sem sessão; isso é inofensivo (o usuário só volta para `/login` normalmente) e não ganhou critério próprio.
 
 **Independent test:** clicar num link de verificação válido e cair logado no dashboard; abrir um link expirado e ver a mensagem de erro no login.
 
@@ -70,7 +73,7 @@ Quando isso for entregue, um cadastro só terá login liberado depois de confirm
 
 **Acceptance Criteria**
 
-12. The system SHALL tratar todo `User` criado antes do corte desta feature como `emailVerified = true`, via backfill único, de modo que nenhum usuário atual seja bloqueado no login por esta mudança.
+13. The system SHALL tratar todo `User` criado antes do corte desta feature como `emailVerified = true`, via backfill único, de modo que nenhum usuário atual seja bloqueado no login por esta mudança.
 
 **Independent test:** após o backfill e a ativação da flag, uma conta que já existia antes do corte continua logando normalmente sem passar por verificação.
 
@@ -80,8 +83,8 @@ Quando isso for entregue, um cadastro só terá login liberado depois de confirm
 | --- | --- | --- | --- |
 | VERIFY-01 | S1 | 1, 2, 3, 4 | Pending |
 | VERIFY-02 | S2 | 5, 6, 7 | Pending |
-| VERIFY-03 | S3 | 8, 9, 10, 11 | Pending |
-| VERIFY-04 | S4 | 12 | Pending |
+| VERIFY-03 | S3 | 8, 9, 10, 11, 12 | Pending |
+| VERIFY-04 | S4 | 13 | Pending |
 
 ## Observable
 
@@ -92,12 +95,12 @@ Quando isso for entregue, um cadastro só terá login liberado depois de confirm
 | screen cadastro (`signup-form.tsx`) | estado vazio/carregando | existing - spinner de `isSubmitting` já implementado |
 | screen cadastro (`signup-form.tsx`) | ação destrutiva confirma antes | n/a - cadastro não tem ação destrutiva |
 | screen login (`login-form.tsx`) | estado de erro (e-mail não verificado) | AC 6 |
-| screen login (`login-form.tsx` / `login/page.tsx`) | estado de erro (link inválido/expirado via query) | AC 11 |
-| screen login | sessão já ativa ao carregar | AC 10 |
+| screen login (`login-form.tsx` / `login/page.tsx`) | estado de erro (link inválido/expirado via query) | AC 12 |
+| screen login | sessão já ativa ao carregar | AC 11 |
 | screen login | estado vazio | n/a - formulário, não há lista |
 | API `POST /api/auth/sign-up/email` (better-auth) | forma da resposta e códigos | AC 1, AC 3 |
 | API `POST /api/auth/sign-in/email` (better-auth) | forma da resposta e códigos | AC 5 |
-| API `GET /api/auth/verify-email` (better-auth) | forma da resposta e códigos | AC 8, AC 9 |
+| API `GET /api/auth/verify-email` (better-auth) | forma da resposta e códigos | AC 8, AC 9, AC 10 |
 | API `POST /api/auth/send-verification-email` (better-auth) | forma da resposta e códigos | AC 7 |
 | API (todas acima) | quem pode chamar | existing - endpoints públicos do better-auth, sem mudança de autorização |
 | API (todas acima) | versionamento | n/a - endpoints internos do better-auth, sem contrato de versão próprio |
@@ -110,8 +113,8 @@ Reaproveita o pipeline nativo do better-auth (`emailAndPassword` + `emailVerific
 1. Formulário de cadastro (`signup-form.tsx`, exists) → `authClient.signUp.email` → `POST /api/auth/sign-up/email` (exists, gerenciado pelo better-auth) → cria `User` com `emailVerified=false`, sem sessão; dispara `sendVerificationEmail` (door 1, novo callback em `src/lib/auth.ts`) que chama `sendEmail` (`src/lib/email.ts`, exists) com um novo template de e-mail de verificação (new, colocação por convenção do módulo `identity`).
 2. Formulário de cadastro (exists) - quando o sucesso não vem com sessão, renderiza uma confirmação em vez de navegar, com uma ação de reenvio chamando `authClient.sendVerificationEmail`.
 3. Formulário de login (`login-form.tsx`, exists) → `authClient.signIn.email` → `POST /api/auth/sign-in/email` (exists) → responde 403 `EMAIL_NOT_VERIFIED` quando não verificado; o formulário de login (exists) mostra a mesma ação de reenvio nesse erro.
-4. Link do e-mail → `GET /api/auth/verify-email` (exists, gerenciado pelo better-auth) → valida o token, marca `emailVerified=true`, cria sessão (autoSignInAfterVerification) e redireciona para `/login` (sucesso) ou `/login?error=invalid_token` (falha).
-5. Página de login (`login/page.tsx` / `login-form.tsx`, exists) → ao carregar, verifica se já existe sessão e redireciona para `/dashboard`; lê `error=invalid_token` na URL e mostra a mensagem correspondente.
+4. Link do e-mail → `GET /api/auth/verify-email` (exists, gerenciado pelo better-auth) → valida o token, marca `emailVerified=true`, cria sessão (autoSignInAfterVerification) e redireciona para `/login` (sucesso) ou `/login?error=invalid_token` / `/login?error=token_expired` (falha).
+5. Página de login (`login/page.tsx` / `login-form.tsx`, exists) → ao carregar, verifica se já existe sessão e redireciona para `/dashboard`; lê `error=invalid_token` ou `error=token_expired` na URL e mostra a mensagem correspondente.
 6. Backfill único (door 2) → linhas de `User` criadas antes do corte recebem `emailVerified=true`, executado uma vez antes de a flag `requireEmailVerification` entrar em produção.
 
 ## Relations

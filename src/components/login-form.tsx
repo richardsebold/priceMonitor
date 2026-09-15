@@ -37,7 +37,9 @@ export function LoginForm({
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const linkExpired = searchParams.get("error") === "invalid_token";
+  const verificationLinkError = searchParams.get("error");
+  const linkExpired =
+    verificationLinkError === "invalid_token" || verificationLinkError === "token_expired";
   const { data: session, isPending: isSessionPending } = authClient.useSession();
 
   useEffect(() => {

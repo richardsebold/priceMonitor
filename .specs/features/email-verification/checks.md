@@ -14,7 +14,7 @@ Grouped by slice do plano; numeração corre por toda a feature.
 **C1** - `requireEmailVerification` ativo em `emailAndPassword` — cadastro por e-mail/senha não abre sessão sem verificação (VERIFY-01 AC1; também prova VERIFY-02 AC5, que depende da mesma flag)
 Proof: `npx vitest run src/lib/auth.test.ts -t "requireEmailVerification"`
 
-**C2** - a configuração `emailVerification` envia o e-mail no cadastro, expira o token em 3600s e loga o usuário automaticamente após verificar (VERIFY-01 AC2; também prova VERIFY-03 AC8 e governa a janela de expiração usada na AC9)
+**C2** - a configuração `emailVerification` envia o e-mail no cadastro, expira o token em 3600s e loga o usuário automaticamente após verificar (VERIFY-01 AC2; também prova VERIFY-03 AC8 e governa a janela de expiração que produz a AC10)
 Proof: `npx vitest run src/lib/auth.test.ts -t "emailVerification"`
 
 **C3** - uma falha no envio do e-mail de verificação (ex.: Resend indisponível) não impede o retorno de sucesso do cadastro, e é registrada no log (VERIFY-01 AC3)
@@ -33,15 +33,15 @@ Proof: Manual — Playwright MCP: clicar em "reenviar e-mail de verificação" n
 
 ### S3 - Confirmação do link e redirecionamento · 2 files · ~8 KB · ~2k
 
-**C7** - a página de login redireciona automaticamente para `/dashboard` quando já existe uma sessão ativa ao carregar (VERIFY-03 AC10)
+**C7** - a página de login redireciona automaticamente para `/dashboard` quando já existe uma sessão ativa ao carregar (VERIFY-03 AC11)
 Proof: Manual — Playwright MCP: abrir um link de verificação válido, cair em `/login` já autenticado e observar o redirect automático para `/dashboard`
 
-**C8** - a página de login mostra a mensagem de link inválido/expirado quando a URL traz `error=invalid_token` (VERIFY-03 AC11)
-Proof: Manual — Playwright MCP: navegar para `/login?error=invalid_token` e observar a mensagem
+**C8** - a página de login mostra a mensagem de link inválido/expirado quando a URL traz `error=invalid_token` ou `error=token_expired` (VERIFY-03 AC9, AC10, AC12)
+Proof: Manual — Playwright MCP: navegar para `/login?error=invalid_token` e para `/login?error=token_expired`, e observar a mensagem nos dois casos
 
 ### S4 - Usuários existentes não são afetados · 2 files · ~4 KB · ~1k
 
-**C9** - o backfill marca `emailVerified=true` apenas para usuários criados antes do corte, deixando de fora um usuário criado depois (VERIFY-04 AC12)
+**C9** - o backfill marca `emailVerified=true` apenas para usuários criados antes do corte, deixando de fora um usuário criado depois (VERIFY-04 AC13)
 Proof: `npx vitest run src/modules/identity/infra/backfill-legacy-verified-users.test.ts -t "backfill"`
 
 ## Coverage
@@ -59,7 +59,7 @@ Proof: `npx vitest run src/modules/identity/infra/backfill-legacy-verified-users
 | login mostra link inválido/expirado (1) | C8 | - |
 | `POST /api/auth/sign-up/email` status (1) | `200` - existing (better-auth), sem sessão quando não verificado gated by C1 | - |
 | `POST /api/auth/sign-in/email` status | `200` - existing (caminho inalterado) · `403` - existing (better-auth) gated by C1 | - |
-| `GET /api/auth/verify-email` outcomes | válido → sessão + redirect `/login` - existing (better-auth) gated by C2 · inválido/expirado → redirect `/login?error=invalid_token` - existing (better-auth) gated by C2 | - |
+| `GET /api/auth/verify-email` outcomes | válido → sessão + redirect `/login` - existing (better-auth) gated by C2 · token inválido/adulterado → redirect `/login?error=invalid_token` - existing (better-auth), tratado na UI por C8 · token expirado → redirect `/login?error=token_expired` - existing (better-auth), tratado na UI por C8 · e-mail já verificado (link reaberto) → redirect sem erro e sem sessão - existing (better-auth), inofensivo | - |
 | `POST /api/auth/send-verification-email` status | `200` - existing (better-auth) gated by C2 · `429` - existing (limitador padrão por IP do better-auth) | - |
 
 - As quatro rotas acima são geridas pelo better-auth (`src/app/api/auth/[...all]/route.ts`); seus status codes não têm proof própria porque a mudança de comportamento vem inteiramente da configuração provada em C1/C2 — testar o status novamente seria retestar a biblioteca
