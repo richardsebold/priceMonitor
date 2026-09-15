@@ -108,21 +108,21 @@ O login (`src/components/login-form.tsx:123-128`) já tem um link "Esqueceu sua 
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| PWDRESET-01 | P1: Pedir redefinição de senha | Execute | Implementing |
-| PWDRESET-02 | P1: Pedir redefinição de senha | Execute | Implementing |
-| PWDRESET-03 | P1: Pedir redefinição de senha | Execute | Implementing |
-| PWDRESET-04 | P1: Pedir redefinição de senha | Execute | Implementing |
-| PWDRESET-05 | P1: Pedir redefinição de senha | Execute | Implementing |
-| PWDRESET-06 | P1: Definir nova senha | Execute | Implementing |
-| PWDRESET-07 | P1: Definir nova senha | Execute | Implementing |
-| PWDRESET-08 | P1: Definir nova senha | Execute | Implementing |
-| PWDRESET-09 | P1: Definir nova senha | Execute | Implementing |
-| PWDRESET-10 | P1: Definir nova senha | Execute | Implementing |
-| PWDRESET-11 | P1: Definir nova senha | Execute | Implementing |
-| PWDRESET-12 | P1: Definir nova senha | Execute | Implementing |
-| PWDRESET-13 | P2: Envio do e-mail de redefinição | Execute | Implementing |
-| PWDRESET-14 | P2: Envio do e-mail de redefinição | Execute | Implementing |
-| PWDRESET-15 | P2: Envio do e-mail de redefinição | Execute | Implementing |
+| PWDRESET-01 | P1: Pedir redefinição de senha | Execute | Verified |
+| PWDRESET-02 | P1: Pedir redefinição de senha | Execute | Verified |
+| PWDRESET-03 | P1: Pedir redefinição de senha | Execute | Verified |
+| PWDRESET-04 | P1: Pedir redefinição de senha | Execute | Verified |
+| PWDRESET-05 | P1: Pedir redefinição de senha | Execute | Verified |
+| PWDRESET-06 | P1: Definir nova senha | Execute | Verified |
+| PWDRESET-07 | P1: Definir nova senha | Execute | Verified |
+| PWDRESET-08 | P1: Definir nova senha | Execute | Verified |
+| PWDRESET-09 | P1: Definir nova senha | Execute | Verified |
+| PWDRESET-10 | P1: Definir nova senha | Execute | Verified |
+| PWDRESET-11 | P1: Definir nova senha | Execute | Verified |
+| PWDRESET-12 | P1: Definir nova senha | Execute | Verified |
+| PWDRESET-13 | P2: Envio do e-mail de redefinição | Execute | Verified |
+| PWDRESET-14 | P2: Envio do e-mail de redefinição | Execute | Verified |
+| PWDRESET-15 | P2: Envio do e-mail de redefinição | Execute | Verified |
 
 **ID format:** `PWDRESET-NN`
 
