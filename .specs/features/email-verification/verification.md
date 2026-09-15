@@ -1,130 +1,140 @@
 # Email verification verification
 
-**Verdict**: FAIL
+**Verdict**: PASS
 **Profile**: light
-**Diff range**: `80c35ea..HEAD`
-**Round**: 1 - full
+**Diff range**: `80c35ea..8b27e64` (full feature; fix scope is `99058c2..8b27e64`)
+**Round**: 2 - scoped
 **Verifier**: independent sub-agent (author != verifier)
+
+## Scope of this round
+
+Round 1 (`verification.md` at `b7fd696`) returned FAIL: `checks.md` C8 and `plan.md`'s then-AC9
+claimed a single `error=invalid_token` param covered every failed-link case, but installed
+`better-auth@1.4.18` uses `error=token_expired` for an expired token and no error param at all for
+an already-verified token's still-valid link; `login-form.tsx` only checked `invalid_token`, so a
+real expired-link click showed no message. Two commits landed since: `99058c2` (records the round 1
+report, no code) and `8b27e64` (the fix). Per verify.md's "Re-verifying after a fix": this round is
+scoped to the fix's diff (`99058c2..8b27e64`, covering `login-form.tsx`, `plan.md`, `checks.md`) plus
+the one thing that was not PASS (the AC9/C8 gap). Everything else is `carried from b7fd696` below,
+not re-investigated.
 
 ## Step 1 (binding sources) and Step 4 (fault injection)
 
-Both are gated to profiles `ui` / `standard`/`ui` respectively by verify.md's "Read the profile
-first" section. `checks.md` declares `Profile: light`, so neither ran. This is a scope statement,
-not a shortcut: at `light`, no binding-source cross-check and no mutation testing are owed, and
-none is claimed below.
+`carried from b7fd696`. Both are gated to profiles `ui` / `standard`/`ui` by verify.md's "Read the
+profile first" section. `checks.md` still declares `Profile: light` (unchanged by the fix), so
+neither runs. No binding-source cross-check and no mutation testing are claimed below.
 
 ## Manual-proof checks (C4-C8): method note
 
-This repo has no component-test or e2e-test harness, and `AGENTS.md` mandates manual Playwright-MCP
-validation for UI changes instead of automated UI tests. A live browser session could not be driven
-inside this verification task, so C4-C8 were verified by reading the actual component code
-(`src/components/signup-form.tsx`, `src/components/login-form.tsx`, `src/app/login/page.tsx`) and,
-where the claim depends on library behaviour, by reading the installed `better-auth@1.4.18` source
-under `node_modules/better-auth/dist` to confirm the condition, redirect target, and message are
-genuinely wired the way the check claims. This is code inspection, not a re-run browser session -
-noted per check below.
+`carried from b7fd696`. This repo has no component-test or e2e-test harness, and `AGENTS.md`
+mandates manual Playwright-MCP validation for UI changes instead of automated UI tests. As in round
+1, a live browser session against the app (which needs the remote Neon `DATABASE_URL`) was not
+driven for this scoped round; C7-C8 were re-verified by reading the actual component code
+(`src/components/login-form.tsx`) and, for the library-dependent claim, by independently re-opening
+the installed `better-auth@1.4.18` source under `node_modules/better-auth/dist` - not by trusting
+round 1's citations secondhand. This is code inspection, not a re-run browser session.
 
-## Proofs run at HEAD
+## Proofs run at HEAD (`8b27e64849442cac251a561b892ae86345095b75`)
 
-Environment note: this worktree's `node_modules` and `.env` were absent at task start (0 packages
-installed). Ran `npm install` and copied `.env` from the repo root (`DATABASE_URL` only, needed for
-`prisma generate`/`vitest` to boot) so the suite could execute; no data was written to the remote
-Neon database by this action or by any command below.
+Full suite re-run at the new HEAD, per verify.md's "Proofs always re-run in full, at the new HEAD."
 
-- `npx tsc --noEmit` (filtered `^skills/`): clean, no output.
-- `npx vitest run`: `Test Files 20 passed (20)`, `Tests 98 passed (98)`.
-- Each named proof re-run individually and confirmed to exist and pass:
-  - `npx vitest run src/lib/auth.test.ts -t "requireEmailVerification"` -> 1 passed, 1 skipped (2) - exit 0
-  - `npx vitest run src/lib/auth.test.ts -t "emailVerification"` -> 1 passed, 1 skipped (2) - exit 0
-  - `npx vitest run src/modules/identity/domain/send-verification-email.test.ts -t "does not throw when delivery fails"` -> 1 passed, 1 skipped (2) - exit 0
-  - `npx vitest run src/modules/identity/infra/backfill-legacy-verified-users.test.ts -t "backfill"` -> 1 passed (1) - exit 0
+- `npx tsc --noEmit`: exit 0, no output (nothing to filter for `^skills/`).
+- `npx vitest run`: `Test Files 20 passed (20)`, `Tests 98 passed (98)` - identical counts to round
+  1, consistent with the fix touching only `login-form.tsx` (a component with no test file; `find
+  src -iname "*login-form*"` returns only the component itself) plus two spec docs.
+- `python3 .../validate_plan.py email-verification`: `0 error(s), 0 warning(s)`.
+- `python3 .../validate_checks.py email-verification`: `0 error(s), 8 warning(s)` - the 8 warnings
+  (manual proofs cite no vitest selector; three Coverage rows omit a `(N)` set-size) are pre-existing
+  structural notes about the `light`-profile manual checks and un-sized rows, unrelated to the fix's
+  diff; none is new.
 
-## Checks
+## Checks (C1-C6, C9: carried from b7fd696; C7-C8 re-verified at new citations)
 
 | Check | Claim | Proof run | Evidence | Result |
 | --- | --- | --- | --- | --- |
-| C1 | `requireEmailVerification` active; unverified sign-in/sign-up-without-session gated | `npx vitest run src/lib/auth.test.ts -t "requireEmailVerification"` exit 0 | `src/lib/auth.test.ts:6` - `expect(emailAndPasswordConfig.requireEmailVerification).toBe(true)`; wiring confirmed at `src/lib/auth.ts:11` - `emailAndPassword: emailAndPasswordConfig` (same object the test imports, not a standalone copy) | PASS |
-| C2 | `emailVerification` sends on sign-up, expires in 3600s, auto-signs-in after verification | `npx vitest run src/lib/auth.test.ts -t "emailVerification"` exit 0 | `src/lib/auth.test.ts:10-12` - `expect(emailVerificationConfig.sendOnSignUp).toBe(true)`; `...autoSignInAfterVerification).toBe(true)`; `...expiresIn).toBe(3600)`; wiring confirmed at `src/lib/auth.ts:12` - `emailVerification: emailVerificationConfig` | PASS |
-| C3 | Delivery failure does not block sign-up success, and is logged | `npx vitest run src/modules/identity/domain/send-verification-email.test.ts -t "does not throw when delivery fails"` exit 0 | `src/modules/identity/domain/send-verification-email.test.ts:10` - `await expect(sendVerificationEmailSafely(send)).resolves.toBeUndefined()`; `:13` - `expect(consoleErrorSpy).toHaveBeenCalledWith("Falha ao enviar e-mail de verificação:", failure)`; production wiring at `src/lib/auth-email-verification.ts:12` - `void sendVerificationEmailSafely(() => sendEmail(...))` (fire-and-forget, so a rejected send cannot propagate into the sign-up response) | PASS |
-| C4 | Sign-up without a session shows the "check your e-mail" confirmation instead of navigating | Code inspection (manual Playwright per `AGENTS.md`; not re-run live) | `src/components/signup-form.tsx:72-79` - `if (ctx.data?.token) { ...; router.replace("/dashboard"); return; } ...; setConfirmationEmail(formData.email);` and `:103-119` - `if (confirmationEmail) { return <Card>...<CardTitle>Confira seu e-mail</CardTitle>...` ; confirmed against `better-auth` source (`node_modules/better-auth/dist/api/routes/sign-up.mjs:205-208`) that `requireEmailVerification: true` makes the endpoint return `{ token: null, ... }`, so `ctx.data?.token` is falsy exactly when no session was created | PASS |
-| C5 | 403 `EMAIL_NOT_VERIFIED` on login shows a message with a resend action | Code inspection | `src/components/login-form.tsx:75-80` - `if (ctx.error.status === 403) { setUnverifiedEmail(data.email); toast.error("Confirme seu e-mail antes de entrar."); }`; render at `:199-212` (message + "Reenviar e-mail de verificação" button); confirmed against `better-auth` source (`node_modules/better-auth/dist/api/routes/sign-in.mjs:223-235`) that an unverified user is rejected with `APIError("FORBIDDEN", { message: BASE_ERROR_CODES.EMAIL_NOT_VERIFIED })`, which better-call maps to HTTP 403 | PASS |
-| C6 | Resend (post-signup confirmation and login error) fires a new verification e-mail | Code inspection | `src/components/signup-form.tsx:90-101` and `src/components/login-form.tsx:87-98` - both call `authClient.sendVerificationEmail({ email, callbackURL: "/login" })` and toast success/error from the response | PASS |
-| C7 | Login page auto-redirects to `/dashboard` when a session already exists on load | Code inspection | `src/components/login-form.tsx:41,43-47` - `const { data: session, isPending: isSessionPending } = authClient.useSession(); useEffect(() => { if (!isSessionPending && session) { router.replace("/dashboard"); } }, ...)`; `src/app/login/page.tsx:17-19` wraps `<LoginForm/>` in `<Suspense>` (required because `useSearchParams` is used, see C8) | PASS |
-| C8 | Login page shows an invalid/expired-link message when the URL carries `error=invalid_token` | Code inspection | `src/components/login-form.tsx:40` - `const linkExpired = searchParams.get("error") === "invalid_token";`; render at `:193-198` (`"Esse link de verificação é inválido ou expirou..."`) | PASS (narrow claim only - see Swept re-read finding below) |
-| C9 | Backfill marks `emailVerified=true` only for users created before the cutover | `npx vitest run src/modules/identity/infra/backfill-legacy-verified-users.test.ts -t "backfill"` exit 0 | `src/modules/identity/infra/backfill-legacy-verified-users.test.ts:28-30` - `expect(updateManyMock).toHaveBeenCalledWith({ where: { emailVerified: false, createdAt: { lt: LEGACY_VERIFIED_CUTOVER } }, data: { emailVerified: true } })`; cutover is a fixed literal at `src/modules/identity/infra/backfill-legacy-verified-users.ts:5` - `new Date("2026-09-15T00:00:00.000Z")` (not `new Date()`), matching the plan's Landing requirement; script wired via `package.json:14` - `"backfill:verified-users": "tsx scripts/backfill-legacy-verified-users.ts"` | PASS |
+| C1 | `requireEmailVerification` active; gates sign-in/sign-up | `npx vitest run src/lib/auth.test.ts -t "requireEmailVerification"` exit 0 | `src/lib/auth.test.ts:6`; wired at `src/lib/auth.ts:11` | PASS (carried from b7fd696) |
+| C2 | `emailVerification` sends on sign-up, 3600s expiry, auto-signs-in | `npx vitest run src/lib/auth.test.ts -t "emailVerification"` exit 0 | `src/lib/auth.test.ts:10-12`; wired at `src/lib/auth.ts:12` | PASS (carried from b7fd696; only the AC label in `checks.md`'s prose changed, from "usada na AC9" to "que produz a AC10" - a renumbering-only edit, no behavioral claim changed) |
+| C3 | Delivery failure doesn't block sign-up, is logged | `npx vitest run src/modules/identity/domain/send-verification-email.test.ts -t "does not throw when delivery fails"` exit 0 | `src/modules/identity/domain/send-verification-email.test.ts:10,13`; wired at `src/lib/auth-email-verification.ts:12` | PASS (carried from b7fd696) |
+| C4 | Sign-up without session shows confirmation, no navigate | Code inspection (manual Playwright per `AGENTS.md`, not re-run live) | `src/components/signup-form.tsx:72-79,103-119` | PASS (carried from b7fd696) |
+| C5 | 403 `EMAIL_NOT_VERIFIED` shows message + resend | Code inspection | `src/components/login-form.tsx:77-80,201-213` | PASS (carried from b7fd696) |
+| C6 | Resend fires a new verification e-mail | Code inspection | `src/components/signup-form.tsx:90-101`, `src/components/login-form.tsx:89-98` | PASS (carried from b7fd696) |
+| C7 | Login page auto-redirects to `/dashboard` when a session already exists | Code inspection | `src/components/login-form.tsx:43,45-49` - `authClient.useSession()`; `useEffect` calling `router.replace("/dashboard")` when `!isSessionPending && session` | PASS - re-verified at new HEAD. Only the `checks.md` AC citation moved (old AC10 -> AC11, pure renumbering); code and line numbers unchanged from round 1 |
+| **C8** | Login page shows the invalid/expired-link message for **both** `error=invalid_token` **and** `error=token_expired` | Code inspection (manual Playwright per `AGENTS.md`, not re-run live) | `src/components/login-form.tsx:40-42` - `const verificationLinkError = searchParams.get("error"); const linkExpired = verificationLinkError === "invalid_token" or verificationLinkError === "token_expired";`; render unchanged at `:195-199` (`"Esse link de verificação é inválido ou expirou..."`, gated by `linkExpired`) | PASS - the fix, verified at `8b27e64` (see next section for independent re-derivation of the two error strings) |
+| C9 | Backfill marks `emailVerified=true` only for pre-cutover users | `npx vitest run src/modules/identity/infra/backfill-legacy-verified-users.test.ts -t "backfill"` exit 0 | `src/modules/identity/infra/backfill-legacy-verified-users.test.ts:28-30`; cutover literal at `src/modules/identity/infra/backfill-legacy-verified-users.ts:5` | PASS (carried from b7fd696; only the `checks.md`/`plan.md` AC label moved, old AC12 -> AC13, pure renumbering) |
 
-## Coverage
+## The fix, independently re-derived against ground truth
+
+Re-opened `node_modules/better-auth/dist/api/routes/email-verification.mjs` myself (not trusting
+round 1's citation secondhand):
+
+- `:161-168` - the `verifyEmail` handler tries `jwtVerify(token, ...)`; on failure:
+  `if (e instanceof JWTExpired) return redirectOnError("token_expired");` (line 166) else
+  `return redirectOnError("invalid_token");` (line 167). `redirectOnError` (lines 154-160) appends
+  `?error=${error}` (or `&error=${error}`) to `ctx.query.callbackURL` and throws a redirect.
+- `:262-267` - for a token that verifies but whose user is already `emailVerified === true`:
+  `if (user.user.emailVerified) { if (ctx.query.callbackURL) throw ctx.redirect(ctx.query.callbackURL); return ctx.json({status:true,user:null}); }`
+  - a plain redirect to `callbackURL` with **no** error query param and no session created (this
+    branch returns before the `autoSignInAfterVerification` block further down).
+
+This independently reproduces the exact two-error-string split round 1 found (`token_expired` for an
+expired token via `JWTExpired`, `invalid_token` for a malformed/tampered one via the generic catch
+branch) and the harmless silent-redirect behavior for an already-verified reopened link.
+`login-form.tsx:41-42` now checks for both strings with `||`, so both the expired-link case (the
+common one, since tokens expire in 3600s) and the tampered-token case now render the "link inválido
+ou expirou" message. The already-verified case correctly gets no message (there's no error to show;
+the plan's own note explains why it doesn't need one - see Coverage below).
+
+## Coverage - recomputed for the row the fix touched
 
 | Set (size) | Recomputed from | Member -> proof | Unproven |
 | --- | --- | --- | --- |
-| Full recompute | not run (`light` profile gates this to `standard`/`ui`) | - | - |
-| `GET /api/auth/verify-email` outcomes (spot-checked via Swept re-read, see below) | `checks.md` Coverage table + installed `better-auth@1.4.18` source | valid token -> session + redirect `/login`: proof via C2 config + library source, confirmed | - |
-| (same row, continued) | | invalid/expired token -> claimed `redirect /login?error=invalid_token`, "existing (better-auth) gated by C2" | **YES - see finding below.** Expired tokens redirect with `error=token_expired`, a different value than the one `login-form.tsx` checks for. A structurally-invalid token does produce `error=invalid_token` (that sub-case is proven); an already-verified-but-not-yet-expired token produces a silent success redirect with **no** error param at all. Only 1 of 3 sub-cases named in plan.md AC9 ("inválido, já usado ou expirado") actually reaches `invalid_token`. |
+| `GET /api/auth/verify-email` outcomes (4) | installed `better-auth@1.4.18` source, re-read independently above | 1. valid token -> session + redirect `/login`: C2 (config) + C7 (session-present redirect on next load). 2. malformed/tampered -> `?error=invalid_token`: C8 (`login-form.tsx:41`). 3. expired -> `?error=token_expired`: C8 (`login-form.tsx:42`, the fix). 4. already-verified reopened link -> plain redirect, no error, no session: documented exemption, `plan.md:68` | - |
 
-## Swept re-read (the always-on part of step 3)
+Sub-case 4 needs no check: `plan.md:68`'s "Corrigido na verificação" note explicitly names it and
+calls it harmless (user just lands back on `/login` normally), and the ground-truth read above
+confirms the code matches that description exactly - the same status it had before this round.
 
-`checks.md`'s `Swept` section marks several dimensions `existing`, meaning "better-auth already
-provides this, gated by our config." Per the task brief, the gating config itself was confirmed
-wired into production, not just a standalone test:
+Round 1 found sub-case 3 (expired token) unproven, and the code not actually implementing the
+promised behavior for it (`login-form.tsx` checked only `invalid_token`). The fix closes it:
+sub-case 3 now has a located assertion (`login-form.tsx:42`), and `checks.md`'s Coverage row text
+was updated to match (`token expirado → redirect ... existing (better-auth), tratado na UI por C8`).
 
-- `src/lib/auth.ts:11-12` imports and passes the **same objects** `auth.test.ts` asserts on
-  (`emailAndPasswordConfig`, `emailVerificationConfig` from `src/lib/auth-email-verification.ts`),
-  not a copy - so C1/C2 passing is evidence about the object `betterAuth(...)` actually receives.
+All other Coverage rows: `carried from b7fd696` (unaffected by the fix's diff - no other row's
+authority or membership changed).
 
-Re-reading each `existing` row against the installed `better-auth@1.4.18` source
-(`node_modules/better-auth/dist/api/routes/{sign-up,sign-in,email-verification}.mjs`):
+## Swept re-read (idempotency row: re-verified; rest carried from b7fd696)
 
-- **authorization: existing** - confirmed. All four endpoints are public by construction in the
-  library; no route-level change was made in this diff.
-- **state transitions: existing** - confirmed. `email-verification.mjs` only ever calls
-  `updateUserByEmail(parsed.email, { emailVerified: true })`; there is no code path that sets it
-  back to `false` in the verification flow.
-- **idempotency: existing - "um token já usado ou já expirado é tratado como inválido pelo próprio
-  better-auth"** - **NOT confirmed; this is a finding.** Reading
-  `node_modules/better-auth/dist/api/routes/email-verification.mjs:154-168` and `:262-268`:
-  - An expired token (`JWTExpired`) redirects via `redirectOnError("token_expired")` -
-    i.e. `?error=token_expired`, not `?error=invalid_token`.
-  - An already-verified user's still-valid token (`user.user.emailVerified === true`) hits
-    `if (user.user.emailVerified) { throw ctx.redirect(ctx.query.callbackURL); }` - a **silent
-    success redirect with no error parameter at all**, not `?error=invalid_token`.
-  - Only a structurally-malformed/bad-signature token (the generic `catch` branch) actually
-    produces `?error=invalid_token`.
+`checks.md`'s Swept `idempotency` row now reads differently from round 1's version - it no longer
+claims "existing... um token já usado ou já expirado é tratado como inválido pelo próprio
+better-auth" as a single undifferentiated case. That specific wording was removed; the distinct
+`token_expired` vs `invalid_token` vs already-verified outcomes are now carried entirely by the
+Coverage row above (which this round confirmed matches the installed library). No remaining Swept
+row claims something the ground-truth read contradicts.
 
-  **Consequence:** `login-form.tsx:40` only checks
-  `searchParams.get("error") === "invalid_token"`. A user who waits more than 3600s and then clicks
-  their verification link is redirected to `/login?error=token_expired`, and the login screen shows
-  **no error message at all** - not the "link is invalid or expired" message `plan.md`'s S3
-  independent test explicitly asks for ("abrir um link expirado e ver a mensagem de erro no
-  login"). The claim in `checks.md`'s Coverage table ("inválido/expirado -> redirect
-  `/login?error=invalid_token` - existing (better-auth)") is contradicted by the code for the
-  "expirado" and "já usado" sub-cases named in `plan.md` AC9.
+Everything else in Swept (`validation`, `failure modes`, `authorization`, `concurrency`, `data
+lifecycle`, `state transitions`, `dependency failure`, `observability`) is `carried from b7fd696` -
+the fix's diff did not touch any code path those rows describe.
 
-  This is not a defect in C7 or C8 individually - both check the narrow claims they state (C7:
-  session-present redirect; C8: UI reacts correctly to a literal `?error=invalid_token`) and both
-  hold up. The gap is that no check in `checks.md` covers the **expired-token** and
-  **already-verified-token** redirect outcomes that AC9 explicitly promises, and the Coverage
-  table's "existing, gated by C2" label for that row is not actually true of the installed library
-  version this repo depends on.
+## Cross-reference check (renumbering)
 
-- **failure modes / dependency failure / data lifecycle / observability (all -> C3 or C9)** -
-  confirmed, these point at real proofs already listed above.
-- **validation / concurrency: n/a** - correctly out of scope; nothing in the code to be wrong
-  about.
+`git diff 99058c2..8b27e64` shows `plan.md`'s AC9 split into AC9 (invalid_token) + AC10
+(token_expired), with old AC10/11/12 shifted to AC11/12/13. Checked for stale references:
+`rg "AC(9|10|11|12|13)\b"` across the repo (excluding `node_modules`) hits only `checks.md` and this
+`verification.md` - both now consistent with the new numbering (`checks.md` C7 -> AC11, C8 -> AC9,
+AC10, AC12, C9 -> AC13; Traceability table VERIFY-03 -> `8, 9, 10, 11, 12`, VERIFY-04 -> `13`;
+Observable table rows point at AC11/AC12). `validate_plan.py` and `validate_checks.py` (run fresh
+above, not trusted from a prior claim) both return 0 errors, confirming no cross-reference the
+scripts check is broken by the renumbering.
 
 ## Gate
 
 `npx vitest run` - 98 passed, 0 failed
-`npx tsc --noEmit | grep -v "^skills/"` - 0 errors
+`npx tsc --noEmit` - 0 errors (no `skills/` lines to filter)
+`validate_plan.py email-verification` - 0 error(s), 0 warning(s)
+`validate_checks.py email-verification` - 0 error(s), 8 warning(s) (pre-existing, unrelated to the fix)
 
 ## Ranked gaps
 
-1. **AC9 (plan.md) is unproven for 2 of its 3 named failure modes, and the code does not actually
-   implement the promised behaviour for them.** `checks.md`'s Coverage table asserts
-   "inválido/expirado -> `/login?error=invalid_token` - existing (better-auth) gated by C2", but
-   `better-auth@1.4.18` (the version this repo has pinned and installed) redirects expired tokens
-   with `error=token_expired` and silently succeeds (no error param) for an already-verified token's
-   still-valid link. `src/components/login-form.tsx:40` only recognizes the literal string
-   `"invalid_token"`, so a real expired-link click shows the user nothing - no toast, no message,
-   just a plain login form. Evidence: `node_modules/better-auth/dist/api/routes/email-verification.mjs:154-168,262-268`;
-   `src/components/login-form.tsx:40`. This is a P1 (S3) criterion per `plan.md:58` and its
-   independent test explicitly names the expired-link case.
+None. The round 1 gap (AC9/C8 vs. `token_expired`) is closed: `login-form.tsx:41-42` now handles
+both error strings, `checks.md` and `plan.md` were updated to match, and both were independently
+re-verified against the installed `better-auth@1.4.18` source rather than against round 1's report.
