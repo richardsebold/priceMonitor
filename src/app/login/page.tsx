@@ -1,5 +1,6 @@
 import { BadgeDollarSign } from "lucide-react"
 import Link from "next/link"
+import { Suspense } from "react"
 
 import { LoginForm } from "@/components/login-form"
 
@@ -13,7 +14,9 @@ export default function LoginPage() {
           </div>
           Price Tracker
         </Link>
-        <LoginForm />
+        <Suspense fallback={null}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   )
