@@ -37,6 +37,7 @@ describe("POST /api/webhooks/abacatepay", () => {
     const response = await POST(request);
 
     expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ received: true });
     expect(handleAbacatePayWebhookMock).toHaveBeenCalledTimes(1);
     expect(handleAbacatePayWebhookMock).toHaveBeenCalledWith(body);
   });
