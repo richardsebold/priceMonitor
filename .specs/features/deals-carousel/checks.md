@@ -9,31 +9,31 @@ Plan: `.specs/features/deals-carousel/plan.md`
 
 ### S1 - Catálogo semeado e verificado pelo cron · 7 files · ~30 KB · ~8k
 
-**C1** - `seedCatalog` faz upsert do `User` com `id = "system-catalog"`, `email = "catalogo@system.monitorador.invalid"`, `name = "Catálogo"`, `priceAlertsEnabled = false`, `weeklySummaryEnabled = false`, e `CATALOG_USER_ID === "system-catalog"` (DEALS-01, AC 1, door 1)
+**C1** - `seedCatalog` faz upsert do `User` com `id = "system-catalog"`, `email = "catalogo@system.monitorador.invalid"`, `name = "Catálogo"`, `priceAlertsEnabled = false`, `weeklySummaryEnabled = false`, e `CATALOG_USER_ID === "system-catalog"` (DEALS-01, AC 1, door 1) [x]
 Proof: `npx vitest run src/modules/price-tracking/application/seed-catalog.test.ts -t "upserts the catalog user"`
 
-**C2** - Para cada URL de `CATALOG_SEED_URLS` que o `system-catalog` ainda não tem, `seedCatalog` cria um `ProductHistory` com `priceTarget = 0`, `userId = "system-catalog"` e `lastPriceReadAt` preenchido, e um `PriceHistory` com o preço lido (DEALS-01, AC 2)
+**C2** - Para cada URL de `CATALOG_SEED_URLS` que o `system-catalog` ainda não tem, `seedCatalog` cria um `ProductHistory` com `priceTarget = 0`, `userId = "system-catalog"` e `lastPriceReadAt` preenchido, e um `PriceHistory` com o preço lido (DEALS-01, AC 2) [x]
 Proof: `npx vitest run src/modules/price-tracking/application/seed-catalog.test.ts -t "creates missing catalog products"`
 
-**C3** - Uma URL que o `system-catalog` já tem não gera `scrapeProduct`, `ProductHistory` nem `PriceHistory` (DEALS-01, AC 3)
+**C3** - Uma URL que o `system-catalog` já tem não gera `scrapeProduct`, `ProductHistory` nem `PriceHistory` (DEALS-01, AC 3) [x]
 Proof: `npx vitest run src/modules/price-tracking/application/seed-catalog.test.ts -t "skips urls already seeded"`
 
-**C4** - Quando o scrape de uma URL devolve `null`, devolve preço `<= 0` ou lança exceção, `seedCatalog` não cria nada para ela, registra a URL e segue para as próximas (DEALS-01, AC 4)
+**C4** - Quando o scrape de uma URL devolve `null`, devolve preço `<= 0` ou lança exceção, `seedCatalog` não cria nada para ela, registra a URL e segue para as próximas (DEALS-01, AC 4) [x]
 Proof: `npx vitest run src/modules/price-tracking/application/seed-catalog.test.ts -t "skips a failed scrape and continues"`
 
-**C5** - `runPriceCheckJob` grava `lastPriceReadAt` (um `Date`) no produto em toda leitura válida, com o preço mudando e com o preço igual (DEALS-01, AC 5)
+**C5** - `runPriceCheckJob` grava `lastPriceReadAt` (um `Date`) no produto em toda leitura válida, com o preço mudando e com o preço igual (DEALS-01, AC 5) [x]
 Proof: `npx vitest run src/modules/price-tracking/application/run-price-check-job.test.ts -t "records lastPriceReadAt on a valid reading"`
 
-**C6** - `runPriceCheckJob` não grava `lastPriceReadAt` quando o scrape devolve `null`, preço `<= 0` ou leitura implausível não confirmada (DEALS-01, AC 6)
+**C6** - `runPriceCheckJob` não grava `lastPriceReadAt` quando o scrape devolve `null`, preço `<= 0` ou leitura implausível não confirmada (DEALS-01, AC 6) [x]
 Proof: `npx vitest run src/modules/price-tracking/application/run-price-check-job.test.ts -t "does not record lastPriceReadAt without a valid reading"`
 
-**C7** - `NewProduct` cria o `ProductHistory` com `lastPriceReadAt` preenchido (DEALS-01, AC 7)
+**C7** - `NewProduct` cria o `ProductHistory` com `lastPriceReadAt` preenchido (DEALS-01, AC 7) [x]
 Proof: `npx vitest run src/modules/price-tracking/actions/add-product.test.ts -t "sets lastPriceReadAt on creation"`
 
-**C8** - `CATALOG_SEED_URLS` tem as 12 URLs da KaBuM listadas em `.design/deals-carousel.md` (Sources), sem duplicata por `normalizeProductUrl` (DEALS-01, AC 2)
+**C8** - `CATALOG_SEED_URLS` tem as 12 URLs da KaBuM listadas em `.design/deals-carousel.md` (Sources), sem duplicata por `normalizeProductUrl` (DEALS-01, AC 2) [x]
 Proof: `npx vitest run src/modules/price-tracking/domain/catalog.test.ts -t "seed list"`
 
-**C9** - `prisma/schema.prisma` declara `lastPriceReadAt DateTime?` e `addedFrom String?` em `ProductHistory`, e existe uma migração que adiciona as duas colunas como anuláveis, sem default obrigatório (door 2)
+**C9** - `prisma/schema.prisma` declara `lastPriceReadAt DateTime?` e `addedFrom String?` em `ProductHistory`, e existe uma migração que adiciona as duas colunas como anuláveis, sem default obrigatório (door 2) [x]
 Proof: `npx vitest run src/modules/price-tracking/infra/catalog-columns-schema.test.ts -t "catalog tracking columns"`
 
 ### S2 - Regra de desconto e ordenação · 6 files · ~20 KB · ~5k

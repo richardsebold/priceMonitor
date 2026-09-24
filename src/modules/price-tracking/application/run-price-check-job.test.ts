@@ -193,4 +193,43 @@ describe("runPriceCheckJob", () => {
     expect(onPriceEvent).toHaveBeenCalledTimes(1);
   });
 
+  const lastPriceReadAtWrites = () =>
+    updateMock.mock.calls.filter(([arg]) => arg?.data && "lastPriceReadAt" in arg.data);
+
+  it("records lastPriceReadAt on a valid reading", async () => {
+    findManyMock.mockResolvedValue([baseProduct, { ...baseProduct, id: "prod-2" }]);
+    scrapeProductMock
+      .mockResolvedValueOnce(scraped(2400))
+      .mockResolvedValueOnce(scraped(2699.9));
+
+    await runPriceCheckJob({ onPriceEvent: vi.fn() });
+
+    const writes = lastPriceReadAtWrites();
+    expect(writes.map(([arg]) => arg.where.id).sort()).toEqual(["prod-1", "prod-2"]);
+    for (const [arg] of writes) {
+      expect(arg.data.lastPriceReadAt).toBeInstanceOf(Date);
+    }
+  });
+
+  it("does not record lastPriceReadAt without a valid reading", async () => {
+    findManyMock.mockResolvedValue([
+      { ...baseProduct, id: "null-read" },
+      { ...baseProduct, id: "zero-read" },
+      { ...baseProduct, id: "implausible" },
+    ]);
+    scrapeProductMock
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(scraped(0))
+      .mockResolvedValueOnce(scraped(80.6))
+      .mockResolvedValueOnce(scraped(999.9));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await runPriceCheckJob({ onPriceEvent: vi.fn() });
+
+    expect(scrapeProductMock).toHaveBeenCalledTimes(4);
+    expect(lastPriceReadAtWrites()).toEqual([]);
+    vi.restoreAllMocks();
+  });
+
 });

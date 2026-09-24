@@ -10,6 +10,7 @@
     "lint": "eslint src",
     "postinstall": "prisma generate",
     "abacatepay:setup": "tsx prisma/setup-abacatepay-products.ts",
+    "catalog:seed": "tsx prisma/seed-catalog.ts",
     "backfill:verified-users": "tsx scripts/backfill-legacy-verified-users.ts",
     "test:fetch": "tsx scripts/test-raw-fetch.ts",
     "test": "vitest run",

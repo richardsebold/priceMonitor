@@ -6,7 +6,15 @@ import { scrapeProduct } from "../scraping/scrape-product";
 import { getUser } from "@/modules/identity/actions/get-user";
 import { maxTrackedProducts } from "@/modules/billing/domain/plan-entitlements";
 
-export async function NewProduct(url: string, priceTarget: number) {
+type NewProductOptions = {
+  addedFrom?: "carousel";
+};
+
+export async function NewProduct(
+  url: string,
+  priceTarget: number,
+  options: NewProductOptions = {},
+) {
 
   const user = await getUser();
 
@@ -60,6 +68,8 @@ export async function NewProduct(url: string, priceTarget: number) {
         image: newProduct.image,
         method: newProduct.method,
         store: newProduct.store,
+        lastPriceReadAt: new Date(),
+        addedFrom: options.addedFrom ?? null,
         userId: user.id,
       },
     });

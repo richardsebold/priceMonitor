@@ -89,6 +89,11 @@ export async function runPriceCheckJob({ onPriceEvent }: PriceCheckJobOptions) {
         );
       }
 
+      await prisma.productHistory.update({
+        where: { id: product.id },
+        data: { lastPriceReadAt: new Date() },
+      });
+
       if (product.price !== confirmedPrice) {
         await prisma.productHistory.update({
           where: { id: product.id },
