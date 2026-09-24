@@ -1,4 +1,5 @@
 export type ScrapeMethod = 'json-ld' | 'meta-tags' | 'regex' | 'none';
+export type Availability = 'in_stock' | 'out_of_stock' | 'unknown';
 
 export interface ParsedProduct {
   name: string;
@@ -7,6 +8,7 @@ export interface ParsedProduct {
   image: string;
   store: string;
   method: ScrapeMethod;
+  availability: Availability;
 }
 
 export interface ParseOptions {
@@ -98,6 +100,49 @@ const extractAmazonPrice = (html: string): AmazonPriceMatch | null => {
   return { whole: chosen.whole, fraction: fractionMatch ? fractionMatch[1] : null };
 };
 
+// Amazon's buy box submits the offer it is showing through a hidden
+// customerVisiblePrice input. When the page offers both a new and a used item it
+// renders one accordion row per condition, each with its own input, so the price is
+// read from inside the new-item row and the used row is never considered.
+const AMAZON_NEW_ROW_MARKER = 'id="newAccordionRow_0"';
+const AMAZON_USED_ROW_MARKER = 'id="usedAccordionRow"';
+const AMAZON_NEXT_ROW_RE = /id="[A-Za-z]*AccordionRow[^"]*"/g;
+const AMAZON_VISIBLE_PRICE_RE = /customerVisiblePrice\]\[amount\]"\s+value="([\d.]+)"/;
+
+type AmazonVisiblePrice =
+  | { kind: 'price'; price: number }
+  | { kind: 'used-only' }
+  | { kind: 'none' };
+
+const readVisiblePrice = (html: string): number => {
+  const match = html.match(AMAZON_VISIBLE_PRICE_RE);
+  const price = match ? Number(match[1]) : 0;
+  return Number.isFinite(price) ? price : 0;
+};
+
+const extractAmazonVisiblePrice = (html: string): AmazonVisiblePrice => {
+  const newIdx = html.indexOf(AMAZON_NEW_ROW_MARKER);
+  if (newIdx !== -1) {
+    AMAZON_NEXT_ROW_RE.lastIndex = newIdx + AMAZON_NEW_ROW_MARKER.length;
+    const next = AMAZON_NEXT_ROW_RE.exec(html);
+    const price = readVisiblePrice(html.slice(newIdx, next ? next.index : undefined));
+    return price > 0 ? { kind: 'price', price } : { kind: 'none' };
+  }
+  if (html.includes(AMAZON_USED_ROW_MARKER)) return { kind: 'used-only' };
+  const price = readVisiblePrice(html);
+  return price > 0 ? { kind: 'price', price } : { kind: 'none' };
+};
+
+const OUT_OF_STOCK_VALUES = ['OutOfStock', 'SoldOut', 'Discontinued'];
+
+const toAvailability = (value: unknown): Availability => {
+  const text = toStr(value).replace(/^https?:\/\/schema\.org\//i, '');
+  if (!text) return 'unknown';
+  if (OUT_OF_STOCK_VALUES.includes(text)) return 'out_of_stock';
+  if (text === 'InStock') return 'in_stock';
+  return 'unknown';
+};
+
 const decodeEntities = (text: string): string =>
   text
     .replace(/&amp;/g, '&')
@@ -116,6 +161,7 @@ const isProduct = (node: JsonLdNode | null | undefined): boolean => {
 };
 
 interface OfferLike {
+  availability?: unknown;
   price?: unknown;
   lowPrice?: unknown;
   highPrice?: unknown;
@@ -145,14 +191,33 @@ const deepFindProduct = (node: unknown): JsonLdNode | null => {
   return null;
 };
 
-const extractJsonLdBlocks = (html: string): string[] => {
+const findJsonLdAvailability = (html: string): Availability => {
+  for (const raw of extractJsonLdBlocks(html)) {
+    let json: unknown;
+    try {
+      json = JSON.parse(raw);
+    } catch {
+      continue;
+    }
+    for (const root of Array.isArray(json) ? json : [json]) {
+      const product = deepFindProduct(root);
+      if (!product) continue;
+      const offers = product.offers as OfferLike | OfferLike[] | undefined;
+      const offer = Array.isArray(offers) ? offers[0] : offers;
+      return toAvailability(offer?.availability);
+    }
+  }
+  return 'unknown';
+};
+
+function extractJsonLdBlocks(html: string): string[] {
   const blocks: string[] = [];
   const re =
     /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) !== null) blocks.push(m[1].trim());
   return blocks;
-};
+}
 
 const extractMeta = (html: string, key: string): string => {
   const a = new RegExp(
@@ -207,6 +272,7 @@ const normalizeImage = (
 export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct {
   const store = getStore(html, opts.url);
   const url = opts.url || '';
+  const availability = findJsonLdAvailability(html);
 
   // Store-specific extraction for high accuracy
   let specificPrice = 0;
@@ -215,10 +281,28 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
 
   try {
     if (url.includes('amazon.')) {
-      const containerSlice = scopeToAmazonPriceContainer(html);
-      const amazonPrice = (containerSlice && extractAmazonPrice(containerSlice)) || extractAmazonPrice(html);
-      if (amazonPrice) {
-        specificPrice = toNumberPrice(amazonPrice.whole + (amazonPrice.fraction ? ',' + amazonPrice.fraction : ''));
+      const visible = extractAmazonVisiblePrice(html);
+      if (visible.kind === 'used-only') {
+        // Only a used offer is on sale: the new item is unavailable, and the used
+        // price must never stand in for it.
+        return {
+          name: decodeEntities(extractTitle(html).replace(/\s*:?\s*Amazon\.com\.br.*/i, '').trim()),
+          price: 0,
+          currency: 'BRL',
+          image: extractMeta(html, 'og:image'),
+          store,
+          method: 'regex',
+          availability: 'out_of_stock',
+        };
+      }
+      if (visible.kind === 'price') {
+        specificPrice = visible.price;
+      } else {
+        const containerSlice = scopeToAmazonPriceContainer(html);
+        const amazonPrice = (containerSlice && extractAmazonPrice(containerSlice)) || extractAmazonPrice(html);
+        if (amazonPrice) {
+          specificPrice = toNumberPrice(amazonPrice.whole + (amazonPrice.fraction ? ',' + amazonPrice.fraction : ''));
+        }
       }
       const nameMatch = html.match(/<title>([^<]+)<\/title>/i);
       if (nameMatch) {
@@ -337,6 +421,7 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
       image: specificImage || ogImage || extractFirstImg(html),
       store,
       method: 'regex',
+      availability,
     };
   }
 
@@ -364,6 +449,7 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
         ),
         store,
         method: 'json-ld',
+        availability,
       };
     }
   }
@@ -378,6 +464,7 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
       image: ogImage,
       store,
       method: 'meta-tags',
+      availability,
     };
   }
 
@@ -396,6 +483,7 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
         image: ogImage || extractFirstImg(html),
         store,
         method: 'regex',
+        availability,
       };
     }
   }
@@ -407,5 +495,6 @@ export function parseHtml(html: string, opts: ParseOptions = {}): ParsedProduct 
     image: ogImage || extractFirstImg(html),
     store,
     method: 'none',
+    availability,
   };
 }
