@@ -92,6 +92,32 @@ describe("seedCatalog", () => {
     expect(priceCreateMock).toHaveBeenCalledTimes(1);
   });
 
+  it("skips urls already seeded only when the catalog user has them", async () => {
+    const rows = [
+      { url: "https://www.kabum.com.br/produto/1/a", userId: "system-catalog" },
+      { url: "https://www.kabum.com.br/produto/2/b", userId: "user-1" },
+    ];
+    productFindManyMock.mockImplementation(({ where }: { where: { userId?: string } }) =>
+      Promise.resolve(
+        rows
+          .filter((row) => where.userId === undefined || row.userId === where.userId)
+          .map(({ url }) => ({ url })),
+      ),
+    );
+    const scrape = vi.fn().mockResolvedValue(scraped(10));
+
+    await seedCatalog({
+      urls: ["https://www.kabum.com.br/produto/1/a", "https://www.kabum.com.br/produto/2/b"],
+      scrape,
+    });
+
+    expect(scrape).toHaveBeenCalledTimes(1);
+    expect(scrape).toHaveBeenCalledWith("https://www.kabum.com.br/produto/2/b");
+    expect(productCreateMock.mock.calls.map(([arg]) => arg.data.url)).toEqual([
+      "https://www.kabum.com.br/produto/2/b",
+    ]);
+  });
+
   it("skips a failed scrape and continues", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const scrape = vi
