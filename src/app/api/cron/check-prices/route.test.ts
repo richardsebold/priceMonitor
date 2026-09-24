@@ -16,7 +16,7 @@ vi.mock("next/server", () => ({
   after: (callback: () => unknown) => afterMock(callback),
 }));
 
-import { GET } from "./route";
+import { GET, maxDuration } from "./route";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -24,6 +24,10 @@ beforeEach(() => {
 });
 
 describe("GET /api/cron/check-prices", () => {
+  it("allows the scheduled round up to Vercel Hobby's 300s limit", () => {
+    expect(maxDuration).toBe(300);
+  });
+
   it("returns 401 and never runs the job when the bearer token is wrong", async () => {
     const request = new Request("http://localhost/api/cron/check-prices", {
       headers: { authorization: "Bearer wrong-secret" },

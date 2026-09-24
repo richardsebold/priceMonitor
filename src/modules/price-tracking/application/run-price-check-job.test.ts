@@ -321,6 +321,22 @@ describe("runPriceCheckJob", () => {
       vi.restoreAllMocks();
     });
 
+    it("does not let an out-of-stock rescrape confirm an implausible reading", async () => {
+      findManyMock.mockResolvedValue([baseProduct]);
+      scrapeProductMock
+        .mockResolvedValueOnce(scraped(80.6))
+        .mockResolvedValueOnce({ ...scraped(80.6), availability: "out_of_stock" });
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const onPriceEvent = vi.fn();
+      await runPriceCheckJob({ onPriceEvent });
+
+      expect(createMock).not.toHaveBeenCalled();
+      expect(priceOrTargetWrites()).toEqual([]);
+      expect(onPriceEvent).not.toHaveBeenCalled();
+      vi.restoreAllMocks();
+    });
+
     it("counts an unconfirmed implausible reading as a failure", async () => {
       findManyMock.mockResolvedValue([baseProduct]);
       scrapeProductMock
