@@ -33,6 +33,16 @@ const scraped = (price: number) => ({
   method: "regex" as const,
 });
 
+const priceOrTargetWrites = () =>
+  updateMock.mock.calls.filter(
+    ([arg]) => arg?.data && ("price" in arg.data || "targetReached" in arg.data),
+  );
+
+const checkWrites = (id = "prod-1") =>
+  updateMock.mock.calls
+    .map(([arg]) => arg)
+    .filter((arg) => arg?.where?.id === id && arg?.data && "lastCheckedAt" in arg.data);
+
 const baseProduct = {
   id: "prod-1",
   name: "Produto Teste",
@@ -62,7 +72,7 @@ describe("runPriceCheckJob", () => {
     await runPriceCheckJob({ onPriceEvent });
 
     expect(createMock).not.toHaveBeenCalled();
-    expect(updateMock).not.toHaveBeenCalled();
+    expect(priceOrTargetWrites()).toEqual([]);
     expect(onPriceEvent).not.toHaveBeenCalled();
     expect(scrapeProductMock).toHaveBeenCalledTimes(2);
   });
@@ -146,7 +156,7 @@ describe("runPriceCheckJob", () => {
     await runPriceCheckJob({ onPriceEvent });
 
     expect(createMock).not.toHaveBeenCalled();
-    expect(updateMock).not.toHaveBeenCalled();
+    expect(priceOrTargetWrites()).toEqual([]);
     expect(onPriceEvent).not.toHaveBeenCalled();
   });
 
@@ -230,6 +240,117 @@ describe("runPriceCheckJob", () => {
     expect(scrapeProductMock).toHaveBeenCalledTimes(4);
     expect(lastPriceReadAtWrites()).toEqual([]);
     vi.restoreAllMocks();
+  });
+
+  describe("availability", () => {
+    it("ignores an out-of-stock reading", async () => {
+      const product = { ...baseProduct, price: 2849, priceTarget: 2000 };
+      findManyMock.mockResolvedValue([product]);
+      scrapeProductMock.mockResolvedValueOnce({ ...scraped(3999.99), availability: "out_of_stock" });
+      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      const onPriceEvent = vi.fn();
+      await runPriceCheckJob({ onPriceEvent });
+
+      expect(priceOrTargetWrites()).toEqual([]);
+      expect(createMock).not.toHaveBeenCalled();
+      expect(onPriceEvent).not.toHaveBeenCalled();
+      expect(scrapeProductMock).toHaveBeenCalledTimes(1);
+      expect(logSpy).toHaveBeenCalledWith(expect.stringMatching(/\[SCRAPE\] esgotado.*prod-1/));
+      logSpy.mockRestore();
+    });
+
+    it("treats unknown availability as in stock", async () => {
+      findManyMock.mockResolvedValue([baseProduct]);
+      scrapeProductMock.mockResolvedValueOnce({ ...scraped(2400), availability: "unknown" });
+
+      await runPriceCheckJob({ onPriceEvent: vi.fn() });
+
+      expect(updateMock).toHaveBeenCalledWith({ where: { id: "prod-1" }, data: { price: 2400 } });
+      expect(createMock).toHaveBeenCalledWith({ data: { price: 2400, productId: "prod-1" } });
+    });
+  });
+
+  describe("check tracking", () => {
+    it("records a successful check", async () => {
+      findManyMock.mockResolvedValue([
+        { ...baseProduct, id: "changed" },
+        { ...baseProduct, id: "same" },
+        { ...baseProduct, id: "sold-out" },
+      ]);
+      scrapeProductMock
+        .mockResolvedValueOnce(scraped(2400))
+        .mockResolvedValueOnce(scraped(2699.9))
+        .mockResolvedValueOnce({ ...scraped(3999.99), availability: "out_of_stock" });
+      vi.spyOn(console, "log").mockImplementation(() => {});
+
+      await runPriceCheckJob({ onPriceEvent: vi.fn() });
+
+      for (const id of ["changed", "same", "sold-out"]) {
+        const writes = checkWrites(id);
+        expect(writes, id).toHaveLength(1);
+        expect(writes[0].data.lastCheckedAt, id).toBeInstanceOf(Date);
+        expect(writes[0].data.consecutiveFailures, id).toBe(0);
+      }
+      vi.restoreAllMocks();
+    });
+
+    it("records a failed check", async () => {
+      findManyMock.mockResolvedValue([
+        { ...baseProduct, id: "null-read" },
+        { ...baseProduct, id: "zero-read" },
+        { ...baseProduct, id: "throws" },
+      ]);
+      scrapeProductMock
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(scraped(0))
+        .mockRejectedValueOnce(new Error("timeout"));
+      vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const onPriceEvent = vi.fn();
+      await runPriceCheckJob({ onPriceEvent });
+
+      for (const id of ["null-read", "zero-read", "throws"]) {
+        const writes = checkWrites(id);
+        expect(writes, id).toHaveLength(1);
+        expect(writes[0].data.lastCheckedAt, id).toBeInstanceOf(Date);
+        expect(writes[0].data.consecutiveFailures, id).toEqual({ increment: 1 });
+      }
+      expect(createMock).not.toHaveBeenCalled();
+      expect(onPriceEvent).not.toHaveBeenCalled();
+      vi.restoreAllMocks();
+    });
+
+    it("does not let an out-of-stock rescrape confirm an implausible reading", async () => {
+      findManyMock.mockResolvedValue([baseProduct]);
+      scrapeProductMock
+        .mockResolvedValueOnce(scraped(80.6))
+        .mockResolvedValueOnce({ ...scraped(80.6), availability: "out_of_stock" });
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const onPriceEvent = vi.fn();
+      await runPriceCheckJob({ onPriceEvent });
+
+      expect(createMock).not.toHaveBeenCalled();
+      expect(priceOrTargetWrites()).toEqual([]);
+      expect(onPriceEvent).not.toHaveBeenCalled();
+      vi.restoreAllMocks();
+    });
+
+    it("counts an unconfirmed implausible reading as a failure", async () => {
+      findManyMock.mockResolvedValue([baseProduct]);
+      scrapeProductMock
+        .mockResolvedValueOnce(scraped(80.6))
+        .mockResolvedValueOnce(scraped(999.9));
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      await runPriceCheckJob({ onPriceEvent: vi.fn() });
+
+      const writes = checkWrites();
+      expect(writes).toHaveLength(1);
+      expect(writes[0].data.consecutiveFailures).toEqual({ increment: 1 });
+      vi.restoreAllMocks();
+    });
   });
 
 });

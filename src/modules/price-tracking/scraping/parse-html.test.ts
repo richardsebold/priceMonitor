@@ -219,4 +219,106 @@ describe("parseHtml", () => {
       method: "none",
     });
   });
+  describe("availability", () => {
+    const jsonLdWithAvailability = (availability: string) => `
+      <html><head>
+        <script type="application/ld+json">
+        {"@type":"Product","name":"Placa","offers":{"@type":"Offer","price":3999.99,"priceCurrency":"BRL","availability":"${availability}"}}
+        </script>
+      </head></html>
+    `;
+    const prefixes = ["https://schema.org/", "http://schema.org/", ""];
+
+    it("maps every out-of-stock availability value to out_of_stock", () => {
+      for (const value of ["OutOfStock", "SoldOut", "Discontinued"]) {
+        for (const prefix of prefixes) {
+          const result = parseHtml(jsonLdWithAvailability(prefix + value), {
+            url: "https://www.kabum.com.br/produto/1012610/x",
+          });
+          expect(result.availability, prefix + value).toBe("out_of_stock");
+        }
+      }
+    });
+
+    it("maps InStock to in_stock", () => {
+      for (const prefix of prefixes) {
+        const result = parseHtml(jsonLdWithAvailability(prefix + "InStock"), {
+          url: "https://www.kabum.com.br/produto/609952/x",
+        });
+        expect(result.availability, prefix + "InStock").toBe("in_stock");
+      }
+    });
+
+    it("returns unknown availability when the page does not state it", () => {
+      const html = `
+        <html><head>
+          <script type="application/ld+json">
+          {"@type":"Product","name":"Sem estoque informado","offers":{"price":"199.90","priceCurrency":"BRL"}}
+          </script>
+        </head></html>
+      `;
+
+      expect(parseHtml(html).availability).toBe("unknown");
+    });
+  });
+
+  describe("Amazon offer selection", () => {
+    const amazonUrl = "https://www.amazon.com.br/dp/B0GNCKHV9G";
+    const newRow = `
+      <div id="newAccordionRow_0" data-buying-option-index="0" class="a-box a-accordion-active celwidget" data-a-accordion-row-name="newAccordionRow">
+        Comprar novo <span class="a-price"><span class="a-price-whole">1.148</span><span class="a-price-fraction">99</span></span>
+        <input type="hidden" name="items[0.base][customerVisiblePrice][amount]" value="1148.99">
+      </div>`;
+    const usedRow = `
+      <div id="usedAccordionRow" data-buying-option-index="1" class="a-box celwidget" data-a-accordion-row-name="usedAccordionRow">
+        Usado - Como novo <span class="a-price"><span class="a-price-whole">919</span><span class="a-price-fraction">53</span></span>
+        <input type="hidden" name="items[0.base][customerVisiblePrice][amount]" value="919.53">
+      </div>`;
+    const page = (body: string) =>
+      `<html><head><title>Cafeteira : Amazon.com.br</title></head><body>${body}</body></html>`;
+
+    it("reads the new-offer accordion row regardless of order", () => {
+      expect(parseHtml(page(newRow + usedRow), { url: amazonUrl }).price).toBe(1148.99);
+      expect(parseHtml(page(usedRow + newRow), { url: amazonUrl }).price).toBe(1148.99);
+    });
+
+    it("reads a single customerVisiblePrice when there is no accordion", () => {
+      const html = page(`
+        <div id="corePriceDisplay_desktop_feature_div">
+          <span class="a-price-whole">479</span><span class="a-price-fraction">99</span>
+        </div>
+        <input type="hidden" name="items[0.base][customerVisiblePrice][amount]" value="479.99">
+      `);
+
+      expect(parseHtml(html, { url: "https://www.amazon.com.br/dp/B097K5J1SB" }).price).toBe(479.99);
+    });
+
+    it("falls back to a-price-whole without customerVisiblePrice", () => {
+      const html = page(`
+        <div id="corePriceDisplay_desktop_feature_div">
+          <span class="a-price-whole">1.028</span><span class="a-price-fraction">20</span>
+        </div>
+      `);
+
+      expect(parseHtml(html, { url: "https://www.amazon.com.br/dp/B0CGLW3GWG" }).price).toBe(1028.2);
+    });
+
+    it("treats a used-only Amazon page as out of stock", () => {
+      const result = parseHtml(page(usedRow), { url: amazonUrl });
+
+      expect(result.price).not.toBe(919.53);
+      expect(result.availability).toBe("out_of_stock");
+    });
+
+    it("ignores variation selector prices", () => {
+      const variations = `
+        <div id="twister_feature_div">
+          <li data-asin="B0GNCKHV9G"><span>220.0 Volts</span><span class="a-price"><span class="a-price-whole">1.249</span><span class="a-price-fraction">00</span></span></li>
+          <li data-asin="B0GNCJSWF5"><span>110.0 Volts</span><span>R$1.119,00</span></li>
+          <script type="a-state">{"displayPrice":"R$ 1.249,00","priceAmount":1249.00}</script>
+        </div>`;
+
+      expect(parseHtml(page(variations + newRow + usedRow), { url: amazonUrl }).price).toBe(1148.99);
+    });
+  });
 });
