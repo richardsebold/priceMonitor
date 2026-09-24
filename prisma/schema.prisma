@@ -130,6 +130,8 @@ model ProductHistory {
   store       String?
   lastPriceReadAt DateTime?
   addedFrom   String?
+  lastCheckedAt       DateTime?
+  consecutiveFailures Int       @default(0)
 
 
   userId    String

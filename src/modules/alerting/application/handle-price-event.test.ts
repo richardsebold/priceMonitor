@@ -32,6 +32,8 @@ const product = {
   store: "loja",
   lastPriceReadAt: null,
   addedFrom: null,
+  lastCheckedAt: null,
+  consecutiveFailures: 0,
   userId: "user-1",
 };
 
