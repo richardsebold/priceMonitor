@@ -38,40 +38,40 @@ Proof: `npx vitest run src/modules/price-tracking/infra/catalog-columns-schema.t
 
 ### S2 - Regra de desconto e ordenação · 6 files · ~20 KB · ~5k
 
-**C10** - `referencePrice` devolve o maior preço em vigor entre `now - 30 dias` e `now`. O último registro anterior à janela conta como em vigor no início dela, registros mais antigos são ignorados, e histórico vazio devolve `null` (DEALS-02, AC 8)
+**C10** - `referencePrice` devolve o maior preço em vigor entre `now - 30 dias` e `now`. O último registro anterior à janela conta como em vigor no início dela, registros mais antigos são ignorados, e histórico vazio devolve `null` (DEALS-02, AC 8) [x]
 Proof: `npx vitest run src/modules/analytics/domain/deals.test.ts -t "referencePrice"`
 
-**C11** - `toDeal` inclui um produto com desconto de exatamente 5% (preço 95, referência 100) e devolve `discount = 0.05` (DEALS-02, AC 9)
+**C11** - `toDeal` inclui um produto com desconto de exatamente 5% (preço 95, referência 100) e devolve `discount = 0.05` (DEALS-02, AC 9) [x]
 Proof: `npx vitest run src/modules/analytics/domain/deals.test.ts -t "includes a discount at the 5% floor"`
 
-**C12** - `toDeal` devolve `null` com desconto de 4,99%, com preço igual à referência e com preço acima dela (DEALS-02, AC 10)
+**C12** - `toDeal` devolve `null` com desconto de 4,99%, com preço igual à referência e com preço acima dela (DEALS-02, AC 10) [x]
 Proof: `npx vitest run src/modules/analytics/domain/deals.test.ts -t "excludes below the 5% floor"`
 
-**C13** - `toDeal` inclui desconto de exatamente 40% e devolve `null` com 40,01% (DEALS-02, AC 11)
+**C13** - `toDeal` inclui desconto de exatamente 40% e devolve `null` com 40,01% (DEALS-02, AC 11) [x]
 Proof: `npx vitest run src/modules/analytics/domain/deals.test.ts -t "40% ceiling"`
 
-**C14** - `toDeal` devolve `null` com `lastPriceReadAt` nulo ou há 24 h e 1 ms, e inclui com 23 h (DEALS-02, AC 12)
+**C14** - `toDeal` devolve `null` com `lastPriceReadAt` nulo ou há 24 h e 1 ms, e inclui com 23 h (DEALS-02, AC 12) [x]
 Proof: `npx vitest run src/modules/analytics/domain/deals.test.ts -t "stale reading"`
 
-**C15** - `rankDeals` ordena por `popularity` decrescente e, no empate, por `discount` decrescente (DEALS-02, AC 13)
+**C15** - `rankDeals` ordena por `popularity` decrescente e, no empate, por `discount` decrescente (DEALS-02, AC 13) [x]
 Proof: `npx vitest run src/modules/analytics/domain/deals.test.ts -t "rankDeals"`
 
-**C16** - `getDeals` calcula `popularity` como o número de `userId` distintos, sem contar o `system-catalog`, com `ProductHistory` de mesma `normalizeProductUrl`. Duas URLs que diferem só pela query contam como a mesma (DEALS-02, AC 13)
+**C16** - `getDeals` calcula `popularity` como o número de `userId` distintos, sem contar o `system-catalog`, com `ProductHistory` de mesma `normalizeProductUrl`. Duas URLs que diferem só pela query contam como a mesma (DEALS-02, AC 13) [x]
 Proof: `npx vitest run src/modules/analytics/actions/get-deals.test.ts -t "popularity"`
 
-**C17** - `getDeals` devolve no máximo 12 itens quando há 13 candidatos (DEALS-02, AC 14)
+**C17** - `getDeals` devolve no máximo 12 itens quando há 13 candidatos (DEALS-02, AC 14) [x]
 Proof: `npx vitest run src/modules/analytics/actions/get-deals.test.ts -t "at most 12"`
 
-**C18** - `getDeals` marca `alreadyTracked = true` no item cuja URL normalizada o usuário da sessão já monitora, e `false` nos outros (DEALS-02, AC 15)
+**C18** - `getDeals` marca `alreadyTracked = true` no item cuja URL normalizada o usuário da sessão já monitora, e `false` nos outros (DEALS-02, AC 15) [x]
 Proof: `npx vitest run src/modules/analytics/actions/get-deals.test.ts -t "alreadyTracked"`
 
-**C19** - `getDeals` devolve `[]` sem ler o banco quando `getSessionUserId()` devolve `null` (DEALS-02, AC 16)
+**C19** - `getDeals` devolve `[]` sem ler o banco quando `getSessionUserId()` devolve `null` (DEALS-02, AC 16) [x]
 Proof: `npx vitest run src/modules/analytics/actions/get-deals.test.ts -t "no session"`
 
-**C20** - `getDeals` só busca candidatos com `where: { userId: "system-catalog" }` (DEALS-02, AC 17)
+**C20** - `getDeals` só busca candidatos com `where: { userId: "system-catalog" }` (DEALS-02, AC 17) [x]
 Proof: `npx vitest run src/modules/analytics/actions/get-deals.test.ts -t "only catalog products"`
 
-**C21** - `normalizeProductUrl` tira o `www.`, a query, o hash e a barra final e deixa o host em minúsculas. Reduz KaBuM a `kabum.com.br/produto/{id}` e Amazon a `amazon.com.br/dp/{ASIN}` (DEALS-02, AC 13, AC 15)
+**C21** - `normalizeProductUrl` tira o `www.`, a query, o hash e a barra final e deixa o host em minúsculas. Reduz KaBuM a `kabum.com.br/produto/{id}` e Amazon a `amazon.com.br/dp/{ASIN}` (DEALS-02, AC 13, AC 15) [x]
 Proof: `npx vitest run src/modules/price-tracking/domain/product-url.test.ts -t "normalizeProductUrl"`
 
 ### S3 - Carrossel no dashboard · 6 files · ~40 KB · ~10k
@@ -79,7 +79,7 @@ Proof: `npx vitest run src/modules/price-tracking/domain/product-url.test.ts -t 
 **C22** - `NewProduct(url, target, { addedFrom: "carousel" })` grava `addedFrom = "carousel"`, e `NewProduct(url, target)` grava `addedFrom = null` (DEALS-03, AC 23, AC 28)
 Proof: `npx vitest run src/modules/price-tracking/actions/add-product.test.ts -t "addedFrom"`
 
-**C23** - `formatDealBadge(0.123)` devolve `"-12% vs. últimos 30 dias"`, e `formatDealBadge(0.125)` devolve `"-13% vs. últimos 30 dias"` (DEALS-03, AC 19)
+**C23** - `formatDealBadge(0.123)` devolve `"-12% vs. últimos 30 dias"`, e `formatDealBadge(0.125)` devolve `"-13% vs. últimos 30 dias"` (DEALS-03, AC 19) [x]
 Proof: `npx vitest run src/modules/analytics/domain/deals.test.ts -t "formatDealBadge"`
 
 **C24** - Com pelo menos 1 item, `/dashboard` mostra o carrossel abaixo de `SectionCards` e acima do título "Últimas Atualizações", com um card por item (DEALS-03, AC 18)
