@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { handleAbacatePayWebhook } from "@/modules/billing/application/handle-webhook-event";
+import { rawSecretMatches } from "@/lib/secure-compare";
 
 export async function POST(request: Request) {
   try {
     const url = new URL(request.url);
 
     const secretFromUrl = url.searchParams.get("webhookSecret");
-    const webhookSecret = process.env.ABACATEPAY_WEBHOOK_SECRET;
 
-    if (!secretFromUrl || secretFromUrl !== webhookSecret) {
+    if (!rawSecretMatches(secretFromUrl, process.env.ABACATEPAY_WEBHOOK_SECRET, "ABACATEPAY_WEBHOOK_SECRET")) {
       return NextResponse.json({ error: "Acesso Negado" }, { status: 401 });
     }
 

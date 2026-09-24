@@ -1,12 +1,13 @@
 import { runPriceCheckJob } from "@/modules/price-tracking/application/run-price-check-job";
 import { handlePriceEvent } from "@/modules/alerting/application/handle-price-event";
+import { bearerTokenMatches } from "@/lib/secure-compare";
 
 // Só permite requisições GET
 export async function GET(request: Request) {
 
   const authHeader = request.headers.get("authorization");
 
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!bearerTokenMatches(authHeader, process.env.CRON_SECRET, "CRON_SECRET")) {
     return new Response("Não autorizado", { status: 401 });
   }
   try {
