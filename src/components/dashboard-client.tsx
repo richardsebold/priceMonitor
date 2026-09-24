@@ -22,6 +22,8 @@ import { toast } from "sonner";
 import { ChartAreaInteractive } from "./chart-area-interactive";
 import { Card } from "./ui/card";
 import { SectionCards } from "./section-cards";
+import { DealsCarousel } from "./deals-carousel";
+import type { DealItem } from "@/modules/analytics/actions/get-deals";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +58,7 @@ interface DashboardClientProps {
   planLimit: number;
   initialProducts: ProductHistory[];
   initialStats: InitialStats;
+  deals?: DealItem[];
   hideSectionCards?: boolean;
   defaultExpandFirstItem?: boolean;
 }
@@ -84,6 +87,7 @@ export function DashboardClient({
   planLimit,
   initialProducts,
   initialStats,
+  deals = [],
   hideSectionCards = false,
   defaultExpandFirstItem = true,
 }: DashboardClientProps) {
@@ -200,6 +204,8 @@ export function DashboardClient({
             biggestDrop={stats.biggestDrop}
           />
         )}
+
+        <DealsCarousel deals={deals} onProductAdded={refreshDashboard} />
 
         <div className="rounded-2xl w-full mt-8 shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">

@@ -76,7 +76,7 @@ Proof: `npx vitest run src/modules/price-tracking/domain/product-url.test.ts -t 
 
 ### S3 - Carrossel no dashboard · 6 files · ~40 KB · ~10k
 
-**C22** - `NewProduct(url, target, { addedFrom: "carousel" })` grava `addedFrom = "carousel"`, e `NewProduct(url, target)` grava `addedFrom = null` (DEALS-03, AC 23, AC 28)
+**C22** - `NewProduct(url, target, { addedFrom: "carousel" })` grava `addedFrom = "carousel"`, e `NewProduct(url, target)` grava `addedFrom = null` (DEALS-03, AC 23, AC 28) [x]
 Proof: `npx vitest run src/modules/price-tracking/actions/add-product.test.ts -t "addedFrom"`
 
 **C23** - `formatDealBadge(0.123)` devolve `"-12% vs. últimos 30 dias"`, e `formatDealBadge(0.125)` devolve `"-13% vs. últimos 30 dias"` (DEALS-03, AC 19) [x]

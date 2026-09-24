@@ -154,6 +154,7 @@ One-way constraints: o `User` com id `system-catalog` é o único dono dos produ
 | --- | --- | --- |
 | 1. Dono dos produtos do catálogo | `User` com `id = "system-catalog"`, `email = "catalogo@system.monitorador.invalid"`, `name = "Catálogo"`, `priceAlertsEnabled = false`, `weeklySummaryEnabled = false`, sem `Account` (não consegue logar), e `export const CATALOG_USER_ID = "system-catalog"` em `src/modules/price-tracking/domain/catalog.ts` | Tabela `CatalogProduct` própria com série de preço compartilhada por URL: exige um segundo caminho de scraping e de histórico, e só compensa com muitos usuários monitorando as mesmas URLs. Hoje há 1 usuário |
 | 2. Colunas novas em `ProductHistory` | `lastPriceReadAt DateTime?` e `addedFrom String?` (valor `"carousel"` ou `null`), na migração aditiva `prisma/migrations/<timestamp>_add_catalog_tracking_columns` | Reusar o `lastCheckedAt` de `.design/price-scraping-coverage.md`: ainda não está na `main`, e ele é gravado também em falha, então não diz quando houve a última leitura válida |
+| 3. Dependência nova (achada no build) | `embla-carousel-react`, instalada por `npx shadcn@latest add carousel`, que gera `src/components/ui/carousel.tsx` | Lista horizontal com CSS scroll-snap, sem dependência: não tem os botões anterior/próximo nem a API de navegação que os outros componentes shadcn do projeto seguem, e o projeto já adota o shadcn como kit de UI (`components.json`) |
 
 - Nada mais nesta mudança é difícil de reverter. Constantes da regra de desconto, componente e action são código comum.
 
