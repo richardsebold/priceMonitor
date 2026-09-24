@@ -94,6 +94,9 @@ Com a entrega, o dashboard passa a mostrar, abaixo do Hero, um carrossel de elet
 26. IF `NewProduct` devolve qualquer outro erro THEN o sistema SHALL mostrar a mensagem de erro devolvida num toast e manter o diálogo aberto.
 27. WHILE um item tem `alreadyTracked = true` o card SHALL mostrar o badge "Já monitorado" e SHALL NOT mostrar o botão "Monitorar".
 28. WHEN `NewProduct` é chamado sem o terceiro argumento THEN o sistema SHALL gravar `addedFrom = null`.
+29. The system SHALL mostrar os cards do carrossel numa única faixa horizontal, com os controles "anterior" e "próximo", e o controle "próximo" SHALL deslocar a faixa (Landing, door 3). Acrescentado em 2026-09-24, depois da 1ª rodada de verificação.
+30. The system SHALL mostrar no diálogo "Monitorar" somente o campo de URL, o campo de meta e o botão de confirmar, além do botão de fechar do próprio diálogo. Acrescentado em 2026-09-24, depois da 1ª rodada de verificação.
+31. IF o produto mais recente do usuário tem `priceTarget = 0` (meta vazia no diálogo "Monitorar") THEN `/dashboard` SHALL renderizar normalmente, sem travar o servidor nem o browser. Acrescentado em 2026-09-24, com a aprovação do Richard para corrigir `priceScale`.
 
 **Independent test:** com o dev server e um produto do catálogo em desconto no banco, abrir `/dashboard` com o Playwright, ver o carrossel, monitorar pelo diálogo e ver o badge "Já monitorado". Com nenhum produto em desconto, confirmar que a seção não aparece.
 
@@ -103,7 +106,7 @@ Com a entrega, o dashboard passa a mostrar, abaixo do Hero, um carrossel de elet
 | --- | --- | --- | --- |
 | DEALS-01 | S1 | 1, 2, 3, 4, 5, 6, 7 | Pending |
 | DEALS-02 | S2 | 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 | Pending |
-| DEALS-03 | S3 | 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 | Pending |
+| DEALS-03 | S3 | 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 | Pending |
 
 ## Observable
 
@@ -114,6 +117,8 @@ Com a entrega, o dashboard passa a mostrar, abaixo do Hero, um carrossel de elet
 | screen `/dashboard` carrossel | erro ao carregar | existing - uma exceção em `page.tsx` cai no error boundary padrão do Next, como já acontece com `getDashboardStats()` |
 | screen `/dashboard` carrossel | sem autorização | existing - `page.tsx` redireciona para `/` quando `getDashboardStats()` devolve `null`, e AC 16 cobre a action |
 | screen `/dashboard` carrossel | densidade e ordenação | AC 13, AC 14, AC 19 |
+| screen `/dashboard` carrossel | arranjo (faixa horizontal com anterior/próximo) | AC 29 |
+| screen diálogo "Monitorar" | composição (só URL, meta e confirmar) | AC 30 |
 | screen `/dashboard` carrossel | ação destrutiva confirma antes | n/a - o carrossel não tem ação destrutiva |
 | screen diálogo "Monitorar" | erro | AC 25, AC 26 |
 | screen diálogo "Monitorar" | carregando | existing - spinner `LoaderCircle` com `loading`, como em `btn-cadastro-produto.tsx` |
@@ -168,4 +173,5 @@ One-way constraints: o `User` com id `system-catalog` é o único dono dos produ
 | domain | termo existente: `ProductHistory` - até hoje sempre pertencia a uma pessoa. As queries por produto já filtram pelo `userId` da sessão (`product-ownership.test.ts`), então nenhuma tela de usuário mostra o catálogo |
 | stored data | migração aditiva com as duas colunas anuláveis. As linhas existentes ficam com `lastPriceReadAt = null` até a próxima leitura do cron, e só os produtos do catálogo dependem dessa coluna |
 | stored data | seed único dos 12 produtos e do usuário `system-catalog` no Neon remoto, só com a confirmação do Richard (Open question 1) |
+| componente existente | `priceScale` em `src/components/chart-area-interactive.tsx` passa a devolver domínio `[0, 1]` para lista vazia (AC 31). Antes, entrava em loop infinito quando o gráfico renderizava sem histórico e sem meta |
 | operação | o cron, que já estoura o tempo (`.design/price-scraping-coverage.md`), passa de 15 para 27 produtos até o bloco 1 da cobertura entrar |

@@ -109,6 +109,16 @@ Proof: Manual - Playwright MCP em banco isolado: monitorar uma URL do catálogo 
 **C32** - Um item com `alreadyTracked = true` mostra o badge "Já monitorado" e não tem botão "Monitorar" (DEALS-03, AC 27) [x]
 Proof: Manual - Playwright MCP em banco isolado: abrir `/dashboard` com um usuário que já monitora um produto do catálogo e conferir o card
 
+**C33** - O carrossel tem `aria-roledescription="carousel"`, os cards visíveis ficam na mesma linha (mesmo `top`), existem os botões "Previous slide" e "Next slide", e clicar em "Next slide" desloca o primeiro card para a esquerda (DEALS-03, AC 29, door 3) [x]
+Proof: Manual - Playwright em banco isolado: medir `boundingBox` dos cards visíveis, conferir os dois controles e comparar o `x` do primeiro card antes e depois de "Next slide"
+
+**C34** - O diálogo "Monitorar" tem exatamente 2 campos (`input`), o botão "Monitorar" e o botão de fechar, e nada além disso (DEALS-03, AC 30) [x]
+Proof: Manual - Playwright em banco isolado: contar `input` e `button` dentro de `role=dialog`
+
+**C35** - `priceScale([])` devolve `domain [0, 1]` com ticks finitos, e o `/dashboard` renderiza quando o produto mais recente do usuário tem `priceTarget = 0` (DEALS-03, AC 31) [x]
+Proof: `npx vitest run src/components/chart-area-interactive.test.ts -t "returns a finite scale when there are no values"`
+Proof: Manual - Playwright em banco isolado: com um produto de meta 0 como o mais recente do usuário Pro, `/dashboard` responde e mostra "Últimas Atualizações" em menos de 30 s
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -117,6 +127,7 @@ Proof: Manual - Playwright MCP em banco isolado: abrir `/dashboard` com um usuá
 | door 2 - colunas de `ProductHistory` (2) | `lastPriceReadAt` C9 · `addedFrom` C9 | - |
 | entidade User system-catalog e seus produtos (2) | dono dos produtos C2 · único candidato do carrossel C20 | - |
 | entidade ProductHistory e sua série de preço (2) | primeira leitura no seed C2 · série lida pela regra C10 | - |
+| escopo da busca de URLs já semeadas (2) | URL do catálogo pulada C3 · URL de outro usuário não conta como semeada C3 | - |
 | falha de scrape no seed (3) | `null` C4 · preço `<= 0` C4 · exceção C4 | - |
 | resultado da leitura no cron (4) | válida com preço novo C5 · válida com preço igual C5 · falha (`null` / `<= 0`) C6 · implausível não confirmada C6 | - |
 | janela do preço de referência (4) | registro dentro C10 · último anterior à janela C10 · anterior a esse C10 · histórico vazio C10 | - |
@@ -126,6 +137,9 @@ Proof: Manual - Playwright MCP em banco isolado: abrir `/dashboard` com um usuá
 | regras de `normalizeProductUrl` (6) | host em minúsculas C21 · `www.` C21 · query/hash C21 · barra final C21 · KaBuM C21 · Amazon C21 | - |
 | `NewProduct` `addedFrom` (2) | `"carousel"` C22 · ausente → `null` C22 | - |
 | estados da tela do carrossel (4) | com itens C24, C25 · vazio C26 · item já monitorado C32 · depois de monitorar C29 | - |
+| arranjo do carrossel (3) | faixa horizontal C33 · anterior/próximo C33 · deslocamento ao avançar C33 | - |
+| composição do diálogo "Monitorar" (3 controles) | URL C28, C34 · meta C28, C34 · confirmar C34 | - |
+| entrada de `priceScale` (2) | lista vazia C35 · histórico carregado C24 (gráfico da lista renderiza) | - |
 | resultados do diálogo "Monitorar" (3) | sucesso C29 · limite do plano C30 · outro erro C31 | - |
 | textos vinculantes (7) | "Monitorar" C28 · "Ver na loja" C27 · "Já monitorado" C29, C32 · "-N% vs. últimos 30 dias" C23, C25 · "Produto adicionado!" C29 · link "/planos" C30 · "Últimas Atualizações" como vizinho C24 | - |
 | startup config (0) | nenhuma: não entra variável de ambiente nem configuração de montagem | - |
@@ -156,7 +170,7 @@ Cost: 21 provas automatizadas em 7 arquivos de teste, mais 9 roteiros de Playwri
 ## Swept
 
 - validation: C12, C13, C14 (limites de desconto e frescor). A meta vazia no diálogo segue o comportamento que já existe (`Number("") = 0`, Assumptions)
-- failure modes: C4 (seed segue depois de falha por URL), C6 (cron sem leitura válida não finge frescor), C31 (erro no diálogo)
+- failure modes: C35 (dashboard com meta 0 não trava), C4 (seed segue depois de falha por URL), C6 (cron sem leitura válida não finge frescor), C31 (erro no diálogo)
 - idempotency: C3 (seed rodado de novo não duplica). O duplicado no "Monitorar" já é barrado por `userId_url` e pela checagem em `NewProduct` (C31 exercita a mensagem)
 - authorization: C19 (sem sessão, nada é devolvido) e C20 (só produtos do catálogo, nunca os de outros usuários). A página já redireciona sem sessão
 - concurrency: n/a - o seed é rodado à mão por uma pessoa, e dois "Monitorar" simultâneos do mesmo usuário caem no `@@unique([userId, url])` que já existe (P2002 tratado em `add-product.ts`)
@@ -175,3 +189,4 @@ Pré-requisito das provas manuais (C24 a C32): o `.env` aponta para o Neon de pr
 - **Settled mid-build:** posição do carrossel entre `SectionCards` e "Últimas Atualizações" (usuário, na aprovação do plano). Postgres local no lugar do Docker e script do Playwright no lugar do MCP (usuário, 2026-09-24). Door 3 (`embla-carousel-react`) acrescentada ao Landing antes do código. O pacote `cn`, que o CLI do shadcn acrescentou, foi removido
 - **Abandoned:** Docker (o daemon não sobe nesta máquina) e Playwright MCP (não configurado)
 - **Bug encontrado, fora do escopo, não corrigido:** `priceScale([])` em `src/components/chart-area-interactive.tsx:75` entra em loop infinito quando o primeiro produto expandido tem `priceTarget = 0`, porque no primeiro render o histórico ainda está vazio. Isso trava o SSR e o browser do `/dashboard`. Já existia (o diálogo "CADASTRAR PRODUTO" aceita meta vazia, que vira 0), e o diálogo "Monitorar" do carrossel abre um segundo caminho para ele (reproduzido na primeira rodada da C31)
+- **Round 2 fixes (2026-09-24):** a 1ª verificação deu FAIL. Um mutante sobreviveu no filtro do seed, e o arranjo do carrossel e a composição do diálogo não tinham checagem. Com a aprovação do Richard, o teste do seed ganhou um mock que respeita `where` (mata o mutante `where: {}`), entraram as C33 e C34, e a C35 cobre a correção de `priceScale([])`. C33 a C35 foram provadas com `uiproof/round2.mjs` contra `next dev --webpack -p 3101` a partir do worktree, ligado ao Postgres local
