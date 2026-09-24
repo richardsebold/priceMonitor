@@ -72,7 +72,10 @@ function formatBRL(value: number, fractionDigits = 2) {
 
 // Escala do eixo Y com folga (um preço estável fica no meio do gráfico, e não
 // colado na borda) e com no máximo 5 intervalos de passo "redondo" (1, 2, 2,5 ou 5 × 10^n).
-function priceScale(values: number[]) {
+// Exportada para teste. Sem valores (histórico ainda carregando e sem meta), o
+// Math.min/Math.max dão ±Infinity e a busca de magnitude abaixo nunca termina.
+export function priceScale(values: number[]) {
+  if (values.length === 0) return { domain: [0, 1] as [number, number], ticks: [0, 1] };
   const min = Math.min(...values);
   const max = Math.max(...values);
   const pad = (max - min) * 0.05 || max * 0.05 || 1;

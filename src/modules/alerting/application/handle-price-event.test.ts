@@ -30,6 +30,8 @@ const product = {
   method: "json-ld",
   scrapedAt: new Date(),
   store: "loja",
+  lastPriceReadAt: null,
+  addedFrom: null,
   userId: "user-1",
 };
 

@@ -4,10 +4,11 @@ import Sidebar from "@/components/sidebar";
 import Hero from "@/components/hero";
 import ClientAlerts from "@/components/alert-items";
 import { getDashboardStats } from "@/modules/analytics/actions/get-dashboard-stats";
+import { getDeals } from "@/modules/analytics/actions/get-deals";
 import { maxTrackedProducts } from "@/modules/billing/domain/plan-entitlements";
 
 export default async function Dashboard() {
-  const data = await getDashboardStats();
+  const [data, deals] = await Promise.all([getDashboardStats(), getDeals()]);
 
   if (!data) {
     redirect("/");
@@ -25,6 +26,7 @@ export default async function Dashboard() {
         planLimit={userLimit}
         initialProducts={products}
         initialStats={{ reachedTargets, potentialSavings, biggestDrop }}
+        deals={deals}
       />
       <ClientAlerts alerts={alerts} />
     </div>

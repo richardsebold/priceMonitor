@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 5,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "surviving_mutant::when a mocked repository query decides which rows count as existing assert the query s where clause or make the mock honour it",
+      "text": "When a mocked repository query decides which rows count as existing, assert the query's where clause or make the mock honour it",
+      "signal": "surviving_mutant",
+      "scope": "repo-layer",
+      "status": "candidate",
+      "features": [
+        "deals-carousel"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md F5 - src/modules/price-tracking/application/seed-catalog.ts:25 (repo-layer)"
+      ],
+      "created": "2026-09-24T03:41:46Z",
+      "last_seen": "2026-09-24T03:41:46Z"
+    },
+    {
+      "id": "L-002",
+      "key": "ac_gap::give every ui arrangement the plan decides such as a carousel with navigation controls its own selector level check not only copy and dom order",
+      "text": "Give every UI arrangement the plan decides, such as a carousel with navigation controls, its own selector-level check, not only copy and DOM order",
+      "signal": "ac_gap",
+      "scope": "ui",
+      "status": "candidate",
+      "features": [
+        "deals-carousel"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md Binding sources - src/components/deals-carousel.tsx:147 (ui)"
+      ],
+      "created": "2026-09-24T03:41:46Z",
+      "last_seen": "2026-09-24T03:41:46Z"
+    },
+    {
+      "id": "L-003",
+      "key": "spec_precision_gap::match the exact expected error text in a ui error proof not a pattern that also accepts a generic fallback message",
+      "text": "Match the exact expected error text in a UI error proof, not a pattern that also accepts a generic fallback message",
+      "signal": "spec_precision_gap",
+      "scope": "ui",
+      "status": "candidate",
+      "features": [
+        "deals-carousel"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md C31 - uiproof/ui.mjs:125 (ui)"
+      ],
+      "created": "2026-09-24T03:41:46Z",
+      "last_seen": "2026-09-24T03:41:46Z"
+    },
+    {
+      "id": "L-004",
+      "key": "gate_fail::assert the absence of extra inputs when the plan says a dialog has only certain fields",
+      "text": "Assert the absence of extra inputs when the plan says a dialog has only certain fields",
+      "signal": "gate_fail",
+      "scope": "ui",
+      "status": "candidate",
+      "features": [
+        "deals-carousel"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validate_verification.py deals-carousel exit 1 (ui)"
+      ],
+      "created": "2026-09-24T03:41:46Z",
+      "last_seen": "2026-09-24T03:41:46Z"
+    }
+  ]
+}
