@@ -82,31 +82,31 @@ Proof: `npx vitest run src/modules/price-tracking/actions/add-product.test.ts -t
 **C23** - `formatDealBadge(0.123)` devolve `"-12% vs. últimos 30 dias"`, e `formatDealBadge(0.125)` devolve `"-13% vs. últimos 30 dias"` (DEALS-03, AC 19) [x]
 Proof: `npx vitest run src/modules/analytics/domain/deals.test.ts -t "formatDealBadge"`
 
-**C24** - Com pelo menos 1 item, `/dashboard` mostra o carrossel abaixo de `SectionCards` e acima do título "Últimas Atualizações", com um card por item (DEALS-03, AC 18)
+**C24** - Com pelo menos 1 item, `/dashboard` mostra o carrossel abaixo de `SectionCards` e acima do título "Últimas Atualizações", com um card por item (DEALS-03, AC 18) [x]
 Proof: Manual - Playwright MCP em banco isolado: abrir `/dashboard` e conferir, pela ordem do DOM e por screenshot, SectionCards → carrossel → "Últimas Atualizações"
 
-**C25** - Cada card mostra imagem, nome, loja, preço em BRL (`R$ 1.234,56`) e o badge `-{N}% vs. últimos 30 dias` (DEALS-03, AC 19)
+**C25** - Cada card mostra imagem, nome, loja, preço em BRL (`R$ 1.234,56`) e o badge `-{N}% vs. últimos 30 dias` (DEALS-03, AC 19) [x]
 Proof: Manual - Playwright MCP em banco isolado: snapshot de um card, conferindo os cinco elementos e o texto do badge contra o desconto do dado de teste
 
-**C26** - Com `getDeals()` vazio, `/dashboard` não tem o carrossel nem nenhum texto dele: SectionCards é seguido direto por "Últimas Atualizações" (DEALS-03, AC 20)
+**C26** - Com `getDeals()` vazio, `/dashboard` não tem o carrossel nem nenhum texto dele: SectionCards é seguido direto por "Últimas Atualizações" (DEALS-03, AC 20) [x]
 Proof: Manual - Playwright MCP em banco isolado, sem produto em desconto: snapshot de `/dashboard`
 
-**C27** - "Ver na loja" é um link com `href` igual à URL do produto, `target="_blank"` e `rel="noopener noreferrer"` (DEALS-03, AC 21)
+**C27** - "Ver na loja" é um link com `href` igual à URL do produto, `target="_blank"` e `rel="noopener noreferrer"` (DEALS-03, AC 21) [x]
 Proof: Manual - Playwright MCP: ler os atributos do link no snapshot
 
-**C28** - "Monitorar" abre um diálogo com a URL do produto num campo somente leitura e um campo de meta de preço (DEALS-03, AC 22)
+**C28** - "Monitorar" abre um diálogo com a URL do produto num campo somente leitura e um campo de meta de preço (DEALS-03, AC 22) [x]
 Proof: Manual - Playwright MCP: clicar em "Monitorar", conferir o valor e o `readonly` do campo de URL e a presença do campo de meta
 
-**C29** - Confirmar o diálogo com sucesso fecha o diálogo, mostra o toast "Produto adicionado!", faz o produto aparecer em "Últimas Atualizações" sem recarregar a página e troca o botão do card pelo badge "Já monitorado" (DEALS-03, AC 23, AC 24)
+**C29** - Confirmar o diálogo com sucesso fecha o diálogo, mostra o toast "Produto adicionado!", faz o produto aparecer em "Últimas Atualizações" sem recarregar a página e troca o botão do card pelo badge "Já monitorado" (DEALS-03, AC 23, AC 24) [x]
 Proof: Manual - Playwright MCP em banco isolado: confirmar o diálogo e conferir os quatro efeitos sem navegação. `addedFrom` no banco já está provado em C22
 
-**C30** - Com o limite do plano atingido, confirmar o diálogo mostra a mensagem de limite do `NewProduct` e um link para `/planos` (DEALS-03, AC 25)
+**C30** - Com o limite do plano atingido, confirmar o diálogo mostra a mensagem de limite do `NewProduct` e um link para `/planos` (DEALS-03, AC 25) [x]
 Proof: Manual - Playwright MCP em banco isolado, com usuário Free que já tem 1 produto: confirmar o diálogo e conferir a mensagem e o `href="/planos"`
 
-**C31** - Com qualquer outro erro do `NewProduct`, o erro devolvido aparece num toast e o diálogo continua aberto (DEALS-03, AC 26)
+**C31** - Com qualquer outro erro do `NewProduct`, o erro devolvido aparece num toast e o diálogo continua aberto (DEALS-03, AC 26) [x]
 Proof: Manual - Playwright MCP em banco isolado: monitorar uma URL do catálogo cujo scrape falha (ou um produto que a sessão já tem, que devolve "Você já está monitorando este produto.") e conferir o toast e o diálogo aberto
 
-**C32** - Um item com `alreadyTracked = true` mostra o badge "Já monitorado" e não tem botão "Monitorar" (DEALS-03, AC 27)
+**C32** - Um item com `alreadyTracked = true` mostra o badge "Já monitorado" e não tem botão "Monitorar" (DEALS-03, AC 27) [x]
 Proof: Manual - Playwright MCP em banco isolado: abrir `/dashboard` com um usuário que já monitora um produto do catálogo e conferir o card
 
 ## Coverage
@@ -170,3 +170,8 @@ Cost: 21 provas automatizadas em 7 arquivos de teste, mais 9 roteiros de Playwri
 Divisão planejada, com a conta, antes de qualquer código: S1 + S2 + S3 ≈ 23k tokens de leitura (≈ 90 KB / 4), bem abaixo de 150k -> um único builder, sem handoff.
 
 Pré-requisito das provas manuais (C24 a C32): o `.env` aponta para o Neon de produção, e essas provas precisam de produto do catálogo em desconto e de cadastro pelo diálogo. Elas só rodam contra um banco isolado (um branch do Neon ou um Postgres local), com a escolha confirmada pelo Richard antes da S3. Não rodam contra produção.
+
+- **Boundary:** C1-C32 closed at the S3 commit and this commit. Provas manuais C24-C32 rodadas em 2026-09-24 com Playwright 1.63 (script, porque o Playwright MCP não está configurado neste ambiente) contra `next dev -p 3100` ligado a um Postgres local (`embedded-postgres`, porta 55432), nunca contra o Neon. O banco local recebeu as 25 migrações e o `catalog:seed` real (12/12 produtos lidos da KaBuM), mais um histórico montado à mão para criar os descontos. As 9 passaram, com screenshots no scratchpad da sessão (`uiproof/shots/`). A ordem esperada dos cards (popularidade, depois desconto) conferiu: Vivobook, Electrolux, TCL 32 (popularidade 1), depois TCL 65 (23%), G35 (20%), inexistente (17%), A07 (9%). O iPhone (3%), o IdeaPad (44%, acima do teto), o Nitro (leitura de 30 h) e o TCL 50 (sem queda) ficaram de fora
+- **Settled mid-build:** posição do carrossel entre `SectionCards` e "Últimas Atualizações" (usuário, na aprovação do plano). Postgres local no lugar do Docker e script do Playwright no lugar do MCP (usuário, 2026-09-24). Door 3 (`embla-carousel-react`) acrescentada ao Landing antes do código. O pacote `cn`, que o CLI do shadcn acrescentou, foi removido
+- **Abandoned:** Docker (o daemon não sobe nesta máquina) e Playwright MCP (não configurado)
+- **Bug encontrado, fora do escopo, não corrigido:** `priceScale([])` em `src/components/chart-area-interactive.tsx:75` entra em loop infinito quando o primeiro produto expandido tem `priceTarget = 0`, porque no primeiro render o histórico ainda está vazio. Isso trava o SSR e o browser do `/dashboard`. Já existia (o diálogo "CADASTRAR PRODUTO" aceita meta vazia, que vira 0), e o diálogo "Monitorar" do carrossel abre um segundo caminho para ele (reproduzido na primeira rodada da C31)
