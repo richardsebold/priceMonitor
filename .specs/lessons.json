@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 2,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "surviving_mutant::assert that a composed component wires the shared action component not just that an element with the same label renders",
+      "text": "Assert that a composed component wires the shared action component, not just that an element with the same label renders",
+      "signal": "surviving_mutant",
+      "scope": "components",
+      "status": "candidate",
+      "features": [
+        "sidebar-nav"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M5 src/components/sidebar/nav-links.tsx:70 (components)"
+      ],
+      "created": "2026-09-27T04:52:36Z",
+      "last_seen": "2026-09-27T04:52:36Z"
+    }
+  ]
+}

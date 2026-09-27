@@ -1,26 +1,11 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "../ui/sheet";
-import {
-  BadgeQuestionMark,
-  Bell,
-  DollarSign,
-  LayoutDashboard,
-  LogOut,
-  Package,
-  PackageSearch,
-  PanelBottom,
-  PlaneTakeoff,
-  Settings,
-} from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+import { DollarSign, Package, PanelBottom } from "lucide-react";
+import { TooltipProvider } from "../ui/tooltip";
 import { UserMenu } from "../user-menu";
 import TooltipAddProduct from "../btn-cadastro-produto";
+import { DesktopNavLinks, MobileNavLinks } from "./nav-links";
 
 export default function Sidebar() {
   return (
@@ -41,97 +26,14 @@ export default function Sidebar() {
 
             <TooltipAddProduct />
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
-                  prefetch={false}
-                >
-                  <LayoutDashboard className="h-5 w-5 transition-all" />
-                  <span className="sr-only">Dashboard</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Dashboard</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/produtos"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
-                  prefetch={false}
-                >
-                  <PackageSearch className="h-5 w-5 transition-all" />
-                  <span className="sr-only">Produtos Rastreados</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Produtos Rastreados</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/alertas"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
-                  prefetch={false}
-                >
-                  <Bell className="h-5 w-5 transition-all" />
-                  <span className="sr-only">Alertas</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Alertas</TooltipContent>
-            </Tooltip>
-
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/planos"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
-                  prefetch={false}
-                >
-                  <PlaneTakeoff className="h-5 w-5 transition-all" />
-                  <span className="sr-only">Planos</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Planos</TooltipContent>
-            </Tooltip>
+            <DesktopNavLinks />
           </TooltipProvider>
         </nav>
 
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 mb-10">
 
           <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/settings"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
-                  prefetch={false}
-                >
-                  <Settings className="h-5 w-5 transition-all" />
-                  <span className="sr-only">Configurações</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Configurações</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/help"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-white"
-                  prefetch={false}
-                >
-                  <BadgeQuestionMark className="h-5 w-5 transition-all" />
-                  <span className="sr-only">Ajuda</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Ajuda</TooltipContent>
-            </Tooltip>
-
-
+            <DesktopNavLinks footer />
 
             <UserMenu />
           </TooltipProvider>
@@ -159,58 +61,7 @@ export default function Sidebar() {
                   <span className="sr-only">Logo</span>
                 </Link>
 
-                <Link
-                  href="/"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                  prefetch={false}
-                >
-                  <LayoutDashboard className="h-5 w-5 transition-all" />
-                  <span className="">Dashboard</span>
-                </Link>
-
-                <Link
-                  href="/"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                  prefetch={false}
-                >
-                  <PackageSearch className="h-5 w-5 transition-all" />
-                  <span className="">Produtos Rastreados</span>
-                </Link>
-
-                <Link
-                  href="/"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                  prefetch={false}
-                >
-                  <Bell className="h-5 w-5 transition-all" />
-                  <span className="">Alertas</span>
-                </Link>
-
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                  prefetch={false}
-                >
-                  <Settings className="h-5 w-5 transition-all" />
-                  <span className="">Configurações</span>
-                </Link>
-
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                  prefetch={false}
-                >
-                  <BadgeQuestionMark className="h-5 w-5 transition-all" />
-                  <span className="">Ajuda</span>
-                </Link>
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                  prefetch={false}
-                >
-                  <LogOut className="h-5 w-5 transition-all" />
-                  <span className="">Sair</span>
-                </Link>
+                <MobileNavLinks />
               </nav>
             </SheetContent>
 
