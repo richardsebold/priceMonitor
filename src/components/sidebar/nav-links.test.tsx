@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { ReactElement } from "react";
+import { Children, isValidElement, type ComponentProps, type ReactElement, type ReactNode } from "react";
 
 const { pathname, replace, signOut } = vi.hoisted(() => ({
   pathname: { current: "/produtos" as string | null },
@@ -115,6 +115,24 @@ describe("MobileNavLinks", () => {
 
     expect(buttons).toEqual(["Sair"]);
     expect(links(container).some((a) => a.textContent === "Sair")).toBe(false);
+  });
+});
+
+describe("MobileNavLinks: Sair", () => {
+  it("usa o ButtonSignOut, que chama authClient.signOut ao clicar", async () => {
+    const fragment = MobileNavLinks() as ReactElement<{ children: ReactNode }>;
+    const item = Children.toArray(fragment.props.children).find(
+      (child) => isValidElement(child) && child.type === ButtonSignOut,
+    ) as ReactElement<ComponentProps<typeof ButtonSignOut>> | undefined;
+
+    expect(item).toBeDefined();
+
+    const button = ButtonSignOut(item!.props) as ReactElement<{
+      onClick: () => Promise<void>;
+    }>;
+    await button.props.onClick();
+
+    expect(signOut).toHaveBeenCalledTimes(1);
   });
 });
 

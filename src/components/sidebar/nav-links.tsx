@@ -65,10 +65,10 @@ export function MobileNavLinks() {
         );
       })}
 
-      <div className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
+      <ButtonSignOut className="flex cursor-pointer items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
         <LogOut className="h-5 w-5 transition-all" />
-        <ButtonSignOut>Sair</ButtonSignOut>
-      </div>
+        <span>Sair</span>
+      </ButtonSignOut>
     </>
   );
 }
