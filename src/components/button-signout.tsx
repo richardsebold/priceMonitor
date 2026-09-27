@@ -1,11 +1,12 @@
 "use client"
 
 
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from '@/lib/auth-client'
 
 
-export function ButtonSignOut() {
+export function ButtonSignOut({ children = "Sair da conta" }: { children?: ReactNode }) {
   const router = useRouter();
 
   async function signOut() {
@@ -20,7 +21,7 @@ export function ButtonSignOut() {
 
   return (
     <button onClick={signOut} className="cursor-pointer">
-      Sair da conta
+      {children}
     </button>
   );
 }

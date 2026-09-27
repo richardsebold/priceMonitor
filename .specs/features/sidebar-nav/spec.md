@@ -85,9 +85,9 @@ A sidebar (`src/components/sidebar/index.tsx`) não indica em que página o usu�
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
 | NAV-01 | P1: Destacar a página atual (AC 1-4, edge cases) | Execute | Implementing |
-| NAV-02 | P1: Destacar a página atual (AC 5-6) | Execute | Pending |
-| NAV-03 | P1: Menu mobile funcional (AC 1-2) | Execute | Pending |
-| NAV-04 | P1: Menu mobile funcional (AC 3-4) | Execute | Pending |
+| NAV-02 | P1: Destacar a página atual (AC 5-6) | Execute | Implementing |
+| NAV-03 | P1: Menu mobile funcional (AC 1-2) | Execute | Implementing |
+| NAV-04 | P1: Menu mobile funcional (AC 3-4) | Execute | Implementing |
 
 **Coverage:** 4 total, 4 mapped to steps, 0 unmapped
 
